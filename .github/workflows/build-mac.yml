@@ -1,0 +1,79 @@
+# Đóng gói CC Motion Editor cho macOS (arm64 + x64) và đăng DMG lên trang Releases.
+# Chạy khi push lên nhánh có thay đổi mã nguồn, hoặc bấm Run workflow.
+name: Build macOS DMG
+
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'electron/**'
+      - 'shared/**'
+      - 'scripts/**'
+      - 'build/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'electron-builder.yml'
+      - '.github/workflows/build-mac.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  dmg:
+    # Cùng quy trình đã kiểm tra trên Linux: rcodesign ký ad-hoc + scripts/make-dmg.py dựng DMG
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Cài công cụ
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q xorriso
+          V=0.29.0
+          curl -fsSL -o /tmp/rc.tgz "https://github.com/indygreg/apple-platform-rs/releases/download/apple-codesign%2F$V/apple-codesign-$V-x86_64-unknown-linux-musl.tar.gz" \
+            && tar -xzf /tmp/rc.tgz -C /tmp && sudo install /tmp/apple-codesign-$V-x86_64-unknown-linux-musl/rcodesign /usr/local/bin/ \
+            || cargo install apple-codesign --version $V --locked --bin rcodesign
+          rcodesign --version
+
+      - name: Cài thư viện
+        run: npm ci
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+
+      - name: Unit test
+        run: npm test
+
+      - name: Đóng gói DMG
+        run: bash scripts/build-mac.sh arm64 x64
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CC-Motion-Editor-dmg
+          path: release/*.dmg
+          compression-level: 0
+
+      - name: Đăng lên Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v$VERSION"
+          NOTES="CC Motion Editor $VERSION — Chợ Chời Creative Studio.
+
+          • Máy chip Apple M1/M2/M3/M4: tải file **arm64.dmg**
+          • Máy Intel: tải file **x64.dmg**
+
+          Mở DMG, kéo app vào Applications. Lần đầu mở: Cài đặt hệ thống → Quyền riêng tư & Bảo mật → **Vẫn mở**.
+          (Build từ commit ${GITHUB_SHA::7})"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" release/*.dmg --clobber
+            gh release edit "$TAG" --notes "$NOTES" --target "$GITHUB_SHA"
+          else
+            gh release create "$TAG" release/*.dmg --title "CC Motion Editor $VERSION" --notes "$NOTES" --target "$GITHUB_SHA" --prerelease
+          fi
