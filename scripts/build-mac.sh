@@ -6,6 +6,7 @@
 # hoặc Linux (cần xorriso + rcodesign: cargo install apple-codesign --bin rcodesign).
 set -euo pipefail
 cd "$(dirname "$0")/.."
+PWD_ROOT="$(pwd)"
 ARCHS=("${@:-arm64 x64}")
 ARCHS=(${ARCHS[@]})
 
@@ -18,7 +19,7 @@ for arch in "${ARCHS[@]}"; do
     tmp=$(mktemp -d)
     cp -r node_modules/ffmpeg-static/. "$tmp/"
     rm -f "$tmp/ffmpeg"
-    (cd "$tmp" && npm_config_platform=darwin npm_config_arch=$arch node install.js)
+    (cd "$tmp" && NODE_PATH="$PWD_ROOT/node_modules" npm_config_platform=darwin npm_config_arch=$arch node install.js)
     mkdir -p "build/bin/darwin-$arch"
     mv "$tmp/ffmpeg" "build/bin/darwin-$arch/ffmpeg"
     chmod +x "build/bin/darwin-$arch/ffmpeg"
