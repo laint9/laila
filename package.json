@@ -1,0 +1,38 @@
+{
+  "name": "laila-motion-studio",
+  "productName": "Laila Motion Studio",
+  "version": "0.1.0",
+  "description": "Video editor cho macOS: dùng Claude để generate motion graphic từ brand elements, ghép nhiều clip thành video tổng.",
+  "main": "out/main/index.js",
+  "author": "laint9",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --test --experimental-strip-types tests/*.test.ts",
+    "dist:mac": "electron-vite build && electron-builder --mac --config electron-builder.yml",
+    "test:e2e": "electron-vite build && node tests/e2e/smoke.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0",
+    "ffmpeg-static": "^5.3.0",
+    "ffprobe-static": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "electron": "^44.7.1",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "playwright-core": "^1.64.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.7",
+    "zustand": "^5.0.15"
+  }
+}

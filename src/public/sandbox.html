@@ -1,0 +1,158 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<!-- Code do Claude sinh ra chạy ở đây: iframe sandbox (origin rỗng), không mạng, không Node. -->
+<meta http-equiv="Content-Security-Policy"
+  content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; img-src blob: data:; font-src 'none'; connect-src 'none'" />
+<style>
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+  canvas { width: 100%; height: 100%; object-fit: contain; display: block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+(() => {
+  'use strict'
+  const canvas = document.getElementById('c')
+  const ctx = canvas.getContext('2d')
+  let mod = null
+  let base = null
+
+  const ease = {
+    linear: (x) => x,
+    inQuad: (x) => x * x,
+    outQuad: (x) => 1 - (1 - x) * (1 - x),
+    inOutQuad: (x) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2),
+    inCubic: (x) => x * x * x,
+    outCubic: (x) => 1 - Math.pow(1 - x, 3),
+    inOutCubic: (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2),
+    inQuart: (x) => x * x * x * x,
+    outQuart: (x) => 1 - Math.pow(1 - x, 4),
+    inOutQuart: (x) => (x < 0.5 ? 8 * x * x * x * x : 1 - Math.pow(-2 * x + 2, 4) / 2),
+    inExpo: (x) => (x === 0 ? 0 : Math.pow(2, 10 * x - 10)),
+    outExpo: (x) => (x === 1 ? 1 : 1 - Math.pow(2, -10 * x)),
+    inOutExpo: (x) =>
+      x === 0 ? 0 : x === 1 ? 1 : x < 0.5 ? Math.pow(2, 20 * x - 10) / 2 : (2 - Math.pow(2, -20 * x + 10)) / 2,
+    outBack: (x) => {
+      const c1 = 1.70158, c3 = c1 + 1
+      return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2)
+    },
+    outElastic: (x) => {
+      const c4 = (2 * Math.PI) / 3
+      return x === 0 ? 0 : x === 1 ? 1 : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1
+    },
+    outBounce: (x) => {
+      const n1 = 7.5625, d1 = 2.75
+      if (x < 1 / d1) return n1 * x * x
+      if (x < 2 / d1) return n1 * (x -= 1.5 / d1) * x + 0.75
+      if (x < 2.5 / d1) return n1 * (x -= 2.25 / d1) * x + 0.9375
+      return n1 * (x -= 2.625 / d1) * x + 0.984375
+    }
+  }
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v))
+  const lerp = (a, b, k) => a + (b - a) * k
+  const map = (v, a, b, c, d) => (b === a ? c : lerp(c, d, clamp((v - a) / (b - a), 0, 1)))
+  const seg = (t, s, e) => (e <= s ? (t >= e ? 1 : 0) : clamp((t - s) / (e - s), 0, 1))
+  const random = (seed) => {
+    let x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453
+    return x - Math.floor(x)
+  }
+  const wrapText = (c, text, maxWidth) => {
+    const out = []
+    for (const para of String(text).split('\n')) {
+      const words = para.split(/\s+/).filter(Boolean)
+      let line = ''
+      for (const w of words) {
+        const test = line ? line + ' ' + w : w
+        if (c.measureText(test).width > maxWidth && line) {
+          out.push(line)
+          line = w
+        } else line = test
+      }
+      out.push(line)
+    }
+    return out
+  }
+
+  // Chặn các API không xác định/không an toàn trong code sinh ra
+  const banned = { Math: Object.assign(Object.create(Math), { random: () => { throw new Error('Math.random is not allowed, use api.random(seed)') } }) }
+
+  function reply(msg, transfer) {
+    parent.postMessage(msg, '*', transfer || [])
+  }
+
+  function load(m) {
+    canvas.width = m.width
+    canvas.height = m.height
+    const fonts = m.fonts || {}
+    base = {
+      width: m.width,
+      height: m.height,
+      duration: m.duration,
+      fps: m.fps,
+      el: Object.freeze({ ...(m.el || {}) }),
+      img: Object.freeze({ ...(m.images || {}) }),
+      ease, lerp, clamp, map, seg, random, wrapText,
+      font: (name, size, weight) => {
+        const fam = fonts[name] || Object.values(fonts)[0]
+        const stack = (fam ? '"' + fam + '", ' : '') + '-apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif'
+        return (weight || 400) + ' ' + Math.round(size) + 'px ' + stack
+      },
+      state: undefined
+    }
+    const factory = new Function(
+      'Math', 'Date', 'fetch', 'XMLHttpRequest', 'WebSocket', 'parent', 'top', 'window', 'document',
+      '"use strict";\n' + m.code + '\n;return { render: typeof render === "function" ? render : null, setup: typeof setup === "function" ? setup : null };'
+    )
+    mod = factory(banned.Math, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined)
+    if (!mod.render) throw new Error('render(ctx, t, api) is not defined')
+    if (mod.setup) base.state = mod.setup(base)
+  }
+
+  function draw(t) {
+    if (!mod) throw new Error('No scene loaded')
+    const api = Object.assign({}, base, { p: base.duration > 0 ? clamp(t / base.duration, 0, 1) : 0 })
+    ctx.save()
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
+    ctx.globalAlpha = 1
+    ctx.globalCompositeOperation = 'source-over'
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.restore()
+    ctx.save()
+    const t0 = performance.now()
+    try {
+      mod.render(ctx, t, api)
+    } finally {
+      ctx.restore()
+    }
+    return performance.now() - t0
+  }
+
+  window.addEventListener('message', async (e) => {
+    if (e.source !== parent) return
+    const m = e.data || {}
+    try {
+      if (m.type === 'load') {
+        load(m)
+        reply({ type: 'ok', id: m.id })
+      } else if (m.type === 'draw') {
+        const ms = draw(m.t)
+        reply({ type: 'ok', id: m.id, ms })
+      } else if (m.type === 'capture') {
+        draw(m.t)
+        const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'))
+        const buf = await blob.arrayBuffer()
+        reply({ type: 'frame', id: m.id, buf }, [buf])
+      }
+    } catch (err) {
+      reply({ type: 'error', id: m.id, message: String((err && (err.stack || err.message)) || err) })
+    }
+  })
+  window.addEventListener('error', (ev) => reply({ type: 'error', id: -1, message: String(ev.message) }))
+  reply({ type: 'ready' })
+})()
+</script>
+</body>
+</html>

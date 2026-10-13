@@ -1,0 +1,22 @@
+appId: com.laila.motionstudio
+productName: Laila Motion Studio
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**
+  - package.json
+asarUnpack:
+  - node_modules/ffmpeg-static/**
+  - node_modules/ffprobe-static/**
+mac:
+  category: public.app-category.video
+  # Build theo kiến trúc của máy đang build (ffmpeg-static tải binary đúng kiến trúc máy đó).
+  target: dmg
+  hardenedRuntime: true
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  # Chưa có Apple Developer ID thì để null: app vẫn chạy, lần đầu mở bằng chuột phải > Open.
+  identity: null
+dmg:
+  title: Laila Motion Studio
