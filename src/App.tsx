@@ -8,7 +8,11 @@ import { Preview } from './components/Preview'
 import { Timeline } from './components/Timeline'
 import { SettingsModal } from './components/SettingsModal'
 import { ExportModal } from './components/ExportModal'
+import { MotionEditor } from './editor/MotionEditor'
+import { applyTheme } from './lib/theme'
 import type { AppSettings } from '../shared/types'
+
+applyTheme()
 
 export function App() {
   const project = useStore((s) => s.project)
@@ -16,6 +20,9 @@ export function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null)
+  const [editing, setEditing] = useState<string | null>(null)
+  const editingRef = useRef<string | null>(null)
+  editingRef.current = editing
   const loaded = useRef(false)
 
   // Mở lại phiên làm việc trước
@@ -48,6 +55,7 @@ export function App() {
   // Phím tắt kiểu CapCut
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (editingRef.current) return // Motion Editor có phím tắt riêng
       const tag = (e.target as HTMLElement)?.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target as HTMLElement)?.isContentEditable) return
       const s = useStore.getState()
@@ -67,6 +75,10 @@ export function App() {
         s.duplicateSelected()
       } else if (!mod && e.key.toLowerCase() === 's') {
         s.splitAtPlayhead()
+      } else if (!mod && e.key.toLowerCase() === 'q') {
+        s.trimLeft()
+      } else if (!mod && e.key.toLowerCase() === 'w') {
+        s.trimRight()
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
         s.deleteSelected()
       } else if (e.key === 'ArrowLeft') {
@@ -89,21 +101,23 @@ export function App() {
         apiReady={!!appSettings?.hasApiKey}
       />
       <div className="workspace">
-        <aside className="left panel">
+        <aside className="sidebar">
           <div className="tabs">
-            <button className={leftTab === 'elements' ? 'on' : ''} onClick={() => setLeftTab('elements')}>
-              Brand elements
-            </button>
-            <button className={leftTab === 'media' ? 'on' : ''} onClick={() => setLeftTab('media')}>
-              Media <span className="count">{project.media.length}</span>
-            </button>
+            <div className="segmented full">
+              <button className={leftTab === 'elements' ? 'on' : ''} onClick={() => setLeftTab('elements')}>
+                Brand kit
+              </button>
+              <button className={leftTab === 'media' ? 'on' : ''} onClick={() => setLeftTab('media')}>
+                Media <span className="count">{project.media.length}</span>
+              </button>
+            </div>
           </div>
           {leftTab === 'elements' ? <ElementsPanel /> : <MediaBin />}
         </aside>
-        <main className="center panel">
-          <Studio onNeedKey={() => setShowSettings(true)} apiReady={!!appSettings?.hasApiKey} />
+        <main className="content">
+          <Studio onNeedKey={() => setShowSettings(true)} apiReady={!!appSettings?.hasApiKey} onEdit={setEditing} />
         </main>
-        <section className="right panel">
+        <section className="inspector-pane">
           <Preview />
         </section>
       </div>
@@ -112,6 +126,7 @@ export function App() {
         <SettingsModal settings={appSettings} onChange={setAppSettings} onClose={() => setShowSettings(false)} />
       )}
       {showExport && <ExportModal onClose={() => setShowExport(false)} />}
+      {editing && <MotionEditor sceneId={editing} onClose={() => setEditing(null)} />}
     </div>
   )
 }

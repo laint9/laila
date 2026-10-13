@@ -29,11 +29,16 @@ export interface Scene {
   elementIds: string[]
   status: SceneStatus
   progress?: number
+  /** scene dạng layer/keyframe (MotionScene trong src/engine/types.ts) */
+  motion?: unknown
+  /** định dạng cũ (chỉ code) — tự chuyển sang motion khi mở project */
   code?: string
   notes?: string
   error?: string
   /** media id của bản render mới nhất */
   mediaId?: string
+  /** đã chỉnh trong Motion Editor nhưng chưa render lại */
+  dirty?: boolean
   /** số lần đã generate (phiên bản) */
   version: number
 }
@@ -58,6 +63,14 @@ export interface TimelineClip {
   in: number
   out: number
   volume: number
+  /** tốc độ 0.25 - 4 */
+  speed?: number
+  /** chuyển cảnh sang clip kế tiếp */
+  transition?: TransitionKind
+  transitionDuration?: number
+  /** fade âm thanh đầu/cuối clip (giây) */
+  audioFadeIn?: number
+  audioFadeOut?: number
 }
 
 export interface MusicTrack {
@@ -84,10 +97,10 @@ export interface GenerateRequest {
   scene: Pick<Scene, 'title' | 'prompt' | 'duration'>
   elements: BrandElement[]
   settings: ProjectSettings
-  /** Khi refine: code hiện tại + yêu cầu sửa */
-  previousCode?: string
+  /** Khi refine: scene hiện tại (JSON) + yêu cầu sửa */
+  previousScene?: unknown
   instruction?: string
-  /** Khi auto-fix: lỗi runtime từ sandbox */
+  /** Khi auto-fix: lỗi runtime từ layer code */
   runtimeError?: string
   model?: string
 }
@@ -95,8 +108,9 @@ export interface GenerateRequest {
 export interface GenerateResult {
   title: string
   duration: number
-  code: string
   notes: string
+  /** MotionScene thô, renderer sẽ chuẩn hoá */
+  scene: unknown
 }
 
 export interface StoryboardRequest {
@@ -115,10 +129,26 @@ export interface StoryboardScene {
   elementNames: string[]
 }
 
+export type TransitionKind = 'none' | 'fade' | 'fadeblack' | 'fadewhite' | 'slideleft' | 'slideup' | 'wipeleft' | 'circleopen' | 'zoomin' | 'dissolve'
+
+export interface ExportClip {
+  path: string
+  in: number
+  out: number
+  hasAudio: boolean
+  volume: number
+  speed: number
+  /** chuyển cảnh SANG clip kế tiếp */
+  transition: TransitionKind
+  transitionDuration: number
+  fadeIn: number
+  fadeOut: number
+}
+
 export interface ExportRequest {
   outPath: string
   settings: ProjectSettings
-  clips: { path: string; in: number; out: number; hasAudio: boolean; volume: number }[]
+  clips: ExportClip[]
   music?: { path: string; in: number; volume: number }
   quality: 'draft' | 'high'
 }

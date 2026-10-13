@@ -34,7 +34,8 @@ const api = {
     abort: (jobId: string): Promise<void> => ipcRenderer.invoke('render:abort', jobId)
   },
   media: {
-    import: (kind: 'video' | 'audio'): Promise<MediaItem[]> => ipcRenderer.invoke('media:import', kind)
+    import: (kind: 'video' | 'audio'): Promise<MediaItem[]> => ipcRenderer.invoke('media:import', kind),
+    filmstrip: (path: string, duration: number): Promise<string | null> => ipcRenderer.invoke('media:filmstrip', path, duration)
   },
   file: {
     pickImage: (): Promise<string | null> => ipcRenderer.invoke('file:pickImage'),

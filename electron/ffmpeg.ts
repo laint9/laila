@@ -111,37 +111,90 @@ export class FrameEncoder {
 
 const n = (v: number) => v.toFixed(3)
 
-/** Dựng args ffmpeg cho bản xuất cuối: trim từng clip, scale/pad về khung chung, concat, trộn nhạc. */
+/** atempo chỉ nhận 0.5..2 mỗi lần -> xâu chuỗi */
+function atempoChain(speed: number): string {
+  const parts: string[] = []
+  let s = speed
+  while (s > 2) {
+    parts.push('atempo=2')
+    s /= 2
+  }
+  while (s < 0.5) {
+    parts.push('atempo=0.5')
+    s /= 0.5
+  }
+  if (Math.abs(s - 1) > 1e-3) parts.push(`atempo=${s.toFixed(4)}`)
+  return parts.length ? parts.join(',') + ',' : ''
+}
+
+const XFADE: Record<string, string> = {
+  fade: 'fade',
+  dissolve: 'dissolve',
+  fadeblack: 'fadeblack',
+  fadewhite: 'fadewhite',
+  slideleft: 'slideleft',
+  slideup: 'slideup',
+  wipeleft: 'wipeleft',
+  circleopen: 'circleopen',
+  zoomin: 'zoomin'
+}
+
+/** Dựng lệnh ffmpeg xuất video tổng: trim, tốc độ, scale/pad, fade âm thanh, chuyển cảnh (xfade), nhạc nền. */
 export function buildExportArgs(req: ExportRequest): { args: string[]; total: number } {
-  const { width: W, height: H, fps } = req.settings
+  const even = (v: number) => Math.max(2, Math.round(v / 2) * 2)
+  const W = even(req.settings.width)
+  const H = even(req.settings.height)
+  const fps = req.settings.fps
   const args: string[] = ['-y']
   const filters: string[] = []
-  const concatInputs: string[] = []
-  let total = 0
+  const lens: number[] = []
 
   req.clips.forEach((c, i) => {
     args.push('-i', c.path)
-    const d = Math.max(0.04, c.out - c.in)
-    total += d
+    const speed = Math.min(4, Math.max(0.25, c.speed || 1))
+    const d = Math.max(0.04, (c.out - c.in) / speed)
+    lens.push(d)
     filters.push(
-      `[${i}:v]trim=start=${n(c.in)}:end=${n(c.out)},setpts=PTS-STARTPTS,` +
+      `[${i}:v]trim=start=${n(c.in)}:end=${n(c.out)},setpts=(PTS-STARTPTS)/${speed},` +
         `scale=${W}:${H}:force_original_aspect_ratio=decrease,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=black,` +
-        `setsar=1,fps=${fps},format=yuv420p[v${i}]`
+        `setsar=1,fps=${fps},format=yuv420p,settb=AVTB[v${i}]`
     )
+    const fades =
+      (c.fadeIn > 0 ? `,afade=t=in:st=0:d=${n(Math.min(c.fadeIn, d))}` : '') +
+      (c.fadeOut > 0 ? `,afade=t=out:st=${n(Math.max(0, d - c.fadeOut))}:d=${n(Math.min(c.fadeOut, d))}` : '')
     if (c.hasAudio) {
       filters.push(
-        `[${i}:a]atrim=start=${n(c.in)}:end=${n(c.out)},asetpts=PTS-STARTPTS,` +
-          `aformat=sample_rates=48000:channel_layouts=stereo,volume=${c.volume.toFixed(2)},apad=whole_dur=${n(d)}[a${i}]`
+        `[${i}:a]atrim=start=${n(c.in)}:end=${n(c.out)},asetpts=PTS-STARTPTS,${atempoChain(speed)}` +
+          `aformat=sample_rates=48000:channel_layouts=stereo,volume=${c.volume.toFixed(2)},apad=whole_dur=${n(d)},atrim=duration=${n(d)}${fades}[a${i}]`
       )
     } else {
       filters.push(`anullsrc=r=48000:cl=stereo,atrim=duration=${n(d)}[a${i}]`)
     }
-    concatInputs.push(`[v${i}][a${i}]`)
   })
 
-  filters.push(`${concatInputs.join('')}concat=n=${req.clips.length}:v=1:a=1[vout][acat]`)
+  // ghép tuần tự: chuyển cảnh dùng xfade/acrossfade, không thì concat
+  let vAcc = 'v0'
+  let aAcc = 'a0'
+  let total = lens[0] ?? 0
+  for (let i = 1; i < req.clips.length; i++) {
+    const prev = req.clips[i - 1]
+    const kind = XFADE[prev.transition]
+    const td = kind ? Math.max(0, Math.min(prev.transitionDuration || 0.5, lens[i - 1] * 0.45, lens[i] * 0.45)) : 0
+    const vOut = `vx${i}`
+    const aOut = `ax${i}`
+    if (kind && td > 0.02) {
+      filters.push(`[${vAcc}][v${i}]xfade=transition=${kind}:duration=${n(td)}:offset=${n(total - td)}[${vOut}]`)
+      filters.push(`[${aAcc}][a${i}]acrossfade=d=${n(td)}:c1=tri:c2=tri[${aOut}]`)
+      total += lens[i] - td
+    } else {
+      filters.push(`[${vAcc}][${aAcc}][v${i}][a${i}]concat=n=2:v=1:a=1[${vOut}][${aOut}]`)
+      total += lens[i]
+    }
+    vAcc = vOut
+    aAcc = aOut
+  }
 
-  let audioOut = '[acat]'
+  let audioOut = `[${aAcc}]`
   if (req.music) {
     const mi = req.clips.length
     args.push('-i', req.music.path)
@@ -149,17 +202,18 @@ export function buildExportArgs(req: ExportRequest): { args: string[]; total: nu
       `[${mi}:a]atrim=start=${n(req.music.in)},asetpts=PTS-STARTPTS,aformat=sample_rates=48000:channel_layouts=stereo,` +
         `volume=${req.music.volume.toFixed(2)},afade=t=out:st=${n(Math.max(0, total - 1.5))}:d=1.5[mus]`
     )
-    filters.push(`[acat][mus]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[aout]`)
+    filters.push(`[${aAcc}][mus]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[aout]`)
     audioOut = '[aout]'
   }
 
   args.push('-filter_complex', filters.join(';'))
-  args.push('-map', '[vout]', '-map', audioOut)
+  args.push('-map', `[${vAcc}]`, '-map', audioOut)
   args.push(
     '-c:v', 'libx264',
     '-preset', req.quality === 'high' ? 'slow' : 'veryfast',
     '-crf', req.quality === 'high' ? '17' : '23',
     '-pix_fmt', 'yuv420p',
+    '-r', String(fps),
     '-c:a', 'aac',
     '-b:a', '192k',
     '-t', n(total),
@@ -167,6 +221,25 @@ export function buildExportArgs(req: ExportRequest): { args: string[]; total: nu
     req.outPath
   )
   return { args, total }
+}
+
+/** Dải thumbnail (filmstrip) cho clip trên timeline */
+export function makeFilmstrip(path: string, outPath: string, duration: number, count = 12): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const rate = count / Math.max(0.1, duration)
+    const p = spawn(FFMPEG, [
+      '-y',
+      '-i', path,
+      '-vf', `fps=${rate.toFixed(4)},scale=-2:72,tile=${count}x1`,
+      '-frames:v', '1',
+      '-q:v', '5',
+      outPath
+    ])
+    let err = ''
+    p.stderr.on('data', (d) => (err = (err + d).slice(-2000)))
+    p.on('error', reject)
+    p.on('close', (code) => (code === 0 ? resolve() : reject(new Error(err))))
+  })
 }
 
 export function runExport(

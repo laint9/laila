@@ -11,7 +11,7 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "node --test --experimental-strip-types tests/*.test.ts",
+    "test": "tsx --test tests/*.test.ts",
     "dist:mac": "electron-vite build && electron-builder --mac --config electron-builder.yml",
     "test:e2e": "electron-vite build && node tests/e2e/smoke.mjs"
   },
@@ -31,6 +31,7 @@
     "playwright-core": "^1.64.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite": "^7.3.7",
     "zustand": "^5.0.15"

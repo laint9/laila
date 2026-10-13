@@ -5,7 +5,7 @@ import { basename, extname, join } from 'node:path'
 import { Readable } from 'node:stream'
 import { randomUUID } from 'node:crypto'
 import { ClaudeService, DEFAULT_MODEL } from './claude'
-import { FrameEncoder, probe, runExport } from './ffmpeg'
+import { FrameEncoder, makeFilmstrip, probe, runExport } from './ffmpeg'
 import type {
   AppSettings,
   ExportRequest,
@@ -244,6 +244,25 @@ function registerIpc() {
       })
     }
     return items
+  })
+
+  // filmstrip cho timeline, cache theo đường dẫn + thời gian sửa file
+  const strips = new Map<string, Promise<string | null>>()
+  ipcMain.handle('media:filmstrip', (_e, path: string, duration: number) => {
+    if (!existsSync(path)) return null
+    const key = path + ':' + statSync(path).mtimeMs
+    let p = strips.get(key)
+    if (!p) {
+      const dir = join(userDir(), 'thumbs')
+      mkdirSync(dir, { recursive: true })
+      const out = join(dir, `${randomUUID()}.jpg`)
+      p = makeFilmstrip(path, out, duration).then(
+        () => out,
+        () => null
+      )
+      strips.set(key, p)
+    }
+    return p
   })
 
   ipcMain.handle('file:pickImage', async () => {

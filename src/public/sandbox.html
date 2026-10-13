@@ -140,6 +140,10 @@
       } else if (m.type === 'draw') {
         const ms = draw(m.t)
         reply({ type: 'ok', id: m.id, ms })
+      } else if (m.type === 'bitmap') {
+        draw(m.t)
+        const bmp = await createImageBitmap(canvas)
+        reply({ type: 'bitmap', id: m.id, bmp }, [bmp])
       } else if (m.type === 'capture') {
         draw(m.t)
         const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'))

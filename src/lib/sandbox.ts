@@ -136,6 +136,11 @@ export class MotionSandbox {
     return this.call({ type: 'draw', t })
   }
 
+  async bitmap(t: number): Promise<ImageBitmap> {
+    const r = await this.call<{ bmp: ImageBitmap }>({ type: 'bitmap', t })
+    return r.bmp
+  }
+
   async capture(t: number): Promise<Uint8Array> {
     const r = await this.call<{ buf: ArrayBuffer }>({ type: 'capture', t })
     return new Uint8Array(r.buf)
@@ -155,38 +160,5 @@ export class MotionSandbox {
     for (const p of this.pending.values()) p.reject(new Error('sandbox disposed'))
     this.pending.clear()
     this.iframe.remove()
-  }
-}
-
-/** Render toàn bộ scene ra mp4 qua ffmpeg ở main process. */
-export async function renderToFile(
-  prog: SceneProgram,
-  label: string,
-  onProgress: (p: number) => void,
-  signal?: { cancelled: boolean }
-) {
-  const sb = new MotionSandbox()
-  const jobId = crypto.randomUUID()
-  let started = false
-  try {
-    await sb.load(prog)
-    await sb.validate(prog.duration)
-    const fps = prog.settings.fps
-    const frames = Math.max(1, Math.round(prog.duration * fps))
-    await window.laila.render.start(jobId, fps, label)
-    started = true
-    for (let i = 0; i < frames; i++) {
-      if (signal?.cancelled) throw new Error('Đã huỷ')
-      const png = await sb.capture(i / fps)
-      await window.laila.render.frame(jobId, png)
-      if (i % 3 === 0) onProgress(i / frames)
-    }
-    onProgress(1)
-    return await window.laila.render.finish(jobId)
-  } catch (e) {
-    if (started) await window.laila.render.abort(jobId)
-    throw e
-  } finally {
-    sb.dispose()
   }
 }

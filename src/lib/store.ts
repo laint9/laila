@@ -10,7 +10,7 @@ import type {
   TimelineClip
 } from '../../shared/types'
 import { uid } from './media'
-import { moveClip, splitAt, totalDuration, trimClip } from './timeline'
+import { moveClip, splitAt, totalDuration, trimClip, trimLeftAt, trimRightAt } from './timeline'
 
 export const RESOLUTIONS: { label: string; width: number; height: number }[] = [
   { label: '16:9 · 1920×1080', width: 1920, height: 1080 },
@@ -70,6 +70,9 @@ interface State {
   // timeline (có undo)
   appendToTimeline: (mediaId: string, index?: number) => void
   splitAtPlayhead: () => void
+  trimLeft: () => void
+  trimRight: () => void
+  setClip: (id: string, patch: Partial<TimelineClip>, history?: boolean) => void
   deleteSelected: () => void
   duplicateSelected: () => void
   trim: (id: string, edge: 'in' | 'out', value: number) => void
@@ -197,18 +200,35 @@ export const useStore = create<State>((set, get) => {
         get().setMusic({ mediaId, volume: 0.6, in: 0 })
         return
       }
-      const clip: TimelineClip = { id: uid(), mediaId, in: 0, out: m.duration, volume: 1 }
+      const clip: TimelineClip = { id: uid(), mediaId, in: 0, out: m.duration, volume: 1, speed: 1, transition: 'none', transitionDuration: 0.5 }
       commit((p) => {
         const tl = p.timeline.slice()
         tl.splice(index ?? tl.length, 0, clip)
         return { timeline: tl }
       })
       set({ selectedClipId: clip.id, preview: { type: 'timeline' } })
+      // timeline ngắn thì phóng to cho dễ nhìn (kiểu CapCut tự vừa khung)
+      const total = totalDuration(get().project.timeline)
+      if (total > 0 && total * get().zoom < 500) set({ zoom: Math.min(200, 900 / total) })
     },
     splitAtPlayhead: () => {
       const { project, playhead } = get()
       const next = splitAt(project.timeline, playhead, uid)
       if (next !== project.timeline) commit(() => ({ timeline: next }))
+    },
+    trimLeft: () => {
+      const { project, playhead } = get()
+      const next = trimLeftAt(project.timeline, playhead)
+      if (next !== project.timeline) commit(() => ({ timeline: next }))
+    },
+    trimRight: () => {
+      const { project, playhead } = get()
+      const next = trimRightAt(project.timeline, playhead)
+      if (next !== project.timeline) commit(() => ({ timeline: next }))
+    },
+    setClip: (id, patch, history = true) => {
+      const fn = (p: Project) => ({ timeline: p.timeline.map((c) => (c.id === id ? { ...c, ...patch } : c)) })
+      history ? commit(fn) : patchProject(fn)
     },
     deleteSelected: () => {
       const id = get().selectedClipId

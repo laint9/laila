@@ -2,6 +2,9 @@ import { useState } from 'react'
 import type { AppSettings } from '../../shared/types'
 import { RESOLUTIONS, useStore } from '../lib/store'
 import { rerenderScene } from '../lib/pipeline'
+import { Icon } from './Icon'
+import { Segmented } from '../editor/fields'
+import { getTheme, setTheme, type Theme } from '../lib/theme'
 
 const MODELS = [
   { id: 'claude-opus-5-5', label: 'Claude Opus 5.5 (mặc định, cân bằng chất lượng/giá)' },
@@ -13,6 +16,7 @@ const MODELS = [
 export function SettingsModal(props: { settings: AppSettings; onChange: (s: AppSettings) => void; onClose: () => void }) {
   const [key, setKey] = useState('')
   const [saving, setSaving] = useState(false)
+  const [theme, setThemeState] = useState<Theme>(getTheme())
   const settings = useStore((s) => s.project.settings)
   const setSettings = useStore((s) => s.setSettings)
   const scenes = useStore((s) => s.project.scenes)
@@ -25,18 +29,34 @@ export function SettingsModal(props: { settings: AppSettings; onChange: (s: AppS
   }
 
   const resIndex = RESOLUTIONS.findIndex((r) => r.width === settings.width && r.height === settings.height)
-  const rendered = scenes.filter((s) => s.code)
+  const rendered = scenes.filter((s) => s.motion || s.code)
 
   return (
     <div className="modal-back" onMouseDown={props.onClose}>
       <div className="modal settings" onMouseDown={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <b>Settings</b>
+          <h3>Cài đặt</h3>
           <div className="spacer" />
-          <button className="icon" onClick={props.onClose}>
-            ×
+          <button className="tiny" onClick={props.onClose}>
+            <Icon name="close" />
           </button>
         </div>
+
+        <section>
+          <h4>Giao diện</h4>
+          <Segmented
+            value={theme}
+            options={[
+              { value: 'system', label: 'Theo máy' },
+              { value: 'light', label: 'Sáng' },
+              { value: 'dark', label: 'Tối' }
+            ]}
+            onChange={(t) => {
+              setTheme(t)
+              setThemeState(t)
+            }}
+          />
+        </section>
 
         <section>
           <h4>Claude API key</h4>
@@ -51,11 +71,11 @@ export function SettingsModal(props: { settings: AppSettings; onChange: (s: AppS
           </p>
           <div className="row">
             <input type="password" placeholder="sk-ant-…" value={key} onChange={(e) => setKey(e.target.value)} />
-            <button className="primary" disabled={saving || !key.trim()} onClick={saveKey}>
+            <button className="btn primary" disabled={saving || !key.trim()} onClick={saveKey}>
               Lưu key
             </button>
             {props.settings.keySource === 'stored' && (
-              <button onClick={async () => props.onChange(await window.laila.settings.setKey(''))}>Xoá key</button>
+              <button className="btn" onClick={async () => props.onChange(await window.laila.settings.setKey(''))}>Xoá key</button>
             )}
           </div>
         </section>
@@ -102,7 +122,7 @@ export function SettingsModal(props: { settings: AppSettings; onChange: (s: AppS
           {rendered.length > 0 && (
             <p className="hint">
               Đổi khung hình sau khi đã render: các clip cũ vẫn giữ kích thước cũ (sẽ được scale khi xuất).{' '}
-              <button onClick={() => rendered.forEach((s) => rerenderScene(s.id))}>
+              <button className="btn small" onClick={() => rendered.forEach((s) => rerenderScene(s.id))}>
                 Render lại {rendered.length} scene theo khung mới
               </button>
             </p>

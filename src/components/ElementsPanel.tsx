@@ -1,13 +1,14 @@
 import { useStore } from '../lib/store'
 import { mediaUrl } from '../lib/media'
 import type { BrandElement, ElementKind } from '../../shared/types'
+import { Icon } from './Icon'
 
-const KIND_LABEL: Record<ElementKind, string> = {
-  text: 'Text',
-  color: 'Màu',
-  image: 'Ảnh/Logo',
-  font: 'Font',
-  note: 'Ghi chú brand'
+const KIND: Record<ElementKind, { label: string; icon: string }> = {
+  text: { label: 'Chữ', icon: 'text' },
+  color: { label: 'Màu', icon: 'ellipse' },
+  image: { label: 'Ảnh / Logo', icon: 'image' },
+  font: { label: 'Font', icon: 'text' },
+  note: { label: 'Ghi chú', icon: 'doc' }
 }
 
 export function ElementsPanel() {
@@ -21,18 +22,25 @@ export function ElementsPanel() {
 
   return (
     <div className="panel-body">
-      <p className="hint">
-        Input các element anh muốn Claude dùng. Claude gọi chúng theo <b>tên</b>, nên đặt tên ngắn gọn (vd: logo,
-        headline, primary).
-      </p>
-      <div className="add-row">
-        <button onClick={() => add('text')}>+ Text</button>
-        <button onClick={() => add('color')}>+ Màu</button>
-        <button onClick={addImage}>+ Ảnh</button>
-        <button onClick={() => add('font')}>+ Font</button>
-        <button onClick={() => add('note')}>+ Ghi chú</button>
+      <p className="hint">Claude dùng các element này theo <b>tên</b>. Đặt tên ngắn gọn: logo, headline, primary…</p>
+      <div className="chip-buttons">
+        <button className="btn small" onClick={() => add('text')}>
+          <Icon name="plus" size={12} /> Chữ
+        </button>
+        <button className="btn small" onClick={() => add('color')}>
+          <Icon name="plus" size={12} /> Màu
+        </button>
+        <button className="btn small" onClick={addImage}>
+          <Icon name="plus" size={12} /> Ảnh
+        </button>
+        <button className="btn small" onClick={() => add('font')}>
+          <Icon name="plus" size={12} /> Font
+        </button>
+        <button className="btn small" onClick={() => add('note')}>
+          <Icon name="plus" size={12} /> Ghi chú
+        </button>
       </div>
-      <div className="elements">
+      <div className="list-group">
         {elements.map((e) => (
           <ElementRow key={e.id} el={e} />
         ))}
@@ -54,15 +62,20 @@ function ElementRow({ el }: { el: BrandElement }) {
   return (
     <div className="element">
       <div className="element-head">
-        <span className={'kind kind-' + el.kind}>{KIND_LABEL[el.kind]}</span>
-        <input className="el-name" value={el.name} onChange={(e) => update(el.id, { name: e.target.value })} />
-        <button className="icon" title="Xoá" onClick={() => remove(el.id)}>
-          ×
+        <span className={'kind-badge k-' + el.kind}>
+          {el.kind === 'color' ? <i className="dot" style={{ background: el.value }} /> : <Icon name={KIND[el.kind].icon} size={11} />}
+          {KIND[el.kind].label}
+        </span>
+        <input className="el-name" value={el.name} onChange={(e) => update(el.id, { name: e.target.value })} title="Tên để Claude gọi" />
+        <button className="tiny" title="Xoá" onClick={() => remove(el.id)}>
+          <Icon name="trash" size={13} />
         </button>
       </div>
       {el.kind === 'color' && (
         <div className="color-row">
-          <input type="color" value={el.value} onChange={(e) => update(el.id, { value: e.target.value })} />
+          <label className="swatch-input" style={{ background: el.value }}>
+            <input type="color" value={/^#[0-9a-f]{6}$/i.test(el.value) ? el.value : '#000000'} onChange={(e) => update(el.id, { value: e.target.value })} />
+          </label>
           <input value={el.value} onChange={(e) => update(el.id, { value: e.target.value })} />
         </div>
       )}
@@ -75,12 +88,7 @@ function ElementRow({ el }: { el: BrandElement }) {
         <textarea rows={el.kind === 'note' ? 3 : 2} value={el.value} onChange={(e) => update(el.id, { value: e.target.value })} />
       )}
       {el.kind === 'font' && (
-        <input
-          value={el.value}
-          style={{ fontFamily: el.value }}
-          placeholder="Tên font đã cài trên Mac, vd: Inter, Futura"
-          onChange={(e) => update(el.id, { value: e.target.value })}
-        />
+        <input value={el.value} style={{ fontFamily: el.value }} placeholder="Tên font đã cài trên Mac, vd: Inter, Futura" onChange={(e) => update(el.id, { value: e.target.value })} />
       )}
     </div>
   )

@@ -1,6 +1,8 @@
-// Điều phối: gọi Claude -> chạy thử trong sandbox -> tự sửa lỗi -> render mp4 -> đưa vào media bin.
+// Điều phối: gọi Claude -> chuẩn hoá scene -> chạy thử -> tự sửa lỗi -> render mp4 -> media bin.
 import type { MediaItem, Scene } from '../../shared/types'
-import { renderToFile, MotionSandbox } from './sandbox'
+import { normScene, sceneFromCode } from '../engine/normalize'
+import { SceneRunner, renderSceneToFile } from '../engine/player'
+import type { MotionScene } from '../engine/types'
 import { useStore } from './store'
 import { uid } from './media'
 
@@ -34,23 +36,17 @@ const jobs = new Map<string, Job>()
 const st = () => useStore.getState()
 const sceneOf = (id: string) => st().project.scenes.find((s) => s.id === id)
 
-function elementsFor(scene: Scene) {
-  const all = st().project.elements
+export function elementsFor(scene: Scene) {
   const ids = new Set(scene.elementIds)
-  return all.filter((e) => ids.has(e.id) && (e.kind !== 'image' || e.value))
+  return st().project.elements.filter((e) => ids.has(e.id) && (e.kind !== 'image' || e.value))
 }
 
-async function tryInSandbox(scene: Scene, code: string, duration: number): Promise<string | null> {
-  const sb = new MotionSandbox()
-  try {
-    await sb.load({ code, duration, settings: st().project.settings, elements: elementsFor(scene) })
-    await sb.validate(duration)
-    return null
-  } catch (e) {
-    return (e as Error).message
-  } finally {
-    sb.dispose()
-  }
+/** Scene dạng layer của 1 scene (tự chuyển scene kiểu cũ chỉ có code) */
+export function motionOf(scene: Scene): MotionScene | null {
+  const { width, height } = st().project.settings
+  if (scene.motion) return normScene(scene.motion, scene.duration, width, height)
+  if (scene.code) return sceneFromCode(scene.code, scene.duration, width, height)
+  return null
 }
 
 export function isBusy(sceneId: string) {
@@ -64,7 +60,7 @@ export function cancelScene(sceneId: string) {
   window.laila.claude.cancel(job.reqId)
 }
 
-/** Generate (hoặc refine nếu có instruction) một scene rồi render. */
+/** Generate (hoặc sửa theo lời nếu có instruction) một scene rồi render. */
 export async function generateScene(sceneId: string, opts: { instruction?: string } = {}) {
   const scene0 = sceneOf(sceneId)
   if (!scene0 || jobs.has(sceneId)) return
@@ -74,40 +70,45 @@ export async function generateScene(sceneId: string, opts: { instruction?: strin
   update({ status: 'generating', error: undefined, progress: undefined })
 
   try {
-    const settings = st().project.settings
+    const { settings } = st().project
     const elements = elementsFor(scene0)
-    const refine = !!(opts.instruction && scene0.code)
+    const current = motionOf(scene0)
+    const refine = !!(opts.instruction && current)
 
     let result = await claudeSlots.run(() =>
       window.laila.claude.generate(job.reqId, {
         scene: { title: scene0.title, prompt: scene0.prompt, duration: scene0.duration },
         elements,
         settings,
-        previousCode: refine ? scene0.code : undefined,
+        previousScene: refine ? current : undefined,
         instruction: refine ? opts.instruction : undefined
       })
     )
 
-    // Chạy thử, lỗi thì gửi lại cho Claude sửa
+    let motion = normScene(result.scene, result.duration, settings.width, settings.height)
     for (let attempt = 0; ; attempt++) {
       if (job.signal.cancelled) throw new Error('Đã huỷ')
-      const err = await tryInSandbox(scene0, result.code, result.duration)
+      if (!motion.layers.length) throw new Error('Claude không trả về layer nào')
+      const runner = new SceneRunner(settings, elements)
+      const err = await runner.validate(motion, result.duration).finally(() => runner.dispose())
       if (!err) break
-      if (attempt >= MAX_AUTOFIX) throw new Error(`Code lỗi sau ${MAX_AUTOFIX} lần tự sửa: ${err}`)
+      if (attempt >= MAX_AUTOFIX) throw new Error(`Layer code lỗi sau ${MAX_AUTOFIX} lần tự sửa: ${err}`)
       update({ notes: `Đang tự sửa lỗi (${attempt + 1}/${MAX_AUTOFIX})…` })
       job.reqId = uid()
+      const duration = result.duration
       result = await claudeSlots.run(() =>
         window.laila.claude.generate(job.reqId, {
-          scene: { title: scene0.title, prompt: scene0.prompt, duration: result.duration },
+          scene: { title: scene0.title, prompt: scene0.prompt, duration },
           elements,
           settings,
-          previousCode: result.code,
+          previousScene: motion,
           runtimeError: err
         })
       )
+      motion = normScene(result.scene, result.duration, settings.width, settings.height)
     }
 
-    update({ code: result.code, notes: result.notes, duration: result.duration, title: scene0.title || result.title })
+    update({ motion, code: undefined, notes: result.notes, duration: result.duration, title: scene0.title || result.title })
     await renderScene(sceneId, job)
   } catch (e) {
     const msg = (e as Error).message || String(e)
@@ -117,7 +118,7 @@ export async function generateScene(sceneId: string, opts: { instruction?: strin
   }
 }
 
-/** Render lại từ code hiện có (sau khi sửa code tay, hoặc đổi độ phân giải). */
+/** Render lại từ scene hiện có (sau khi chỉnh trong Motion Editor hoặc đổi khung hình). */
 export async function rerenderScene(sceneId: string) {
   if (jobs.has(sceneId)) return
   const job: Job = { reqId: uid(), signal: { cancelled: false } }
@@ -133,17 +134,13 @@ export async function rerenderScene(sceneId: string) {
 
 async function renderScene(sceneId: string, job: Job) {
   const scene = sceneOf(sceneId)
-  if (!scene?.code) throw new Error('Scene chưa có code')
+  const motion = scene && motionOf(scene)
+  if (!scene || !motion) throw new Error('Scene chưa có nội dung')
   const update = (patch: Partial<Scene>) => st().updateScene(sceneId, patch)
   update({ status: 'rendering', progress: 0, error: undefined })
 
   const out = await renderSlots.run(() =>
-    renderToFile(
-      { code: scene.code!, duration: scene.duration, settings: st().project.settings, elements: elementsFor(scene) },
-      scene.title,
-      (p) => update({ progress: p }),
-      job.signal
-    )
+    renderSceneToFile(motion, scene.duration, st().project.settings, elementsFor(scene), scene.title, (p) => update({ progress: p }), job.signal)
   )
 
   const version = scene.version + 1
@@ -161,7 +158,7 @@ async function renderScene(sceneId: string, job: Job) {
   const oldMediaId = scene.mediaId
   const oldDuration = st().project.media.find((m) => m.id === oldMediaId)?.duration
   st().addMedia([media])
-  update({ status: 'ready', progress: 1, mediaId: media.id, version })
+  update({ status: 'ready', progress: 1, mediaId: media.id, version, dirty: false })
 
   // Clip trên timeline đang dùng bản cũ -> tự đổi sang bản mới
   if (oldMediaId) {
@@ -179,6 +176,39 @@ async function renderScene(sceneId: string, job: Job) {
       }
     }))
   }
+}
+
+/** Nhờ Claude sửa scene đang mở trong Motion Editor (không render, để còn undo) */
+export async function reviseMotion(scene: Scene, motion: MotionScene, duration: number, instruction: string) {
+  const { settings } = st().project
+  const elements = elementsFor(scene)
+  let r = await claudeSlots.run(() =>
+    window.laila.claude.generate(uid(), {
+      scene: { title: scene.title, prompt: scene.prompt, duration },
+      elements,
+      settings,
+      previousScene: motion,
+      instruction
+    })
+  )
+  let next = normScene(r.scene, r.duration, settings.width, settings.height)
+  for (let attempt = 0; attempt < MAX_AUTOFIX; attempt++) {
+    const runner = new SceneRunner(settings, elements)
+    const err = await runner.validate(next, r.duration).finally(() => runner.dispose())
+    if (!err) break
+    const d = r.duration
+    r = await claudeSlots.run(() =>
+      window.laila.claude.generate(uid(), {
+        scene: { title: scene.title, prompt: scene.prompt, duration: d },
+        elements,
+        settings,
+        previousScene: next,
+        runtimeError: err
+      })
+    )
+    next = normScene(r.scene, r.duration, settings.width, settings.height)
+  }
+  return { scene: next, duration: r.duration, notes: r.notes }
 }
 
 export async function generateAll() {
@@ -217,7 +247,7 @@ export function sendReadyScenesToTimeline() {
   }
 }
 
-function cleanError(msg: string) {
+export function cleanError(msg: string) {
   // Electron bọc lỗi IPC: "Error invoking remote method 'x': Error: ..."
   return msg.replace(/^Error invoking remote method '[^']+': (Error: )?/, '')
 }
