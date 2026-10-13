@@ -1,4 +1,4 @@
-/* Laila — giao diện theo tinh thần macOS: phẳng, rõ ràng, không trong suốt.
+/* CC Motion Editor — giao diện theo tinh thần macOS: phẳng, rõ ràng, không trong suốt.
    Sáng/tối theo máy, có thể ép trong Cài đặt. */
 
 :root {
@@ -208,7 +208,7 @@ input::placeholder, textarea::placeholder { color: var(--tertiary); }
 }
 .topbar > *:not(.drag) { -webkit-app-region: no-drag; }
 .app-mark { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; }
-.logo-dot { width: 14px; height: 14px; border-radius: 4px; background: linear-gradient(135deg, var(--accent), var(--purple)); }
+.logo-dot { width: 24px; height: 24px; }
 .project-name { width: 200px; box-shadow: none; background: transparent; font-weight: 600; }
 .project-name:hover { background: var(--fill-2); }
 .meta { color: var(--secondary); font-size: 12px; }

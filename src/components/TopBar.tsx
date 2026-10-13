@@ -20,8 +20,8 @@ export function TopBar(props: { onSettings: () => void; onExport: () => void; ap
   return (
     <header className="topbar">
       <div className="app-mark">
-        <span className="logo-dot" />
-        Laila
+        <img className="logo-dot" src="./app-icon.png" alt="" />
+        CC Motion Editor
       </div>
       <input className="project-name" value={project.name} onChange={(e) => rename(e.target.value)} title="Đổi tên project" />
       <span className="meta">

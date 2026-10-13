@@ -1,22 +1,25 @@
-appId: com.laila.motionstudio
-productName: Laila Motion Studio
+appId: com.chochoi.ccmotioneditor
+productName: CC Motion Editor
+copyright: "© 2026 Chợ Chời Creative Studio"
 directories:
   output: release
   buildResources: build
 files:
   - out/**
   - package.json
-asarUnpack:
-  - node_modules/ffmpeg-static/**
-  - node_modules/ffprobe-static/**
+  # ffmpeg được chép riêng theo kiến trúc vào Resources/bin (extraResources), không cần gói npm
+  - "!node_modules/ffmpeg-static/**"
+extraResources:
+  - from: build/bin/darwin-${arch}
+    to: bin
+artifactName: "CC-Motion-Editor-${version}-${arch}.${ext}"
 mac:
+  icon: build/icon.png
   category: public.app-category.video
-  # Build theo kiến trúc của máy đang build (ffmpeg-static tải binary đúng kiến trúc máy đó).
   target: dmg
-  hardenedRuntime: true
-  entitlements: build/entitlements.mac.plist
-  entitlementsInherit: build/entitlements.mac.plist
-  # Chưa có Apple Developer ID thì để null: app vẫn chạy, lần đầu mở bằng chuột phải > Open.
-  identity: null
+  minimumSystemVersion: "12.0"
+  # Chưa có Apple Developer ID: build trên Mac thì ad-hoc sign; build trên Linux dùng scripts/build-mac.sh
+  identity: "-"
+  hardenedRuntime: false
 dmg:
-  title: Laila Motion Studio
+  title: CC Motion Editor

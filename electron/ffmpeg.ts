@@ -1,20 +1,35 @@
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import ffmpegStatic from 'ffmpeg-static'
-import ffprobeStatic from 'ffprobe-static'
+import { createRequire } from 'node:module'
+import { join } from 'node:path'
 import type { ExportRequest } from '../shared/types'
 
-// Trong app đã đóng gói, binary nằm ở app.asar.unpacked (xem asarUnpack trong electron-builder.yml).
-function resolveBin(p: string | null | undefined, fallback: string): string {
-  if (!p) return fallback
-  const unpacked = p.replace('app.asar', 'app.asar.unpacked')
-  if (existsSync(unpacked)) return unpacked
-  if (existsSync(p)) return p
-  return fallback
+/**
+ * Tìm ffmpeg:
+ * 1. App đã đóng gói: Contents/Resources/bin/ffmpeg (đúng kiến trúc máy, xem scripts/build-mac.sh)
+ * 2. Chạy dev: gói ffmpeg-static
+ * 3. ffmpeg trong PATH
+ */
+function resolveFfmpeg(): string {
+  const resources = (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath
+  if (resources) {
+    const bundled = join(resources, 'bin', process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg')
+    if (existsSync(bundled)) return bundled
+  }
+  try {
+    const p = createRequire(__filename)('ffmpeg-static') as string | null
+    if (p) {
+      const unpacked = p.replace('app.asar', 'app.asar.unpacked')
+      if (existsSync(unpacked)) return unpacked
+      if (existsSync(p)) return p
+    }
+  } catch {
+    /* không có ffmpeg-static (bản đóng gói) */
+  }
+  return 'ffmpeg'
 }
 
-export const FFMPEG = resolveBin(ffmpegStatic as unknown as string, 'ffmpeg')
-export const FFPROBE = resolveBin(ffprobeStatic?.path, 'ffprobe')
+export const FFMPEG = resolveFfmpeg()
 
 export interface ProbeResult {
   duration: number
@@ -24,26 +39,33 @@ export interface ProbeResult {
   height?: number
 }
 
+/** Đọc thông tin file bằng chính ffmpeg (không cần ffprobe) */
+export function parseProbe(stderr: string): ProbeResult {
+  const d = stderr.match(/Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/)
+  const duration = d ? Number(d[1]) * 3600 + Number(d[2]) * 60 + Number(d[3]) : 0
+  const lines = stderr.split('\n').filter((l) => /^\s*Stream #/.test(l))
+  const video = lines.find((l) => /: Video:/.test(l) && !/attached pic/.test(l))
+  const size = video?.match(/, (\d{2,5})x(\d{2,5})[\s,[]/)
+  return {
+    duration,
+    hasAudio: lines.some((l) => /: Audio:/.test(l)),
+    hasVideo: !!video,
+    width: size ? Number(size[1]) : undefined,
+    height: size ? Number(size[2]) : undefined
+  }
+}
+
 export function probe(path: string): Promise<ProbeResult> {
   return new Promise((resolve, reject) => {
-    const p = spawn(FFPROBE, ['-v', 'error', '-print_format', 'json', '-show_format', '-show_streams', path])
-    let out = ''
+    const p = spawn(FFMPEG, ['-hide_banner', '-i', path])
     let err = ''
-    p.stdout.on('data', (d) => (out += d))
     p.stderr.on('data', (d) => (err += d))
     p.on('error', reject)
-    p.on('close', (code) => {
-      if (code !== 0) return reject(new Error(err || `ffprobe exit ${code}`))
-      const j = JSON.parse(out)
-      const streams: any[] = j.streams ?? []
-      const v = streams.find((s) => s.codec_type === 'video' && s.disposition?.attached_pic !== 1)
-      resolve({
-        duration: Number(j.format?.duration ?? v?.duration ?? 0),
-        hasAudio: streams.some((s) => s.codec_type === 'audio'),
-        hasVideo: !!v,
-        width: v?.width,
-        height: v?.height
-      })
+    // ffmpeg không có file ra nên luôn thoát mã 1; chỉ coi là lỗi khi không đọc được gì
+    p.on('close', () => {
+      const r = parseProbe(err)
+      if (!r.hasVideo && !r.hasAudio) return reject(new Error('Không đọc được file media: ' + err.split('\n').slice(-3).join(' ')))
+      resolve(r)
     })
   })
 }

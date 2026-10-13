@@ -1,6 +1,8 @@
-# Laila Motion Studio
+# CC Motion Editor
 
-App macOS để dựng video motion graphic bằng Claude: anh đưa brand elements vào (logo, màu, font, text, ghi chú tone), Claude viết từng clip motion graphic, app render ra MP4, rồi anh cắt/ghép trên timeline kiểu CapCut và xuất ra một video tổng.
+Phát triển bởi **Chợ Chời Creative Studio**.
+
+App macOS để dựng motion graphic bằng Claude: anh đưa brand elements vào (logo, màu, font, text, ghi chú tone), Claude dựng từng clip thành các layer có keyframe, anh chỉnh tiếp trong Motion Editor kiểu After Effects, rồi cắt ghép trên timeline kiểu CapCut và xuất ra một video tổng.
 
 ## Luồng làm việc
 
@@ -57,29 +59,41 @@ Preview dùng 2 trình phát luân phiên nên không bị chớp ở điểm c�
 
 Phong cách macOS: phẳng, không trong suốt, font hệ thống, màu nhấn xanh của Apple. Sáng/tối theo cài đặt của máy, hoặc chọn cố định trong **Cài đặt → Giao diện**. Khung xem video luôn để nền tối để nhìn màu cho chuẩn (giống Final Cut).
 
-## Cài và chạy trên Mac
+## Cài đặt (macOS 12 trở lên, đã kiểm tra cấu trúc gói cho Sequoia 15)
 
-Cần Node.js 20+ (`brew install node`).
+1. Chọn đúng file theo chip máy (menu  → **Giới thiệu về máy Mac này**):
+   - Chip **Apple M1/M2/M3/M4…** → `CC-Motion-Editor-<version>-arm64.dmg`
+   - Bộ xử lý **Intel** → `CC-Motion-Editor-<version>-x64.dmg`
+2. Mở file DMG, kéo **CC Motion Editor** vào thư mục **Applications**.
+3. Mở app lần đầu. App chưa ký bằng Apple Developer ID nên macOS báo *"Apple không thể xác minh…"* → bấm **Xong**.
+4. Vào **Cài đặt hệ thống → Quyền riêng tư & Bảo mật**, kéo xuống mục Bảo mật, bấm **Vẫn mở** cạnh dòng "CC Motion Editor đã bị chặn…", xác nhận bằng mật khẩu / Touch ID. Từ lần sau mở bình thường.
+
+   Cách nhanh bằng Terminal (thay cho bước 3–4):
+   ```bash
+   xattr -dr com.apple.quarantine "/Applications/CC Motion Editor.app"
+   ```
+5. Lần đầu mở, app hiện Cài đặt để nhập **Claude API key** (lấy ở console.anthropic.com). Key được mã hoá bằng Keychain.
+
+## Build từ mã nguồn
+
+Cần Node.js 20+.
 
 ```bash
-git clone <repo> laila && cd laila
 npm install
-npm run dev          # chạy thử ở chế độ dev
-npm run dist:mac     # đóng gói ra release/Laila Motion Studio-<version>.dmg
+npm run dev                 # chạy thử chế độ dev
+bash scripts/build-mac.sh   # ra release/CC-Motion-Editor-<version>-{arm64,x64}.dmg
 ```
 
-Mở file `.dmg`, kéo app vào Applications. Bản build chưa ký Apple Developer ID, nên lần đầu mở: chuột phải vào app → **Open** → **Open**.
-
-Lần đầu mở app sẽ hiện Settings để nhập **Claude API key** (lấy ở console.anthropic.com). Key được mã hoá bằng macOS Keychain qua `safeStorage`, không lưu dạng chữ thường. Có thể dùng biến môi trường `ANTHROPIC_API_KEY` thay thế.
-
-Lưu ý build: `ffmpeg-static` tải ffmpeg đúng kiến trúc của máy chạy `npm install`. Build trên Mac Apple Silicon ra bản arm64, trên Mac Intel ra bản x64.
+- Trên **Mac**: electron-builder tự làm DMG và ký ad-hoc.
+- Trên **Linux**: cần `xorriso` và `rcodesign` (`cargo install apple-codesign --bin rcodesign`). Script tự tải ffmpeg đúng chip, ký ad-hoc toàn bộ app bằng rcodesign, rồi `scripts/make-dmg.py` dựng ổ HFS+ và nén thành DMG chuẩn UDIF (zlib).
+- Icon: `python3 scripts/make-icon.py` vẽ `build/icon.png`.
 
 ## Kiến trúc
 
 ```
 electron/main.ts        Main process: cửa sổ, IPC, giao thức media:// (hỗ trợ tua video), filmstrip, lưu settings/project
 electron/claude.ts      Gọi Claude API (@anthropic-ai/sdk); prompt mô tả định dạng scene layer/keyframe
-electron/ffmpeg.ts      Encode frame -> MP4, probe, filmstrip, lệnh xuất tổng (trim, tốc độ, xfade, fade âm thanh, nhạc)
+electron/ffmpeg.ts      Encode frame -> MP4, đọc thông tin file bằng ffmpeg (không cần ffprobe), filmstrip, lệnh xuất tổng (trim, tốc độ, xfade, fade âm thanh, nhạc)
 src/engine/             Engine motion: kiểu dữ liệu, easing/bezier, chuẩn hoá dữ liệu Claude, vẽ canvas, thao tác keyframe/preset
 src/editor/             Motion Editor kiểu After Effects (viewer, timeline layer, properties, graph editor, presets)
 src/public/sandbox.html Iframe sandbox cho layer code: không mạng, không Node, không Math.random/Date
@@ -112,4 +126,4 @@ Trên Linux chạy e2e cần `xvfb-run`.
 | Graph editor chỉnh ease từng đoạn (kiểu Flow), chưa có value graph | Speed/value graph đầy đủ như AE |
 | Chưa có motion blur | Motion blur khi render (lấy mẫu nhiều frame) |
 | Font: dùng font đã cài trên Mac | Nạp file .otf/.ttf vào brand kit |
-| Chưa ký/notarize app | Ký bằng Apple Developer ID để mở không cần cảnh báo |
+| Ký ad-hoc, chưa notarize | Ký bằng Apple Developer ID + notarize để mở không cần bước "Vẫn mở" |

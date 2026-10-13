@@ -304,8 +304,8 @@ function registerIpc() {
   })
   ipcMain.handle('project:saveAs', async (_e, project: Project) => {
     const r = await dialog.showSaveDialog(win!, {
-      defaultPath: join(app.getPath('documents'), `${project.name || 'project'}.laila.json`),
-      filters: [{ name: 'Laila project', extensions: ['json'] }]
+      defaultPath: join(app.getPath('documents'), `${project.name || 'project'}.ccmotion.json`),
+      filters: [{ name: 'CC Motion Editor project', extensions: ['json'] }]
     })
     if (r.canceled || !r.filePath) return null
     await writeFile(r.filePath, JSON.stringify(project, null, 2))
@@ -314,14 +314,22 @@ function registerIpc() {
   ipcMain.handle('project:open', async () => {
     const r = await dialog.showOpenDialog(win!, {
       properties: ['openFile'],
-      filters: [{ name: 'Laila project', extensions: ['json'] }]
+      filters: [{ name: 'CC Motion Editor project', extensions: ['json'] }]
     })
     if (r.canceled) return null
     return JSON.parse(await readFile(r.filePaths[0], 'utf8')) as Project
   })
 }
 
+app.setName('CC Motion Editor')
+
 app.whenReady().then(async () => {
+  app.setAboutPanelOptions({
+    applicationName: 'CC Motion Editor',
+    applicationVersion: app.getVersion(),
+    copyright: '© 2026 Chợ Chời Creative Studio',
+    credits: 'Phát triển bởi Chợ Chời Creative Studio. Motion graphic tạo bằng Claude.'
+  })
   await loadSettings()
   registerMediaProtocol()
   registerIpc()

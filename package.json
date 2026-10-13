@@ -1,10 +1,12 @@
 {
-  "name": "laila-motion-studio",
-  "productName": "Laila Motion Studio",
+  "name": "cc-motion-editor",
+  "productName": "CC Motion Editor",
   "version": "0.1.0",
-  "description": "Video editor cho macOS: dùng Claude để generate motion graphic từ brand elements, ghép nhiều clip thành video tổng.",
+  "description": "CC Motion Editor — dựng motion graphic bằng Claude và edit video trên macOS. Phát triển bởi Chợ Chời Creative Studio.",
   "main": "out/main/index.js",
-  "author": "laint9",
+  "author": {
+    "name": "Chợ Chời Creative Studio"
+  },
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
@@ -17,8 +19,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",
-    "ffmpeg-static": "^5.3.0",
-    "ffprobe-static": "^3.1.0"
+    "ffmpeg-static": "^5.3.0"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
