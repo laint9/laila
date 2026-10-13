@@ -140,7 +140,7 @@ async function renderScene(sceneId: string, job: Job) {
   update({ status: 'rendering', progress: 0, error: undefined })
 
   const out = await renderSlots.run(() =>
-    renderSceneToFile(motion, scene.duration, st().project.settings, elementsFor(scene), scene.title, (p) => update({ progress: p }), job.signal)
+    renderSceneToFile(motion, scene.duration, st().project.settings, elementsFor(scene), scene.title, (p) => update({ progress: p }), job.signal, !!scene.alpha)
   )
 
   const version = scene.version + 1
@@ -153,7 +153,8 @@ async function renderScene(sceneId: string, job: Job) {
     hasAudio: false,
     width: out.width,
     height: out.height,
-    sceneId
+    sceneId,
+    alpha: !!scene.alpha
   }
   const oldMediaId = scene.mediaId
   const oldDuration = st().project.media.find((m) => m.id === oldMediaId)?.duration
@@ -172,7 +173,17 @@ async function renderScene(sceneId: string, job: Job) {
           if (untrimmed) return { ...c, mediaId: media.id, in: 0, out: media.duration }
           const out = Math.min(media.duration, c.out)
           return { ...c, mediaId: media.id, in: Math.max(0, Math.min(c.in, out - 0.1)), out }
-        })
+        }),
+        // clip trên track phủ cũng đổi sang bản mới
+        tracks: (s.project.tracks ?? []).map((t) => ({
+          ...t,
+          clips: t.clips.map((c) => {
+            if (c.mediaId !== oldMediaId) return c
+            const untrimmed = c.in === 0 && c.out >= (oldDuration ?? 0) - 0.05
+            const out = untrimmed ? media.duration : Math.min(media.duration, c.out)
+            return { ...c, mediaId: media.id, in: Math.max(0, Math.min(c.in, out - 0.1)), out }
+          })
+        }))
       }
     }))
   }

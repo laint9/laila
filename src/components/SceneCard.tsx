@@ -117,6 +117,16 @@ export function SceneCard(props: { scene: Scene; index: number; apiReady: boolea
         </div>
       )}
 
+      <label className="alpha-toggle" title="Render nền trong suốt (webm) để đặt lên track phủ, đè lên video quay thật">
+        <input
+          type="checkbox"
+          checked={!!scene.alpha}
+          disabled={busy}
+          onChange={(e) => update(scene.id, { alpha: e.target.checked, dirty: hasContent ? true : scene.dirty })}
+        />
+        Nền trong suốt (làm lớp phủ)
+      </label>
+
       {scene.error && <div className="error">{scene.error}</div>}
       {scene.notes && !scene.error && <div className="notes">{scene.notes}</div>}
 

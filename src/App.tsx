@@ -9,18 +9,25 @@ import { Timeline } from './components/Timeline'
 import { SettingsModal } from './components/SettingsModal'
 import { ExportModal } from './components/ExportModal'
 import { MotionEditor } from './editor/MotionEditor'
+import { ReferenceModal } from './components/ReferenceModal'
+import { SoundPanel } from './components/SoundPanel'
+import { Splitter } from './components/Splitter'
+import { useLayout } from './lib/layout'
 import { applyTheme } from './lib/theme'
+import { startFontWatch } from './lib/fonts'
 import type { AppSettings } from '../shared/types'
 
 applyTheme()
 
 export function App() {
   const project = useStore((s) => s.project)
-  const [leftTab, setLeftTab] = useState<'elements' | 'media'>('elements')
+  const [leftTab, setLeftTab] = useState<'elements' | 'media' | 'sound'>('elements')
   const [showSettings, setShowSettings] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
+  const [showReference, setShowReference] = useState(false)
+  const sizes = useLayout((s) => s.sizes)
   const editingRef = useRef<string | null>(null)
   editingRef.current = editing
   const loaded = useRef(false)
@@ -39,6 +46,7 @@ export function App() {
       }
       loaded.current = true
     })
+    startFontWatch()
     window.laila.settings.get().then((s) => {
       setAppSettings(s)
       if (!s.hasApiKey) setShowSettings(true)
@@ -94,13 +102,13 @@ export function App() {
   }, [])
 
   return (
-    <div className="app">
+    <div className="app" style={{ gridTemplateRows: `52px minmax(0, 1fr) ${sizes.timeline}px` }}>
       <TopBar
         onSettings={() => setShowSettings(true)}
         onExport={() => setShowExport(true)}
         apiReady={!!appSettings?.hasApiKey}
       />
-      <div className="workspace">
+      <div className="workspace" style={{ gridTemplateColumns: `${sizes.left}px minmax(0, 1fr) ${sizes.right}px` }}>
         <aside className="sidebar">
           <div className="tabs">
             <div className="segmented full">
@@ -110,22 +118,37 @@ export function App() {
               <button className={leftTab === 'media' ? 'on' : ''} onClick={() => setLeftTab('media')}>
                 Media <span className="count">{project.media.length}</span>
               </button>
+              <button className={leftTab === 'sound' ? 'on' : ''} onClick={() => setLeftTab('sound')}>
+                Âm thanh
+              </button>
             </div>
           </div>
-          {leftTab === 'elements' ? <ElementsPanel /> : <MediaBin />}
+          {leftTab === 'elements' ? (
+            <ElementsPanel />
+          ) : leftTab === 'media' ? (
+            <MediaBin />
+          ) : (
+            <SoundPanel apiReady={!!appSettings?.hasApiKey} onNeedKey={() => setShowSettings(true)} />
+          )}
+          <Splitter k="left" dir="right" className="edge-right" />
         </aside>
         <main className="content">
-          <Studio onNeedKey={() => setShowSettings(true)} apiReady={!!appSettings?.hasApiKey} onEdit={setEditing} />
+          <Studio onNeedKey={() => setShowSettings(true)} apiReady={!!appSettings?.hasApiKey} onEdit={setEditing} onReference={() => setShowReference(true)} />
         </main>
         <section className="inspector-pane">
+          <Splitter k="right" dir="left" className="edge-left" />
           <Preview />
         </section>
       </div>
-      <Timeline />
+      <div className="timeline-wrap">
+        <Splitter k="timeline" dir="up" className="edge-top" />
+        <Timeline />
+      </div>
       {showSettings && appSettings && (
         <SettingsModal settings={appSettings} onChange={setAppSettings} onClose={() => setShowSettings(false)} />
       )}
       {showExport && <ExportModal onClose={() => setShowExport(false)} />}
+      {showReference && <ReferenceModal onClose={() => setShowReference(false)} onEdit={setEditing} />}
       {editing && <MotionEditor sceneId={editing} onClose={() => setEditing(null)} />}
     </div>
   )

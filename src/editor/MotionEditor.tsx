@@ -12,6 +12,8 @@ import { LayerTimeline } from './LayerTimeline'
 import { LeftPanels } from './LeftPanels'
 import { selectedLayer, useEditor, type Tool } from './state'
 import { Viewer } from './Viewer'
+import { Splitter } from '../components/Splitter'
+import { useLayout } from '../lib/layout'
 
 export function MotionEditor({ sceneId, onClose }: { sceneId: string; onClose: () => void }) {
   const scene0 = useStore((s) => s.project.scenes.find((x) => x.id === sceneId))
@@ -34,6 +36,7 @@ export function MotionEditor({ sceneId, onClose }: { sceneId: string; onClose: (
   const [askError, setAskError] = useState<string | null>(null)
   const [addOpen, setAddOpen] = useState(false)
   const opened = useRef(false)
+  const sizes = useLayout((s) => s.sizes)
 
   // mở composition
   useEffect(() => {
@@ -75,6 +78,34 @@ export function MotionEditor({ sceneId, onClose }: { sceneId: string; onClose: (
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
   }, [playing])
+
+  // xem thử hiệu ứng khi rê chuột: chạy lặp from..to, thôi rê thì trả playhead về chỗ cũ
+  const previewing = useEditor((s) => s.preview)
+  useEffect(() => {
+    if (!previewing) return
+    const saved = ed().time
+    const wasPlaying = ed().playing
+    ed().setPlaying(false)
+    const { from, to } = previewing
+    let raf = 0
+    let t0 = performance.now()
+    const tick = (now: number) => {
+      let t = from + (now - t0) / 1000
+      if (t > to + 0.4) {
+        t0 = now
+        t = from
+      }
+      useEditor.setState({ time: Math.min(t, to) })
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => {
+      cancelAnimationFrame(raf)
+      useEditor.setState({ time: saved })
+      if (wasPlaying) ed().setPlaying(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [previewing?.from, previewing?.to, previewing?.scene])
 
   const finish = (render: boolean) => {
     const s = ed()
@@ -190,7 +221,7 @@ export function MotionEditor({ sceneId, onClose }: { sceneId: string; onClose: (
 
   return (
     <EditorContext.Provider value={{ runner, W: settings.width, H: settings.height, elements }}>
-      <div className="motion-editor">
+      <div className="motion-editor" style={{ gridTemplateRows: `52px minmax(0, 1fr) ${sizes.edTimeline}px` }}>
         <header className="me-toolbar">
           <button className="btn" onClick={() => finish(false)} title="Lưu và quay lại">
             <Icon name="back" /> Studio
@@ -281,7 +312,9 @@ export function MotionEditor({ sceneId, onClose }: { sceneId: string; onClose: (
             </button>
           </div>
         )}
-        <div className="me-main">
+        <div className="me-main" style={{ gridTemplateColumns: `${sizes.edLeft}px minmax(0, 1fr) ${sizes.edRight}px` }}>
+          <Splitter k="edLeft" dir="right" className="at-x" style={{ left: sizes.edLeft - 4 }} />
+          <Splitter k="edRight" dir="left" className="at-x" style={{ right: sizes.edRight - 4 }} />
           <aside className="me-left">
             <LeftPanels />
           </aside>
@@ -290,7 +323,10 @@ export function MotionEditor({ sceneId, onClose }: { sceneId: string; onClose: (
             <Inspector />
           </aside>
         </div>
-        <LayerTimeline fps={settings.fps} />
+        <div className="timeline-wrap">
+          <Splitter k="edTimeline" dir="up" className="edge-top" />
+          <LayerTimeline fps={settings.fps} />
+        </div>
       </div>
     </EditorContext.Provider>
   )

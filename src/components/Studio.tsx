@@ -4,7 +4,7 @@ import { cleanError, generateAll, planStoryboard, sendReadyScenesToTimeline } fr
 import { SceneCard } from './SceneCard'
 import { Icon } from './Icon'
 
-export function Studio(props: { apiReady: boolean; onNeedKey: () => void; onEdit: (sceneId: string) => void }) {
+export function Studio(props: { apiReady: boolean; onNeedKey: () => void; onEdit: (sceneId: string) => void; onReference: () => void }) {
   const scenes = useStore((s) => s.project.scenes)
   const addScene = useStore((s) => s.addScene)
   const [brief, setBrief] = useState('')
@@ -66,6 +66,9 @@ export function Studio(props: { apiReady: boolean; onNeedKey: () => void; onEdit
           Scenes <span className="count">{scenes.length}</span>
         </div>
         <div className="spacer" />
+        <button className="btn" onClick={guard(props.onReference)} title="Phân tích effect từ ảnh / video mẫu rồi dựng scene tương tự">
+          <Icon name="film" /> Phân tích reference
+        </button>
         <button className="btn" onClick={() => addScene()}>
           <Icon name="plus" /> Scene mới
         </button>

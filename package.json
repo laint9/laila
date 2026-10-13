@@ -1,7 +1,7 @@
 {
   "name": "cc-motion-editor",
   "productName": "CC Motion Editor",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "CC Motion Editor — dựng motion graphic bằng Claude và edit video trên macOS. Phát triển bởi Chợ Chời Creative Studio.",
   "main": "out/main/index.js",
   "author": {

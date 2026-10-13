@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useStore } from '../lib/store'
-import { totalDuration } from '../lib/timeline'
+import { projectDuration } from '../lib/timeline'
 import { fmtTime } from '../lib/media'
 import { cleanError } from '../lib/pipeline'
 import { Icon } from './Icon'
@@ -33,7 +33,6 @@ export function ExportModal(props: { onClose: () => void }) {
     setDone(null)
     setProgress(0)
     const byId = new Map(project.media.map((m) => [m.id, m]))
-    const music = project.music && byId.get(project.music.mediaId)
     try {
       await window.laila.exporter.run({
         outPath,
@@ -56,7 +55,48 @@ export function ExportModal(props: { onClose: () => void }) {
               fadeOut: c.audioFadeOut ?? 0
             }
           }),
-        music: music ? { path: music.path, in: project.music!.in, volume: project.music!.volume } : undefined
+        overlays: (project.tracks ?? [])
+          .filter((t) => t.kind === 'video' && !t.hidden)
+          .reverse() // track đứng đầu danh sách nằm trên cùng -> vẽ sau cùng
+          .flatMap((t) =>
+            t.clips
+              .filter((c) => byId.has(c.mediaId))
+              .map((c) => {
+                const m = byId.get(c.mediaId)!
+                return {
+                  path: m.path,
+                  alpha: !!m.alpha,
+                  hasAudio: m.hasAudio,
+                  start: c.start,
+                  in: c.in,
+                  out: c.out,
+                  speed: c.speed ?? 1,
+                  volume: c.volume,
+                  fadeIn: c.audioFadeIn ?? 0,
+                  fadeOut: c.audioFadeOut ?? 0,
+                  opacity: c.opacity ?? 100,
+                  scale: c.scale ?? 100,
+                  x: c.x ?? 0,
+                  y: c.y ?? 0
+                }
+              })
+          ),
+        audios: (project.tracks ?? [])
+          .filter((t) => t.kind === 'audio' && !t.muted)
+          .flatMap((t) =>
+            t.clips
+              .filter((c) => byId.has(c.mediaId))
+              .map((c) => ({
+                path: byId.get(c.mediaId)!.path,
+                start: c.start,
+                in: c.in,
+                out: c.out,
+                speed: c.speed ?? 1,
+                volume: c.volume,
+                fadeIn: c.audioFadeIn ?? 0,
+                fadeOut: c.audioFadeOut ?? 0
+              }))
+          )
       })
       setDone(outPath)
     } catch (e) {
@@ -83,8 +123,8 @@ export function ExportModal(props: { onClose: () => void }) {
         <div className="form-grid">
           <span className="muted">Nội dung</span>
           <span>
-            {project.timeline.length} clip · {fmtTime(totalDuration(project.timeline))}
-            {project.music ? ' · có nhạc nền' : ''}
+            {project.timeline.length} clip · {fmtTime(projectDuration(project))}
+            {(project.tracks ?? []).length ? ` · ${(project.tracks ?? []).length} track phụ` : ''}
           </span>
           <span className="muted">Kích thước</span>
           <span className="row">
@@ -145,7 +185,7 @@ export function ExportModal(props: { onClose: () => void }) {
               <button className="btn" onClick={props.onClose}>
                 Đóng
               </button>
-              <button className="btn primary" onClick={run} disabled={project.timeline.length === 0}>
+              <button className="btn primary" onClick={run} disabled={projectDuration(project) === 0}>
                 Chọn nơi lưu và xuất
               </button>
             </>

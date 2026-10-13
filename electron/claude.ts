@@ -5,6 +5,11 @@ import type {
   BrandElement,
   GenerateRequest,
   GenerateResult,
+  ReferenceAnalysis,
+  ReferenceRequest,
+  ReferenceResult,
+  SoundDesignRequest,
+  SoundDesignResult,
   StoryboardRequest,
   StoryboardScene
 } from '../shared/types'
@@ -67,6 +72,42 @@ DESIGN RULES
 - Good motion: animate in with strong ease-outs (easeOutExpo/easeOutCubic/easeOutBack), hold long enough to read (~0.25 s per word), stagger related elements 0.05-0.15 s, animate out unless told otherwise. Use parenting for groups that move together.
 - Keep layer names meaningful (e.g. "Headline", "Logo", "Accent bar") and ids stable: when revising a scene keep the ids of layers you keep.
 - Keep it lean: usually 3-12 layers.`
+
+const REFERENCE_SYSTEM = `REFERENCE MODE
+The user attaches frames sampled from a reference image or video that shows a motion graphics effect they like. Your job:
+1. Study the frames in order (timestamps given) and reverse-engineer the effect: layers, motion paths, easing, timing, text animation style, transitions, masks, blur, colour, typography, camera moves.
+2. Judge honestly how much of it this app can recreate. The app can do: text/shape/image layers with keyframed position/scale/rotation/opacity/blur, cubic-bezier easing, per char/word/line text reveals (fade, slide, mask, blur, scale, rotate, typewriter), trim-paths strokes, parenting, wiggle, blend modes, and code layers (2D canvas) for particles or generative patterns. It cannot do: 3D cameras or real 3D models, live-action footage, photographic textures it was not given, true motion tracking, fluid/physics simulations beyond simple 2D code, or exact copies of a third-party logo.
+3. Rebuild the effect as a scene using the user's brand elements instead of the reference's content (keep the motion idea, swap in their text, colours, fonts, logo). Do not copy someone else's logo or copyrighted artwork.
+
+Reply with ONLY one JSON object:
+{
+  "analysis": {
+    "summary": string,                       // what the effect is, 2-3 sentences, in Vietnamese
+    "feasibility": "high" | "partial" | "low",
+    "feasibilityReason": string,             // Vietnamese
+    "techniques": [ { "name": string, "detail": string, "replicable": "yes" | "approx" | "no" } ],  // Vietnamese
+    "timing": string,                        // rhythm and durations, Vietnamese
+    "palette": [ "#RRGGBB", ... ],           // dominant colours of the reference
+    "tips": [ string ]                       // how to get closer by hand in the editor, Vietnamese
+  },
+  "title": string,
+  "duration": number,
+  "notes": string,
+  "scene": { "background": ..., "layers": [...] } | null   // same scene format as above; null only if nothing reasonable can be built
+}`
+
+const SOUND_SYSTEM = `You are a sound designer for motion graphics. The app has a built-in synthesizer (no samples). Turn the user's description into synthesizer parameters.
+
+Reply with ONLY one JSON object:
+{ "type": "sfx" | "music", "name": short Vietnamese name, "notes": one Vietnamese sentence on the idea, "spec": SfxSpec | MusicSpec }
+
+SfxSpec: { "kind": "whoosh"|"swish"|"riser"|"impact"|"boom"|"pop"|"click"|"glitch"|"chime"|"sparkle"|"typing"|"notification",
+  "duration": seconds (0.03-8), "pitch": 0.5-2 (1 = normal), "intensity": 0-1, "brightness": 0-1 (dark to bright), "reverb": 0-1 }
+MusicSpec: { "style": "corporate"|"upbeat"|"chill"|"tech"|"cinematic"|"lofi", "bpm": 60-180, "key": "C".."B" (sharps as C#), "mode": "major"|"minor",
+  "progression": chord scale degrees per bar, 2-8 numbers 1-7 (e.g. [1,5,6,4]), "length": seconds, "energy": 0-1,
+  "instruments": { "pad": bool, "bass": bool, "arp": bool, "drums": bool, "lead": bool },
+  "drums": { "kick": 16-step pattern like "x---x---x---x---", "snare": ..., "hat": ... } }
+Pick "music" for background tracks/beds/songs, "sfx" for single sounds. Respect a requested type when given.`
 
 const STORYBOARD_SYSTEM = `You are a creative director planning a short motion graphics video that will be built from several independent scenes. Each scene is generated separately by a motion designer who only sees that scene's prompt plus the brand elements, so every scene prompt must be self-contained: describe layout, which brand elements appear (by exact name), motion style, colours, pacing and how it should start/end so cuts between scenes feel continuous. Write prompts in the same language as the brief.`
 
@@ -158,6 +199,8 @@ export class ClaudeService {
 
   private async call(opts: {
     system: string
+    /** khối system thứ 2 (sau khối được cache) */
+    extraSystem?: string
     content: Anthropic.Beta.BetaContentBlockParam[]
     model?: string
     effort: Effort
@@ -170,7 +213,10 @@ export class ClaudeService {
         max_tokens: 64000,
         betas: ['server-side-fallback-2026-07-01'],
         fallbacks: 'default',
-        system: [{ type: 'text', text: opts.system, cache_control: { type: 'ephemeral' } }],
+        system: [
+          { type: 'text', text: opts.system, cache_control: { type: 'ephemeral' } },
+          ...(opts.extraSystem ? [{ type: 'text' as const, text: opts.extraSystem }] : [])
+        ],
         output_config: opts.schema
           ? { effort: opts.effort, format: { type: 'json_schema', schema: opts.schema } }
           : { effort: opts.effort },
@@ -231,6 +277,74 @@ export class ClaudeService {
       }
     }
     throw new Error('Claude trả về dữ liệu không đọc được: ' + lastErr)
+  }
+
+  async analyzeReference(req: ReferenceRequest, frames: { t: number; data: string }[], duration: number, signal?: AbortSignal): Promise<ReferenceResult> {
+    const content: Anthropic.Beta.BetaContentBlockParam[] = [...(await imageBlocks(req.elements))]
+    content.push({ type: 'text', text: `Reference ${frames.length > 1 ? `video, ${duration.toFixed(2)}s long, ${frames.length} frames sampled in order` : 'image'}:` })
+    for (const f of frames) {
+      if (frames.length > 1) content.push({ type: 'text', text: `Frame at t=${f.t.toFixed(2)}s` })
+      content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: f.data } })
+    }
+    content.push({
+      type: 'text',
+      text:
+        `Canvas: ${req.settings.width}x${req.settings.height} @ ${req.settings.fps}fps.\n\nBrand elements:\n${describeElements(req.elements)}` +
+        (req.note?.trim() ? `\n\nWhat the user wants from this reference:\n${req.note.trim()}` : '')
+    })
+
+    let lastErr = ''
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const text = await this.call({
+        system: MOTION_SYSTEM,
+        extraSystem: REFERENCE_SYSTEM,
+        content: lastErr ? [...content, { type: 'text', text: `Your previous reply was not valid JSON (${lastErr}). Reply again with only the JSON object.` }] : content,
+        model: req.model,
+        effort: 'high',
+        signal
+      })
+      try {
+        const out = parseJsonObject(text) as Partial<ReferenceResult>
+        const a = (out.analysis ?? {}) as Partial<ReferenceAnalysis>
+        if (!a.summary) throw new Error('missing "analysis.summary"')
+        return {
+          analysis: {
+            summary: String(a.summary),
+            feasibility: a.feasibility === 'high' || a.feasibility === 'low' ? a.feasibility : 'partial',
+            feasibilityReason: String(a.feasibilityReason ?? ''),
+            techniques: Array.isArray(a.techniques)
+              ? a.techniques.map((t) => ({
+                  name: String(t?.name ?? ''),
+                  detail: String(t?.detail ?? ''),
+                  replicable: t?.replicable === 'yes' || t?.replicable === 'no' ? t.replicable : 'approx'
+                }))
+              : [],
+            timing: String(a.timing ?? ''),
+            palette: Array.isArray(a.palette) ? a.palette.filter((c) => typeof c === 'string').slice(0, 8) : [],
+            tips: Array.isArray(a.tips) ? a.tips.map(String) : []
+          },
+          title: typeof out.title === 'string' ? out.title : 'Theo reference',
+          duration: typeof out.duration === 'number' && out.duration > 0 ? Math.min(60, out.duration) : Math.max(1, Math.min(15, duration || 4)),
+          notes: typeof out.notes === 'string' ? out.notes : '',
+          scene: out.scene && typeof out.scene === 'object' ? out.scene : null,
+          frames: frames.length
+        }
+      } catch (e) {
+        lastErr = (e as Error).message
+      }
+    }
+    throw new Error('Claude trả về phân tích không đọc được: ' + lastErr)
+  }
+
+  async designSound(req: SoundDesignRequest, signal?: AbortSignal): Promise<SoundDesignResult> {
+    const ask =
+      `Description: ${req.prompt}\n` +
+      (req.kind === 'auto' ? '' : `Type required: ${req.kind}\n`) +
+      `If music, target length: ${Math.round(req.length)} seconds.`
+    const text = await this.call({ system: SOUND_SYSTEM, content: [{ type: 'text', text: ask }], model: req.model, effort: 'low', signal })
+    const out = parseJsonObject(text) as Partial<SoundDesignResult>
+    const type = req.kind !== 'auto' ? req.kind : out.type === 'music' ? 'music' : 'sfx'
+    return { type, name: typeof out.name === 'string' ? out.name : req.prompt.slice(0, 40), spec: out.spec ?? {}, notes: typeof out.notes === 'string' ? out.notes : '' }
   }
 
   async storyboard(req: StoryboardRequest, signal?: AbortSignal): Promise<StoryboardScene[]> {

@@ -34,6 +34,9 @@ interface EditorState {
   past: Snapshot[]
   future: Snapshot[]
   dirty: boolean
+  /** xem thử hiệu ứng khi rê chuột: vẽ scene tạm, lặp thời gian from..to */
+  preview: { scene: MotionScene; from: number; to: number } | null
+  setPreview: (p: { scene: MotionScene; from: number; to: number } | null) => void
 
   open: (sceneId: string, scene: MotionScene, duration: number) => void
   /** đổi scene, ghi lịch sử (mặc định) */
@@ -75,6 +78,8 @@ export const useEditor = create<EditorState>((set, get) => ({
   past: [],
   future: [],
   dirty: false,
+  preview: null,
+  setPreview: (preview) => set({ preview }),
 
   open: (sceneId, scene, duration) =>
     set({

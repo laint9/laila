@@ -1,6 +1,6 @@
 // Logic timeline thuần (không phụ thuộc React) để dễ test.
 // Clip có tốc độ (speed) và chuyển cảnh sang clip kế tiếp (chồng lấn như CapCut).
-import type { TimelineClip } from '../../shared/types'
+import type { Project, Track, TrackClip, TimelineClip } from '../../shared/types'
 
 export const MIN_CLIP = 0.1
 
@@ -125,4 +125,73 @@ export function moveClip(clips: TimelineClip[], id: string, toIndex: number): Ti
 export function snapPoints(clips: TimelineClip[]): number[] {
   const s = clipStarts(clips)
   return [0, ...clips.flatMap((c, i) => [s[i], s[i] + clipLength(c)])]
+}
+
+// ---------- track phụ (video phủ / âm thanh) ----------
+
+export const tSpeed = (c: TrackClip) => Math.min(4, Math.max(0.25, c.speed ?? 1))
+export const tLength = (c: TrackClip) => Math.max(0, c.out - c.in) / tSpeed(c)
+export const tEnd = (c: TrackClip) => c.start + tLength(c)
+
+export const trackEnd = (t: Track) => t.clips.reduce((m, c) => Math.max(m, tEnd(c)), 0)
+
+/** Tổng thời lượng video: dài nhất giữa track chính và các track phụ */
+export function projectDuration(p: Pick<Project, 'timeline' | 'tracks'>): number {
+  return Math.max(totalDuration(p.timeline), ...(p.tracks ?? []).filter((t) => !(t.kind === 'video' && t.hidden)).map(trackEnd), 0)
+}
+
+/** Clip của track tại thời điểm t */
+export function trackClipAt(t: Track, time: number): TrackClip | null {
+  return t.clips.find((c) => time >= c.start - 1e-6 && time < tEnd(c)) ?? null
+}
+
+const overlaps = (a0: number, a1: number, b0: number, b1: number) => a0 < b1 - 1e-6 && b0 < a1 - 1e-6
+
+/** Vị trí bắt đầu gần `start` nhất mà không đè clip khác (ưu tiên lùi về sau) */
+export function freeStart(clips: TrackClip[], start: number, len: number, ignoreId?: string): number {
+  const others = clips.filter((c) => c.id !== ignoreId).sort((a, b) => a.start - b.start)
+  let s = Math.max(0, start)
+  for (let guard = 0; guard < 1000; guard++) {
+    const hit = others.find((c) => overlaps(s, s + len, c.start, tEnd(c)))
+    if (!hit) return s
+    s = tEnd(hit)
+  }
+  return s
+}
+
+export function fitsAt(clips: TrackClip[], start: number, len: number, ignoreId?: string): boolean {
+  return start >= 0 && !clips.some((c) => c.id !== ignoreId && overlaps(start, start + len, c.start, tEnd(c)))
+}
+
+/** Tách clip track tại thời điểm time */
+export function splitTrackClip(t: Track, clipId: string, time: number, newId: () => string): Track {
+  const c = t.clips.find((x) => x.id === clipId)
+  if (!c || time <= c.start + MIN_CLIP || time >= tEnd(c) - MIN_CLIP) return t
+  const cut = c.in + (time - c.start) * tSpeed(c)
+  const a: TrackClip = { ...c, out: cut }
+  const b: TrackClip = { ...c, id: newId(), in: cut, start: time }
+  return { ...t, clips: t.clips.flatMap((x) => (x.id === clipId ? [a, b] : [x])) }
+}
+
+/** Trim mép clip track: mép trái đổi cả in lẫn start (giữ nguyên nội dung phía sau) */
+export function trimTrackClip(c: TrackClip, edge: 'in' | 'out', value: number, mediaDuration: number): TrackClip {
+  const sp = tSpeed(c)
+  if (edge === 'in') {
+    const nin = Math.min(Math.max(0, value), c.out - MIN_CLIP)
+    return { ...c, in: nin, start: Math.max(0, c.start + (nin - c.in) / sp) }
+  }
+  return { ...c, out: Math.max(Math.min(mediaDuration, value), c.in + MIN_CLIP) }
+}
+
+/** Project cũ có `music` -> chuyển thành track âm thanh */
+export function migrateProject<T extends Project>(p: T, newId: () => string, mediaDuration: (id: string) => number): T {
+  if (!p.music) return { ...p, tracks: p.tracks ?? [] }
+  const { music, ...rest } = p
+  const audio: Track = {
+    id: newId(),
+    kind: 'audio',
+    name: 'Nhạc nền',
+    clips: [{ id: newId(), mediaId: music.mediaId, start: 0, in: music.in, out: mediaDuration(music.mediaId) || music.in + 1, volume: music.volume }]
+  }
+  return { ...(rest as T), tracks: [...(p.tracks ?? []), audio] }
 }

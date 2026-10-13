@@ -1,5 +1,5 @@
 import { useStore, emptyProject } from '../lib/store'
-import { totalDuration } from '../lib/timeline'
+import { projectDuration } from '../lib/timeline'
 import { fmtTime } from '../lib/media'
 import { Icon } from './Icon'
 
@@ -7,7 +7,7 @@ export function TopBar(props: { onSettings: () => void; onExport: () => void; ap
   const project = useStore((s) => s.project)
   const rename = useStore((s) => s.rename)
   const setProject = useStore((s) => s.setProject)
-  const total = totalDuration(project.timeline)
+  const total = projectDuration(project)
 
   const open = async () => {
     const p = await window.laila.project.open()
@@ -43,7 +43,7 @@ export function TopBar(props: { onSettings: () => void; onExport: () => void; ap
         <span className={'status-dot ' + (props.apiReady ? 'ok' : 'bad')} />
         <Icon name="gear" />
       </button>
-      <button className="btn primary" disabled={project.timeline.length === 0} onClick={props.onExport}>
+      <button className="btn primary" disabled={projectDuration(project) === 0} onClick={props.onExport}>
         <Icon name="share" /> Xuất video
       </button>
     </header>

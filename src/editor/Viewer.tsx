@@ -23,6 +23,7 @@ type Drag =
 
 export function Viewer({ runner, width: W, height: H, accent }: Props) {
   const scene = useEditor((s) => s.scene)
+  const previewScene = useEditor((s) => s.preview?.scene)
   const time = useEditor((s) => s.time)
   const selected = useEditor((s) => s.selected)
   const tool = useEditor((s) => s.tool)
@@ -65,8 +66,9 @@ export function Viewer({ runner, width: W, height: H, accent }: Props) {
         do {
           drawing.current.again = false
           const s = useEditor.getState()
-          await runner.prepare(s.scene)
-          await runner.draw(ctx, s.scene, s.time)
+          const sc = s.preview?.scene ?? s.scene
+          await runner.prepare(sc)
+          await runner.draw(ctx, sc, s.time)
         } while (drawing.current.again)
       } finally {
         drawing.current.busy = false
@@ -74,7 +76,7 @@ export function Viewer({ runner, width: W, height: H, accent }: Props) {
       }
     }
     run()
-  }, [scene, time, runner])
+  }, [scene, previewScene, time, runner])
 
   const ctx2d = () => canvas.current!.getContext('2d')!
   const assets = runner.assets

@@ -107,8 +107,11 @@ export async function renderSceneToFile(
   elements: BrandElement[],
   label: string,
   onProgress: (p: number) => void,
-  signal?: { cancelled: boolean }
+  signal?: { cancelled: boolean },
+  alpha = false
 ) {
+  // nền trong suốt: bỏ màu nền của scene
+  if (alpha) scene = { ...scene, background: null }
   const runner = new SceneRunner(settings, elements)
   const jobId = crypto.randomUUID()
   let started = false
@@ -118,7 +121,7 @@ export async function renderSceneToFile(
     const ctx = canvas.getContext('2d')!
     const fps = settings.fps
     const frames = Math.max(1, Math.round(duration * fps))
-    await window.laila.render.start(jobId, fps, label)
+    await window.laila.render.start(jobId, fps, label, alpha)
     started = true
     for (let i = 0; i < frames; i++) {
       if (signal?.cancelled) throw new Error('Đã huỷ')

@@ -29,6 +29,8 @@ export interface Scene {
   elementIds: string[]
   status: SceneStatus
   progress?: number
+  /** render nền trong suốt (webm alpha) để dùng làm lớp phủ */
+  alpha?: boolean
   /** scene dạng layer/keyframe (MotionScene trong src/engine/types.ts) */
   motion?: unknown
   /** định dạng cũ (chỉ code) — tự chuyển sang motion khi mở project */
@@ -53,6 +55,8 @@ export interface MediaItem {
   width?: number
   height?: number
   sceneId?: string
+  /** video có kênh trong suốt (webm VP9 alpha) — dùng làm lớp phủ */
+  alpha?: boolean
 }
 
 /** Clip nằm trên track video chính (kiểu magnetic như CapCut). */
@@ -73,6 +77,35 @@ export interface TimelineClip {
   audioFadeOut?: number
 }
 
+/** Clip trên track phụ (đặt tự do theo thời gian, không hút như track chính) */
+export interface TrackClip {
+  id: string
+  mediaId: string
+  /** vị trí bắt đầu trên timeline (giây) */
+  start: number
+  in: number
+  out: number
+  volume: number
+  speed?: number
+  audioFadeIn?: number
+  audioFadeOut?: number
+  /** chỉ cho track video phủ */
+  opacity?: number // 0..100
+  scale?: number // %
+  x?: number // px lệch so với tâm khung
+  y?: number
+}
+
+export interface Track {
+  id: string
+  kind: 'video' | 'audio'
+  name: string
+  muted?: boolean
+  hidden?: boolean
+  clips: TrackClip[]
+}
+
+/** @deprecated dùng track âm thanh; chỉ còn để đọc project cũ */
 export interface MusicTrack {
   mediaId: string
   volume: number
@@ -88,6 +121,8 @@ export interface Project {
   scenes: Scene[]
   media: MediaItem[]
   timeline: TimelineClip[]
+  /** track phụ: video phủ (đứng trước = nằm trên) và âm thanh */
+  tracks?: Track[]
   music?: MusicTrack
 }
 
@@ -149,12 +184,93 @@ export interface ExportRequest {
   outPath: string
   settings: ProjectSettings
   clips: ExportClip[]
+  /** clip trên track video phủ, thứ tự vẽ từ dưới lên trên */
+  overlays?: ExportOverlay[]
+  /** clip trên track âm thanh */
+  audios?: ExportAudio[]
   music?: { path: string; in: number; volume: number }
   quality: 'draft' | 'high'
+}
+
+export interface ExportAudio {
+  path: string
+  start: number
+  in: number
+  out: number
+  speed: number
+  volume: number
+  fadeIn: number
+  fadeOut: number
+}
+
+export interface ExportOverlay extends ExportAudio {
+  hasAudio: boolean
+  alpha: boolean
+  opacity: number
+  scale: number
+  x: number
+  y: number
 }
 
 export interface AppSettings {
   hasApiKey: boolean
   keySource: 'stored' | 'env' | 'none'
   model: string
+}
+
+// ---------- phân tích reference ----------
+
+export interface ReferenceTechnique {
+  name: string
+  detail: string
+  /** yes = làm lại được trong app; approx = gần giống; no = không làm được */
+  replicable: 'yes' | 'approx' | 'no'
+}
+
+export interface ReferenceAnalysis {
+  summary: string
+  feasibility: 'high' | 'partial' | 'low'
+  feasibilityReason: string
+  techniques: ReferenceTechnique[]
+  timing: string
+  palette: string[]
+  tips: string[]
+}
+
+export interface ReferenceRequest {
+  path: string
+  /** ghi chú của người dùng: muốn lấy phần nào của reference */
+  note?: string
+  elements: BrandElement[]
+  settings: ProjectSettings
+  model?: string
+}
+
+export interface ReferenceResult {
+  analysis: ReferenceAnalysis
+  title: string
+  duration: number
+  notes: string
+  /** MotionScene thô để dựng lại hiệu ứng; null nếu không dựng được */
+  scene: unknown | null
+  frames: number
+}
+
+// ---------- âm thanh ----------
+
+export interface SoundDesignRequest {
+  prompt: string
+  /** 'auto' = để Claude tự chọn hiệu ứng hay nhạc */
+  kind: 'auto' | 'sfx' | 'music'
+  /** độ dài mong muốn cho nhạc (giây) */
+  length: number
+  model?: string
+}
+
+export interface SoundDesignResult {
+  type: 'sfx' | 'music'
+  name: string
+  /** SfxSpec hoặc MusicSpec thô, renderer chuẩn hoá */
+  spec: unknown
+  notes: string
 }

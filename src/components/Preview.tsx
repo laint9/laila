@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react'
-import type { TimelineClip, TransitionKind } from '../../shared/types'
+import type { TimelineClip } from '../../shared/types'
 import { useStore, RESOLUTIONS } from '../lib/store'
 import { fmtTime, mediaUrl } from '../lib/media'
-import { activeClips, clipLength, clipStarts, speedOf, totalDuration, transitionAfter } from '../lib/timeline'
+import { activeClips, clipLength, clipStarts, projectDuration, speedOf, tLength, trackClipAt, transitionAfter, tSpeed } from '../lib/timeline'
 import { Icon } from './Icon'
+import { transitionStyles } from '../lib/transitions'
 
 export function Preview() {
   const preview = useStore((s) => s.preview)
@@ -67,43 +68,6 @@ function ClipPlayer({ mediaId }: { mediaId: string }) {
   )
 }
 
-/** Style của 2 clip trong lúc chuyển cảnh (xem trước gần giống bản xuất bằng ffmpeg xfade) */
-function transitionStyles(kind: TransitionKind, p: number): { out: React.CSSProperties; in: React.CSSProperties; overlay: number; overlayColor: string } {
-  const r = { out: {} as React.CSSProperties, in: {} as React.CSSProperties, overlay: 0, overlayColor: '#000' }
-  switch (kind) {
-    case 'fade':
-    case 'dissolve':
-      r.in.opacity = p
-      break
-    case 'fadeblack':
-    case 'fadewhite':
-      r.overlayColor = kind === 'fadeblack' ? '#000' : '#fff'
-      r.overlay = 1 - Math.abs(2 * p - 1)
-      r.in.opacity = p < 0.5 ? 0 : 1
-      break
-    case 'slideleft':
-      r.out.transform = `translateX(${-p * 100}%)`
-      r.in.transform = `translateX(${(1 - p) * 100}%)`
-      break
-    case 'slideup':
-      r.out.transform = `translateY(${-p * 100}%)`
-      r.in.transform = `translateY(${(1 - p) * 100}%)`
-      break
-    case 'wipeleft':
-      r.in.clipPath = `inset(0 0 0 ${(1 - p) * 100}%)`
-      break
-    case 'circleopen':
-      r.in.clipPath = `circle(${p * 75}% at 50% 50%)`
-      break
-    case 'zoomin':
-      r.out.transform = `scale(${1 + p * 0.6})`
-      r.out.opacity = 1 - p
-      r.in.opacity = p
-      break
-  }
-  return r
-}
-
 /**
  * Phát timeline bằng 2 thẻ <video> luân phiên (clip chẵn/lẻ), clip kế tiếp luôn được nạp sẵn
  * nên không bị chớp khi cắt, và xem trước được chuyển cảnh. Đồng hồ chính là đồng hồ hệ thống.
@@ -115,22 +79,72 @@ function TimelinePlayer() {
   const setPlaying = useStore((s) => s.setPlaying)
   const vids = [useRef<HTMLVideoElement>(null), useRef<HTMLVideoElement>(null)]
   const overlay = useRef<HTMLDivElement>(null)
-  const audio = useRef<HTMLAudioElement>(null)
+  // phần tử phát cho track phụ (video phủ / âm thanh), theo id track
+  const trackEls = useRef(new Map<string, HTMLVideoElement | HTMLAudioElement>())
+  const trackUrl = useRef(new Map<string, string>())
+  const hover = useStore((s) => s.hoverTransition)
   const slot = useRef<{ index: number; url: string }[]>([
     { index: -1, url: '' },
     { index: -1, url: '' }
   ])
 
-  const clips = project.timeline
-  const total = totalDuration(clips)
-  const music = project.music && project.media.find((m) => m.id === project.music!.mediaId)
+  const tracks = project.tracks ?? []
+  const videoTracks = tracks.filter((t) => t.kind === 'video')
+  // đang rê chuột lên 1 kiểu chuyển cảnh: dùng tạm kiểu đó để xem thử
+  const clips = hover
+    ? project.timeline.map((c) => (c.id === hover.clipId ? { ...c, transition: hover.kind, transitionDuration: c.transitionDuration ?? 0.5 } : c))
+    : project.timeline
+  const total = projectDuration(project)
+  const { width: W, height: H } = project.settings
 
   const urlOf = (c: TimelineClip) => {
     const m = project.media.find((x) => x.id === c.mediaId)
     return m ? mediaUrl(m.path) : ''
   }
 
+  const syncTracks = (t: number, isPlaying: boolean) => {
+    for (const tr of tracks) {
+      const el = trackEls.current.get(tr.id)
+      if (!el) continue
+      const c = trackClipAt(tr, t)
+      const off = !c || (tr.kind === 'video' && tr.hidden)
+      if (off) {
+        if (!el.paused) el.pause()
+        if (tr.kind === 'video') el.style.opacity = '0'
+        continue
+      }
+      const m = project.media.find((x) => x.id === c.mediaId)
+      if (!m) continue
+      const url = mediaUrl(m.path)
+      const target = c.in + (t - c.start) * tSpeed(c)
+      if (trackUrl.current.get(tr.id) !== url) {
+        trackUrl.current.set(tr.id, url)
+        el.src = url
+        el.addEventListener('loadedmetadata', () => (el.currentTime = target), { once: true })
+      } else if (el.readyState >= 1 && Math.abs(el.currentTime - target) > (isPlaying ? 0.25 : 0.02)) el.currentTime = target
+      el.playbackRate = tSpeed(c)
+      if (isPlaying) {
+        if (el.paused) el.play().catch(() => {})
+      } else if (!el.paused) el.pause()
+      const local = t - c.start
+      const len = tLength(c)
+      let g = tr.muted ? 0 : c.volume
+      if (c.audioFadeIn) g *= Math.min(1, local / c.audioFadeIn)
+      if (c.audioFadeOut) g *= Math.min(1, (len - local) / c.audioFadeOut)
+      el.volume = Math.max(0, Math.min(1, g))
+      if (tr.kind === 'video') {
+        const z = 10 + videoTracks.length - videoTracks.indexOf(tr)
+        Object.assign(el.style, {
+          opacity: String((c.opacity ?? 100) / 100),
+          zIndex: String(z),
+          transform: `translate(${((c.x ?? 0) / W) * 100}%, ${((c.y ?? 0) / H) * 100}%) scale(${(c.scale ?? 100) / 100})`
+        })
+      }
+    }
+  }
+
   const sync = (t: number, isPlaying: boolean) => {
+    syncTracks(t, isPlaying)
     const starts = clipStarts(clips)
     const act = activeClips(clips, t)
     let styles: [React.CSSProperties, React.CSSProperties] = [{ opacity: 0 }, { opacity: 0 }]
@@ -205,29 +219,46 @@ function TimelinePlayer() {
       overlay.current.style.opacity = String(ov)
       overlay.current.style.background = ovColor
     }
-    if (audio.current && project.music) {
-      const at = project.music.in + t
-      audio.current.volume = project.music.volume
-      if (isPlaying) {
-        if (Math.abs(audio.current.currentTime - at) > 0.25) audio.current.currentTime = at
-        if (audio.current.paused) audio.current.play().catch(() => {})
-      } else {
-        audio.current.pause()
-        if (Math.abs(audio.current.currentTime - at) > 0.05) audio.current.currentTime = at
-      }
-    }
   }
 
   // tua khi dừng
   useEffect(() => {
-    if (!playing) sync(playhead, false)
+    if (!playing && !hover) sync(playhead, false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playhead, clips, project.media, playing])
+  }, [playhead, project.timeline, project.tracks, project.media, playing, hover])
+
+  // rê chuột lên kiểu chuyển cảnh: phát lặp đoạn nối giữa 2 clip
+  useEffect(() => {
+    if (!hover || playing) return
+    const i = clips.findIndex((c) => c.id === hover.clipId)
+    if (i < 0 || i >= clips.length - 1) return
+    const starts = clipStarts(clips)
+    const td = transitionAfter(clips, i)
+    const from = Math.max(0, starts[i + 1] - 0.7)
+    const to = starts[i + 1] + td + 0.7
+    let raf = 0
+    let t0 = performance.now()
+    const tick = (now: number) => {
+      let t = from + (now - t0) / 1000
+      if (t > to) {
+        t0 = now
+        t = from
+      }
+      sync(t, true)
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => {
+      cancelAnimationFrame(raf)
+      sync(useStore.getState().playhead, false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hover, playing])
 
   // phát: đồng hồ hệ thống điều khiển playhead
   useEffect(() => {
     if (!playing) return
-    if (!clips.length) {
+    if (!total) {
       setPlaying(false)
       return
     }
@@ -250,17 +281,39 @@ function TimelinePlayer() {
     tick()
     return () => cancelAnimationFrame(raf)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing, clips])
+  }, [playing, project.timeline, project.tracks])
 
   return (
     <>
-      {clips.length === 0 && <div className="screen-empty">Timeline trống. Generate scene rồi đưa lên timeline.</div>}
+      {total === 0 && <div className="screen-empty">Timeline trống. Generate scene rồi đưa lên timeline.</div>}
       <video ref={vids[0]} playsInline preload="auto" />
       <video ref={vids[1]} playsInline preload="auto" />
       <div ref={overlay} className="screen-overlay" />
-      {music && <audio ref={audio} src={mediaUrl(music.path)} preload="auto" />}
+      {tracks.map((tr) =>
+        tr.kind === 'video' ? (
+          <video
+            key={tr.id}
+            className="overlay-video"
+            playsInline
+            preload="auto"
+            ref={(el) => {
+              if (el) trackEls.current.set(tr.id, el)
+              else trackEls.current.delete(tr.id)
+            }}
+          />
+        ) : (
+          <audio
+            key={tr.id}
+            preload="auto"
+            ref={(el) => {
+              if (el) trackEls.current.set(tr.id, el)
+              else trackEls.current.delete(tr.id)
+            }}
+          />
+        )
+      )}
       <div className="transport">
-        <button className="round" onClick={() => setPlaying(!playing)} disabled={clips.length === 0} title="Phát / dừng (Space)">
+        <button className="round" onClick={() => setPlaying(!playing)} disabled={total === 0} title="Phát / dừng (Space)">
           <Icon name={playing ? 'pause' : 'play'} size={14} />
         </button>
         <span className="tc">

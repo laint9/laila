@@ -6,6 +6,8 @@ import { layerCorners, parentSpace } from '../engine/render'
 import type { Layer, TextPreset } from '../engine/types'
 import { useEditorCtx } from './context'
 import { Section } from './fields'
+import { groupOf, PresetThumb, presetRange } from './PresetThumb'
+import { updateLayer } from '../engine/edit'
 import { selectedLayer, useEditor } from './state'
 
 const TEXT_QUICK: { label: string; preset: TextPreset; unit: 'char' | 'word' | 'line'; stagger?: number }[] = [
@@ -17,6 +19,10 @@ const TEXT_QUICK: { label: string; preset: TextPreset; unit: 'char' | 'word' | '
   { label: 'Fade từng từ', preset: 'fade', unit: 'word' }
 ]
 
+function withTextAnim(l: Layer, q: (typeof TEXT_QUICK)[number]): Layer {
+  return l.type === 'text' ? { ...l, text: { ...l.text, animIn: { ...defaultAnimator(q.preset), unit: q.unit, stagger: q.stagger ?? defaultAnimator(q.preset).stagger } } } : l
+}
+
 export function LeftPanels() {
   const layer = useEditor(selectedLayer)
   const time = useEditor((s) => s.time)
@@ -24,6 +30,10 @@ export function LeftPanels() {
   const duration = useEditor((s) => s.duration)
   const ed = useEditor.getState
   const { runner, W, H, elements } = useEditorCtx()
+
+  // rê chuột: xem thử hiệu ứng trên layer đang chọn, lặp liên tục
+  const hover = (next: Layer, range: [number, number]) => ed().setPreview({ scene: updateLayer(ed().scene, next.id, () => next), from: range[0], to: range[1] })
+  const unhover = () => ed().setPreview(null)
 
   const align = (where: 'l' | 'ch' | 'r' | 't' | 'cv' | 'b') => {
     if (!layer || !runner.assets) return
@@ -68,8 +78,20 @@ export function LeftPanels() {
             <div className="preset-label">{g.label}</div>
             <div className="preset-grid">
               {g.items.map((it) => (
-                <button key={it.id} title={it.label} disabled={!layer || layer.locked} onClick={() => layer && ed().editLayer(layer.id, (l) => applyPreset(l, it.id, H))}>
-                  {it.label}
+                <button
+                  key={it.id}
+                  title={it.label}
+                  className="preset-btn"
+                  disabled={!layer || layer.locked}
+                  onMouseEnter={() => layer && hover(applyPreset(layer, it.id, H), presetRange(groupOf(it.id), layer))}
+                  onMouseLeave={unhover}
+                  onClick={() => {
+                    unhover()
+                    if (layer) ed().editLayer(layer.id, (l) => applyPreset(l, it.id, H))
+                  }}
+                >
+                  <PresetThumb preset={it.id} />
+                  <span>{it.label}</span>
                 </button>
               ))}
             </div>
@@ -83,13 +105,16 @@ export function LeftPanels() {
             {TEXT_QUICK.map((q) => (
               <button
                 key={q.label}
-                onClick={() =>
-                  ed().editLayer(layer.id, (l) =>
-                    l.type === 'text' ? { ...l, text: { ...l.text, animIn: { ...defaultAnimator(q.preset), unit: q.unit, stagger: q.stagger ?? defaultAnimator(q.preset).stagger } } } : l
-                  )
-                }
+                className="preset-btn"
+                onMouseEnter={() => hover(withTextAnim(layer, q), presetRange('text', layer))}
+                onMouseLeave={unhover}
+                onClick={() => {
+                  unhover()
+                  ed().editLayer(layer.id, (l) => withTextAnim(l, q))
+                }}
               >
-                {q.label}
+                <PresetThumb text={q} />
+                <span>{q.label}</span>
               </button>
             ))}
             <button

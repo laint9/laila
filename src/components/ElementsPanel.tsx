@@ -2,6 +2,7 @@ import { useStore } from '../lib/store'
 import { mediaUrl } from '../lib/media'
 import type { BrandElement, ElementKind } from '../../shared/types'
 import { Icon } from './Icon'
+import { FontPicker } from './FontPicker'
 
 const KIND: Record<ElementKind, { label: string; icon: string }> = {
   text: { label: 'Chữ', icon: 'text' },
@@ -88,7 +89,7 @@ function ElementRow({ el }: { el: BrandElement }) {
         <textarea rows={el.kind === 'note' ? 3 : 2} value={el.value} onChange={(e) => update(el.id, { value: e.target.value })} />
       )}
       {el.kind === 'font' && (
-        <input value={el.value} style={{ fontFamily: el.value }} placeholder="Tên font đã cài trên Mac, vd: Inter, Futura" onChange={(e) => update(el.id, { value: e.target.value })} />
+        <FontPicker value={el.value} onChange={(v) => update(el.id, { value: v })} placeholder="Chọn font trong máy" />
       )}
     </div>
   )

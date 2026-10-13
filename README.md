@@ -47,7 +47,8 @@ Phím tắt trong editor: `Space` phát, `J`/`K` keyframe trước/sau, `F9` Eas
 | Tốc độ | Chọn clip → 0.25× đến 4× |
 | Chuyển cảnh | Bấm ô nhỏ ở điểm nối giữa 2 clip: mờ dần, hoà tan, qua đen/trắng, đẩy, quét, mở tròn, phóng to; chỉnh thời lượng, áp cho tất cả |
 | Âm lượng, fade âm thanh | Chọn clip → thanh âm lượng, ô Fade vào / ra |
-| Nhạc nền | Kéo file audio xuống track nhạc, chỉnh âm lượng trên track |
+| Nhiều track | Nút **Track phủ** (video/scene đè lên track chính, chỉnh độ mờ, tỉ lệ, vị trí X/Y) và **Track âm thanh** (nhạc, SFX). Kéo clip giữa các track, ẩn/tắt tiếng từng track |
+| Lớp phủ trong suốt | Tick **Nền trong suốt** trên scene → render WebM có alpha → tự vào track phủ tại playhead |
 | Xoá / nhân bản | `Delete` / `⌘D` |
 | Undo / Redo | `⌘Z` / `⇧⌘Z` |
 | Tua từng frame | `←` `→` (Shift: 1 giây) |
@@ -55,7 +56,36 @@ Phím tắt trong editor: `Space` phát, `J`/`K` keyframe trước/sau, `F9` Eas
 
 Preview dùng 2 trình phát luân phiên nên không bị chớp ở điểm cắt, và xem trước được chuyển cảnh. Chuyển cảnh chồng lên 2 clip giống CapCut, nên thời lượng tổng ngắn lại đúng bằng phần chồng lấn.
 
+## Phân tích reference
+
+Bấm **Phân tích reference**, chọn ảnh hoặc video có effect muốn học theo. App trích tối đa 8 khung hình theo thứ tự thời gian, Claude đánh giá: copy được hoàn toàn / gần đúng / không, từng kỹ thuật làm được hay không, nhịp, bảng màu, mẹo chỉnh thêm. Sau đó bấm **Tạo scene theo reference** để dựng scene tương tự (có thể thêm bảng màu vào brand kit).
+
+Giới hạn: effect chạy quá nhanh giữa 2 khung hình được trích có thể bị bỏ sót; 3D thật, quay thật, particle phức tạp chỉ làm gần đúng.
+
+## Âm thanh (tab Âm thanh)
+
+| Chức năng | Mô tả |
+|---|---|
+| Sound effect | 12 loại (whoosh, swish, riser, impact, boom, pop, click, glitch, chime, sparkle, gõ phím, thông báo), chỉnh độ dài, cao độ, độ mạnh, độ sáng, vang. Nghe thử, rồi thêm vào timeline tại playhead |
+| Nhạc nền | 6 phong cách (corporate, upbeat, chill, tech, cinematic, lo-fi), chỉnh tempo, giọng, điệu, năng lượng, nhạc cụ |
+| Claude thiết kế âm thanh | Mô tả bằng lời ("tiếng vút nhanh, sáng"), Claude chọn thông số |
+| Tự gắn SFX | Quét chuyển động trong các scene trên timeline (chữ bay vào, bật lên, di chuyển nhanh, chuyển cảnh) và đặt SFX đúng thời điểm vào track "SFX tự động" |
+
+Âm thanh được tổng hợp ngay trong app (không dùng thư viện có bản quyền), lưu WAV. Chất lượng nhạc ở mức nhạc nền đơn giản; cần nhạc chất lượng cao thì nhập file nhạc riêng.
+
+## Font
+
+App đọc danh sách font đã cài trong máy. Cài thêm font (vào `~/Library/Fonts` hoặc `/Library/Fonts`) khi app đang mở thì app tự nhận sau khoảng 2 giây và dùng được ngay. Nút làm mới trong ô chọn font để nạp lại thủ công.
+
+## Xem trước nhanh
+
+- Hình thu nhỏ của hiệu ứng và chuyển cảnh tự chạy lặp.
+- Rê chuột lên một hiệu ứng: layer đang chọn chạy thử lặp lại trên khung xem, chưa áp thật. Bấm mới áp.
+- Rê chuột lên một chuyển cảnh: preview chạy lặp đoạn nối giữa 2 clip.
+
 ## Giao diện
+
+Các khung (sidebar trái, phải, timeline, kể cả trong Motion Editor) kéo mép để co giãn, nhấp đúp mép để về mặc định. Kích thước được nhớ cho lần sau.
 
 Phong cách macOS: phẳng, không trong suốt, font hệ thống, màu nhấn xanh của Apple. Sáng/tối theo cài đặt của máy, hoặc chọn cố định trong **Cài đặt → Giao diện**. Khung xem video luôn để nền tối để nhìn màu cho chuẩn (giống Final Cut).
 
@@ -110,10 +140,11 @@ Model mặc định là Claude Opus 5.5, đổi được trong Cài đặt. Requ
 
 ```bash
 npm test          # unit test: easing, keyframe, chuẩn hoá dữ liệu, preset, timeline (tốc độ, chuyển cảnh, Q/W)
-npm run test:e2e  # chạy app thật, Claude được giả lập bằng server cục bộ, bấm qua 35 chức năng:
+npm run test:e2e  # chạy app thật, Claude được giả lập bằng server cục bộ, bấm qua 61 chức năng:
                   # kịch bản, generate + tự sửa lỗi, Motion Editor (chọn/kéo/undo/stopwatch/preset/keyframe/ease/
                   # text animator/công cụ chữ/vẽ hình/align/nhờ Claude sửa), render lại, timeline (tốc độ,
-                  # chuyển cảnh, tách, W, undo, phát), xuất video (kiểm tra thời lượng + có tiếng)
+                  # chuyển cảnh, tách, W, undo, phát, track phủ alpha, track âm thanh), SFX/nhạc,
+                  # tự gắn SFX, phân tích reference, co giãn khung, font mới, xem trước hiệu ứng, xuất video
 ```
 Trên Linux chạy e2e cần `xvfb-run`.
 
@@ -122,8 +153,8 @@ Trên Linux chạy e2e cần `xvfb-run`.
 | Hiện tại | Hướng tiếp |
 |---|---|
 | Mask chỉ có dạng "trồi lên từ vạch" trong text animator | Track matte / mask tự vẽ cho mọi layer |
-| Một track video chính + một track nhạc | Track overlay (chữ, logo đè lên video quay thật) |
+| Lớp phủ chỉ chỉnh độ mờ/tỉ lệ/vị trí, chưa có keyframe trên timeline | Keyframe cho clip lớp phủ |
+| Nhạc tổng hợp đơn giản | Thêm nhạc cụ sample, cấu trúc bài (intro/drop/outro) |
 | Graph editor chỉnh ease từng đoạn (kiểu Flow), chưa có value graph | Speed/value graph đầy đủ như AE |
 | Chưa có motion blur | Motion blur khi render (lấy mẫu nhiều frame) |
-| Font: dùng font đã cài trên Mac | Nạp file .otf/.ttf vào brand kit |
 | Ký ad-hoc, chưa notarize | Ký bằng Apple Developer ID + notarize để mở không cần bước "Vẫn mở" |

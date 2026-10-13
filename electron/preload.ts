@@ -4,6 +4,10 @@ import type {
   ExportRequest,
   GenerateRequest,
   GenerateResult,
+  ReferenceRequest,
+  ReferenceResult,
+  SoundDesignRequest,
+  SoundDesignResult,
   MediaItem,
   Project,
   StoryboardRequest,
@@ -21,11 +25,19 @@ const api = {
       ipcRenderer.invoke('claude:generate', reqId, req),
     storyboard: (reqId: string, req: StoryboardRequest): Promise<StoryboardScene[]> =>
       ipcRenderer.invoke('claude:storyboard', reqId, req),
+    sound: (reqId: string, req: SoundDesignRequest): Promise<SoundDesignResult> => ipcRenderer.invoke('claude:sound', reqId, req),
     cancel: (reqId: string): Promise<void> => ipcRenderer.invoke('claude:cancel', reqId)
   },
+  audio: {
+    save: (name: string, data: Uint8Array): Promise<MediaItem> => ipcRenderer.invoke('audio:save', name, data)
+  },
+  reference: {
+    pick: (): Promise<string | null> => ipcRenderer.invoke('reference:pick'),
+    analyze: (reqId: string, req: ReferenceRequest): Promise<ReferenceResult> => ipcRenderer.invoke('reference:analyze', reqId, req)
+  },
   render: {
-    start: (jobId: string, fps: number, label: string): Promise<string> =>
-      ipcRenderer.invoke('render:start', jobId, fps, label),
+    start: (jobId: string, fps: number, label: string, alpha = false): Promise<string> =>
+      ipcRenderer.invoke('render:start', jobId, fps, label, alpha),
     frame: (jobId: string, frame: Uint8Array): Promise<void> => ipcRenderer.invoke('render:frame', jobId, frame),
     finish: (
       jobId: string
@@ -35,7 +47,8 @@ const api = {
   },
   media: {
     import: (kind: 'video' | 'audio'): Promise<MediaItem[]> => ipcRenderer.invoke('media:import', kind),
-    filmstrip: (path: string, duration: number): Promise<string | null> => ipcRenderer.invoke('media:filmstrip', path, duration)
+    filmstrip: (path: string, duration: number): Promise<string | null> => ipcRenderer.invoke('media:filmstrip', path, duration),
+    waveform: (path: string): Promise<string | null> => ipcRenderer.invoke('media:waveform', path)
   },
   file: {
     pickImage: (): Promise<string | null> => ipcRenderer.invoke('file:pickImage'),
@@ -51,6 +64,16 @@ const api = {
       ipcRenderer.on('export:progress', h)
       return () => {
         ipcRenderer.removeListener('export:progress', h)
+      }
+    }
+  },
+  fonts: {
+    scan: (): Promise<{ family: string; style: string; path: string }[]> => ipcRenderer.invoke('fonts:scan'),
+    onChanged: (cb: () => void) => {
+      const h = () => cb()
+      ipcRenderer.on('fonts:changed', h)
+      return () => {
+        ipcRenderer.removeListener('fonts:changed', h)
       }
     }
   },

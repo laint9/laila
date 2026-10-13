@@ -6,7 +6,8 @@ import { layerCorners, parentSpace } from '../engine/render'
 import type { BlendMode, Ease, EaseName, Layer, TextAnimator, TextLayer, TextPreset } from '../engine/types'
 import { EASE_LABELS } from '../engine/ease'
 import { Icon } from '../components/Icon'
-import { MAC_FONTS, useEditorCtx } from './context'
+import { useEditorCtx } from './context'
+import { FontPicker } from '../components/FontPicker'
 import { EaseEditor } from './EaseEditor'
 import { ColorField, NumberField, PropRow, Section, Segmented } from './fields'
 import { selectedLayer, useEditor } from './state'
@@ -275,23 +276,12 @@ function TextSection({ layer, colors }: { layer: TextLayer; colors: string[] }) 
         />
         <div className="field-row">
           <label>Font</label>
-          <input
-            list="laila-fonts"
+          <FontPicker
             value={d.font}
-            placeholder="Font hệ thống"
-            style={{ fontFamily: brandFonts.find((f) => f.name === d.font)?.value ?? d.font }}
-            onChange={(e) => set(() => ({ font: e.target.value }), false)}
+            brand={brandFonts.map((f) => ({ name: f.name, family: f.value }))}
+            previewFamily={brandFonts.find((f) => f.name === d.font)?.value}
+            onChange={(v) => set(() => ({ font: v }))}
           />
-          <datalist id="laila-fonts">
-            {brandFonts.map((f) => (
-              <option key={f.id} value={f.name}>
-                {f.value} (brand)
-              </option>
-            ))}
-            {MAC_FONTS.map((f) => (
-              <option key={f} value={f} />
-            ))}
-          </datalist>
         </div>
         <div className="field-row">
           <label>Cỡ / Đậm</label>

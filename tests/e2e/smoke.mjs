@@ -51,6 +51,9 @@ const sceneJson = (title, withCode, broken) => ({
 
 const requests = []
 let generateCalls = 0
+let soundCalls = 0
+let referenceCalls = 0
+let referenceImages = 0
 function sse(res, text) {
   const ev = (type, data) => res.write(`event: ${type}\ndata: ${JSON.stringify({ type, ...data })}\n\n`)
   res.writeHead(200, { 'content-type': 'text/event-stream' })
@@ -69,6 +72,16 @@ const server = http.createServer((req, res) => {
     const j = JSON.parse(body || '{}')
     requests.push({ headers: req.headers, body: j })
     const prompt = JSON.stringify(j.messages)
+    if (j.system?.[0]?.text?.startsWith('You are a sound designer')) {
+      soundCalls++
+      return sse(res, JSON.stringify({ type: 'sfx', name: 'Vút sáng', notes: 'test', spec: { kind: 'swish', duration: 0.4, pitch: 1.3, intensity: 0.8, brightness: 0.9, reverb: 0.1 } }))
+    }
+    if (j.system?.[1]?.text?.startsWith('REFERENCE MODE')) {
+      referenceCalls++
+      referenceImages = j.messages[0].content.filter((b) => b.type === 'image').length
+      const sc = sceneJson('Theo reference', false, false)
+      return sse(res, JSON.stringify({ ...sc, analysis: { summary: 'Chữ trượt lên theo từng dòng, thanh màu kéo dài.', feasibility: 'high', feasibilityReason: 'Toàn bộ là chữ và hình 2D.', techniques: [{ name: 'Mask reveal', detail: 'Từng dòng trồi lên', replicable: 'yes' }, { name: 'Camera 3D', detail: 'Xoay nhẹ', replicable: 'no' }], timing: 'Nhanh 0.5s', palette: ['#112233', '#FFCC00'], tips: ['Tăng stagger'] } }))
+    }
     if (j.system?.[0]?.text?.startsWith('You are a creative director')) {
       return sse(res, JSON.stringify({ scenes: [
         { title: 'Intro', prompt: 'Logo reveal', duration: 2, elementNames: ['headline', 'primary', 'background', 'font1'] },
@@ -96,10 +109,33 @@ const extVideo = join(userData, 'ext.mp4')
 execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'sine=f=330', '-t', '8', music])
 execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc2=size=1280x720:rate=30', '-f', 'lavfi', '-i', 'sine=f=440', '-t', '3', '-shortest', '-pix_fmt', 'yuv420p', extVideo])
 
+// thư mục font người dùng riêng cho lần test (để thử tự nhận font mới cài)
+const fakeHome = mkdtempSync(join(tmpdir(), 'cc-home-'))
+mkdirSync(join(fakeHome, '.local/share/fonts'), { recursive: true })
+const newFont = join(userData, 'CCTestSans.ttf')
+let fontReady = false
+try {
+  execFileSync('python3', ['-c', `
+from fontTools.ttLib import TTFont
+f = TTFont('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
+for r in f['name'].names:
+    if r.nameID in (1, 4, 16): r.string = 'CC Test Sans'
+    if r.nameID == 6: r.string = 'CCTestSans'
+f.save('${newFont}')`])
+  fontReady = true
+} catch {
+  console.log('(bỏ qua test font mới: không có fontTools)')
+}
 const app = await electron.launch({
   args: ['out/main/index.js', `--user-data-dir=${userData}`, '--no-sandbox'],
-  env: { ...process.env, ANTHROPIC_BASE_URL: `http://127.0.0.1:${port}` }
+  env: { ...process.env, HOME: fakeHome, ANTHROPIC_BASE_URL: `http://127.0.0.1:${port}` }
 })
+// hộp thoại chọn/lưu file: trả về file định sẵn để đi qua đúng luồng UI
+const stubDialog = (open, save) =>
+  app.evaluate(({ dialog }, [o, sv]) => {
+    dialog.showOpenDialog = async () => ({ canceled: !o, filePaths: o ? o : [] })
+    dialog.showSaveDialog = async () => ({ canceled: !sv, filePath: sv || undefined })
+  }, [open, save])
 const win = await app.firstWindow()
 await win.setViewportSize({ width: 1480, height: 920 })
 const errors = []
@@ -244,33 +280,59 @@ check('Xong & Render ra bản v2', scenes[0].version === 2 && !scenes[0].dirty)
 await win.click('text=/Đưa lên timeline/')
 let tl = await S(() => window.__laila.store.getState().project.timeline)
 check('Đưa scene lên timeline', tl.length === 2)
-// nhập video ngoài + nhạc qua store (hộp thoại file không tự động hoá được)
-await S(async ([v, m]) => {
+
+// nhập video + nhạc qua đúng nút Media (hộp thoại được giả lập)
+await win.locator('.sidebar .segmented button', { hasText: 'Media' }).click()
+await stubDialog([extVideo], null)
+await win.locator('button', { hasText: 'Nhập video' }).click()
+await win.waitForFunction(() => window.__laila.store.getState().project.media.some((m) => m.name === 'ext.mp4'))
+await stubDialog([music], null)
+await win.locator('button', { hasText: 'Nhạc nền' }).click()
+await win.waitForFunction(() => window.__laila.store.getState().project.media.some((m) => m.name === 'music.mp3'))
+const ids = await S(() => {
+  const p = window.__laila.store.getState().project
+  return { ext: p.media.find((m) => m.name === 'ext.mp4').id, mus: p.media.find((m) => m.name === 'music.mp3').id }
+})
+await S(([e, m]) => {
   const s = window.__laila.store.getState()
-  s.addMedia([
-    { id: 'ext', kind: 'video', name: 'ext.mp4', path: v, duration: 3, hasAudio: true },
-    { id: 'mus', kind: 'audio', name: 'music.mp3', path: m, duration: 8, hasAudio: true }
-  ])
-  s.appendToTimeline('ext')
-  s.appendToTimeline('mus')
-}, [extVideo, music])
-tl = await S(() => window.__laila.store.getState().project)
-check('Thêm video ngoài + nhạc nền', tl.timeline.length === 3 && tl.music?.mediaId === 'mus')
+  s.appendToTimeline(e)
+  s.setPlayhead(0)
+  s.appendToTimeline(m)
+}, [ids.ext, ids.mus])
+let pj = await S(() => window.__laila.store.getState().project)
+check('Nhập video + nhạc qua nút Media', pj.timeline.length === 3 && pj.tracks.some((t) => t.kind === 'audio' && t.clips.some((c) => c.mediaId === ids.mus)))
+const extInfo = pj.media.find((m) => m.id === ids.ext)
+check('Đọc thông tin video bằng ffmpeg (không cần ffprobe)', Math.abs(extInfo.duration - 3) < 0.1 && extInfo.width === 1280 && extInfo.hasAudio, `${extInfo.duration} ${extInfo.width}x${extInfo.height}`)
 
 // chọn clip 1, tốc độ 2x
-await win.locator('.video-track .clip').nth(0).click()
-await win.locator('.clip-prop select').selectOption('2')
+await win.locator('.main-lane .clip').nth(0).click()
+await win.locator('.clip-prop select').first().selectOption('2')
 tl = await S(() => window.__laila.store.getState().project.timeline)
 check('Đổi tốc độ clip 2×', tl[0].speed === 2)
 
-// chuyển cảnh giữa clip 1 và 2
+// chuyển cảnh: rê chuột lên để xem thử lặp, rồi bấm chọn
 await win.locator('.trans-btn').first().click()
+const thumbs = await win.locator('.trans-thumb').count()
+const b0 = await win.locator('.trans-grid button', { hasText: 'Đẩy sang trái' }).locator('.tt.b').getAttribute('style')
+await win.waitForTimeout(400)
+const b1 = await win.locator('.trans-grid button', { hasText: 'Đẩy sang trái' }).locator('.tt.b').getAttribute('style')
+check('Hình thu nhỏ chuyển cảnh tự chạy lặp', thumbs === 10 && b0 !== b1)
+await win.locator('.trans-grid button', { hasText: 'Mờ dần' }).hover()
+await win.waitForTimeout(300)
+const ph0 = await S(() => window.__laila.store.getState().playhead)
+const hv = await S(() => window.__laila.store.getState().hoverTransition)
+const v0 = await S(() => [...document.querySelectorAll('.screen video')].map((v) => v.currentTime.toFixed(2)).join())
+await win.waitForTimeout(500)
+const v1 = await S(() => [...document.querySelectorAll('.screen video')].map((v) => v.currentTime.toFixed(2)).join())
+check('Rê chuột lên chuyển cảnh: preview chạy lặp đoạn nối', hv?.kind === 'fade' && v0 !== v1, `${v0} -> ${v1}`)
 await win.locator('.trans-grid button', { hasText: 'Mờ dần' }).click()
 await win.locator('.trans-pop button', { hasText: 'Xong' }).click()
 tl = await S(() => window.__laila.store.getState().project.timeline)
-check('Thêm chuyển cảnh', tl[0].transition === 'fade')
+const hvAfter = await S(() => window.__laila.store.getState().hoverTransition)
+check('Bấm chọn chuyển cảnh; đóng thì hết preview', tl[0].transition === 'fade' && hvAfter === null && (await S(() => window.__laila.store.getState().playhead)) === ph0)
 
 // tách clip bằng phím S, Q/W
+await S(() => window.__laila.store.getState().select(null))
 await S(() => window.__laila.store.getState().setPlayhead(2.2))
 await win.locator('.timeline .ruler').click({ position: { x: 2, y: 2 } })
 await S(() => window.__laila.store.getState().setPlayhead(2.2))
@@ -285,14 +347,50 @@ await win.keyboard.press('Control+z')
 const tlU = await S(() => window.__laila.store.getState().project.timeline)
 check('Undo timeline', JSON.stringify(tlU) === JSON.stringify(tl))
 
+// 4b. Lớp phủ: scene Outro render nền trong suốt -> track phủ
+await win.locator('.scene-card').nth(1).locator('.alpha-toggle input').check()
+await win.locator('.scene-card').nth(1).locator('.sc-badge.warn').click()
+await win.waitForFunction(() => { const s = window.__laila.store.getState().project.scenes[1]; return s.status === 'ready' && s.version === 2 }, null, { timeout: 60000 })
+pj = await S(() => window.__laila.store.getState().project)
+const ovMedia = pj.media.find((m) => m.id === pj.scenes[1].mediaId)
+check('Render scene nền trong suốt (webm alpha)', ovMedia.alpha && ovMedia.path.endsWith('.webm'))
+await S((id) => { const s = window.__laila.store.getState(); s.setPlayhead(0.5); s.appendToTimeline(id) }, ovMedia.id)
+pj = await S(() => window.__laila.store.getState().project)
+const vt = pj.tracks.find((t) => t.kind === 'video')
+check('Clip trong suốt tự vào track phủ tại playhead', vt && vt.clips.length === 1 && Math.abs(vt.clips[0].start - 0.5) < 0.01)
+// kéo clip phủ sang phải ~1s
+const ovClip = win.locator('.track-row.kind-video .clip').first()
+const box = await ovClip.boundingBox()
+const zoomNow = await S(() => window.__laila.store.getState().zoom)
+await win.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+await win.mouse.down()
+await win.mouse.move(box.x + box.width / 2 + zoomNow * 1, box.y + box.height / 2, { steps: 6 })
+await win.mouse.up()
+pj = await S(() => window.__laila.store.getState().project)
+const movedStart = pj.tracks.find((t) => t.kind === 'video').clips[0].start
+check('Kéo clip trên track phủ', Math.abs(movedStart - 1.5) < 0.15, movedStart.toFixed(2))
+// chỉnh tỉ lệ/độ mờ lớp phủ
+await win.locator('.clip-prop', { hasText: 'Tỉ lệ' }).locator('input').fill('80')
+pj = await S(() => window.__laila.store.getState().project)
+check('Chỉnh tỉ lệ lớp phủ', pj.tracks.find((t) => t.kind === 'video').clips[0].scale === 80)
+// thêm track âm thanh mới bằng nút
+const nAudio0 = pj.tracks.filter((t) => t.kind === 'audio').length
+await win.locator('button', { hasText: 'Track âm thanh' }).click()
+pj = await S(() => window.__laila.store.getState().project)
+check('Thêm track âm thanh bằng nút', pj.tracks.filter((t) => t.kind === 'audio').length === nAudio0 + 1)
+await win.locator('.track-row.kind-audio').last().locator('button[title="Xoá track"]').click()
+
 // phát thử 1 giây
+await S(() => window.__laila.store.getState().setPlayhead(0))
 await win.keyboard.press('Space')
 await win.waitForTimeout(1200)
 await win.keyboard.press('Space')
 const ph = await S(() => window.__laila.store.getState().playhead)
-check('Phát timeline (Space)', ph > 3.5, ph.toFixed(2))
-await S(() => window.__laila.store.getState().setPlayhead(1.1))
-await win.waitForTimeout(600)
+check('Phát timeline (Space)', ph > 0.8, ph.toFixed(2))
+await S(() => window.__laila.store.getState().setPlayhead(1.9))
+await win.waitForTimeout(700)
+const ovVisible = await S(() => { const v = document.querySelector('.screen video.overlay-video'); return v && +v.style.opacity > 0 && v.readyState >= 1 })
+check('Preview hiện lớp phủ đúng thời điểm', ovVisible)
 await shot('05-timeline')
 
 // seek trên giao thức media:// (Range)
@@ -307,32 +405,141 @@ const seekOk = await S(async () => {
 })
 check('Tua video qua media:// (Range)', seekOk)
 
-// 5. Xuất video
+// 5. Âm thanh
+await win.locator('.sidebar .segmented button', { hasText: 'Âm thanh' }).click()
+await win.locator('.sfx-tile', { hasText: 'Pop' }).locator('.round-btn').click()
+await win.waitForTimeout(400)
+check('Nghe thử SFX', (await S(() => !!document.querySelector('.sfx-tile.on .round-btn svg path'))) && !(await win.locator('.sound-panel .error').count()))
+const media0 = pj.media.length
+await S(() => window.__laila.store.getState().setPlayhead(1))
+await win.locator('button', { hasText: 'Thêm tại playhead' }).click()
+await win.waitForFunction((n) => window.__laila.store.getState().project.media.length > n, media0, { timeout: 15000 })
+pj = await S(() => window.__laila.store.getState().project)
+const sfxMedia = pj.media[pj.media.length - 1]
+check('Tạo SFX -> WAV vào Media + track âm thanh tại playhead', sfxMedia.kind === 'audio' && sfxMedia.path.endsWith('.wav') && pj.tracks.some((t) => t.clips.some((c) => c.mediaId === sfxMedia.id && Math.abs(c.start - 1) < 0.01)))
+await win.locator('.sound-panel input[type=number]').nth(1).fill('6')
+await win.locator('button', { hasText: 'Tạo & thêm' }).click()
+await win.waitForFunction((n) => window.__laila.store.getState().project.media.length > n + 1, media0, { timeout: 30000 })
+pj = await S(() => window.__laila.store.getState().project)
+const musMedia = pj.media[pj.media.length - 1]
+const vd = (() => { try { return execFileSync('sh', ['-c', `ffmpeg -hide_banner -i "${musMedia.path}" -af volumedetect -f null - 2>&1 | grep mean_volume`]).toString() } catch { return '' } })()
+const meanDb = parseFloat(vd.split(':')[1] || '-99')
+check('Tạo nhạc nền 6s có tiếng thật', Math.abs(musMedia.duration - 6) < 0.1 && meanDb > -40, `${musMedia.duration.toFixed(2)}s, mean ${meanDb} dB`)
+await win.locator('.sound-panel textarea').fill('tiếng vút nhanh, sáng')
+await win.locator('.sound-panel button', { hasText: /^Tạo$/ }).click()
+await win.waitForSelector('.snd-result', { timeout: 15000 })
+check('Claude thiết kế âm thanh từ mô tả', soundCalls === 1 && (await win.locator('.snd-result').innerText()).includes('Vút sáng'))
+await win.locator('button', { hasText: 'Quét timeline' }).click()
+const evCount = await win.locator('.sfx-events li').count()
+check('Tự gắn SFX: quét được chuyển động', evCount >= 2, String(evCount))
+await win.locator('button', { hasText: /Tạo track SFX/ }).click()
+await win.waitForFunction(() => window.__laila.store.getState().project.tracks.some((t) => t.name === 'SFX tự động' && t.clips.length === 1), null, { timeout: 20000 })
+check('Tạo track "SFX tự động"', true)
+await shot('08-sound')
+
+// 6. Phân tích reference
+await stubDialog([extVideo], null)
+await win.locator('button', { hasText: 'Phân tích reference' }).click()
+await win.locator('.modal.reference button', { hasText: 'Chọn file' }).click()
+await win.waitForSelector('.ref-drop video')
+await win.locator('.modal.reference textarea').fill('lấy kiểu chữ chạy')
+await win.locator('.modal.reference button', { hasText: 'Phân tích' }).click()
+await win.waitForSelector('.ref-result', { timeout: 30000 })
+check('Phân tích reference: trích khung hình gửi Claude', referenceCalls === 1 && referenceImages === 6, `${referenceImages} ảnh`)
+check('Hiện đánh giá copy được + kỹ thuật', (await win.locator('.feas').innerText()).includes('Copy được') && (await win.locator('.tech-list li').count()) === 2)
+await shot('09-reference')
+await win.locator('.modal.reference button', { hasText: 'Thêm màu vào brand kit' }).click()
+const nScenes = (await S(() => window.__laila.store.getState().project.scenes)).length
+await win.locator('.modal.reference button', { hasText: 'Tạo scene theo reference' }).click()
+await win.waitForFunction((n) => { const sc = window.__laila.store.getState().project.scenes; return sc.length === n + 1 && sc[n].status === 'ready' }, nScenes, { timeout: 60000 })
+pj = await S(() => window.__laila.store.getState().project)
+check('Tạo scene theo reference + thêm màu vào brand kit', pj.scenes[nScenes].title === 'Theo reference' && pj.elements.some((e) => e.value.toLowerCase() === '#ffcc00'))
+
+// 7. Xuất video qua đúng cửa sổ Xuất
 const out = join(userData, 'final.mp4')
-const totalT = await S(async (outPath) => {
-  const p = window.__laila.store.getState().project
-  const byId = new Map(p.media.map((m) => [m.id, m]))
-  await window.laila.exporter.run({
-    outPath, settings: p.settings, quality: 'draft',
-    clips: p.timeline.map((c) => { const m = byId.get(c.mediaId); return { path: m.path, in: c.in, out: c.out, hasAudio: m.hasAudio, volume: c.volume, speed: c.speed ?? 1, transition: c.transition ?? 'none', transitionDuration: c.transitionDuration ?? 0.5, fadeIn: 0, fadeOut: 0 } }),
-    music: { path: byId.get(p.music.mediaId).path, in: 0, volume: 0.5 }
-  })
-  return document.querySelector('.timeline .tc')?.textContent
-}, out)
+await stubDialog(null, out)
+await win.locator('.topbar button', { hasText: 'Xuất video' }).click()
+await win.locator('.modal.export button', { hasText: 'Chọn nơi lưu và xuất' }).click()
+await win.waitForSelector('.modal.export .ok', { timeout: 90000 })
 const dur = Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', out]).toString())
-const tlTotal = await S(() => {
-  const t = window.__laila.store.getState().project.timeline
-  // tính lại như timeline.ts
+const projTotal = await S(() => {
+  const p = window.__laila.store.getState().project
   const len = (c) => (c.out - c.in) / Math.min(4, Math.max(0.25, c.speed ?? 1))
   let sum = 0
-  t.forEach((c, i) => { sum += len(c); const n = t[i + 1]; if (n && c.transition && c.transition !== 'none') sum -= Math.min(c.transitionDuration ?? 0.5, len(c) * 0.45, len(n) * 0.45) })
+  p.timeline.forEach((c, i) => { sum += len(c); const n = p.timeline[i + 1]; if (n && c.transition && c.transition !== 'none') sum -= Math.min(c.transitionDuration ?? 0.5, len(c) * 0.45, len(n) * 0.45) })
+  for (const t of p.tracks) for (const c of t.clips) sum = Math.max(sum, c.start + len(c))
   return sum
 })
-check('Xuất video đúng thời lượng timeline', Math.abs(dur - tlTotal) < 0.1, `file=${dur.toFixed(2)}s timeline=${tlTotal.toFixed(2)}s (${totalT})`)
+check('Xuất video đúng thời lượng (cả track phụ)', Math.abs(dur - projTotal) < 0.1, `file=${dur.toFixed(2)}s timeline=${projTotal.toFixed(2)}s`)
 const streams = execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'stream=codec_type', '-of', 'csv=p=0', out]).toString().trim().split('\n')
 check('File xuất có hình + tiếng', streams.includes('video') && streams.includes('audio'))
+await win.locator('.modal.export button', { hasText: 'Đóng' }).click()
 
-// 6. Giao diện tối
+// 8. Khung co giãn
+const left0 = await S(() => document.querySelector('.sidebar').getBoundingClientRect().width)
+const sp = await win.locator('.sidebar .splitter').boundingBox()
+await win.mouse.move(sp.x + 3, sp.y + 200)
+await win.mouse.down()
+await win.mouse.move(sp.x + 83, sp.y + 200, { steps: 5 })
+await win.mouse.up()
+const left1 = await S(() => document.querySelector('.sidebar').getBoundingClientRect().width)
+const tlh = await win.locator('.timeline-wrap > .splitter').boundingBox()
+await win.mouse.move(tlh.x + 300, tlh.y + 3)
+await win.mouse.down()
+await win.mouse.move(tlh.x + 300, tlh.y - 77, { steps: 5 })
+await win.mouse.up()
+const tlH = await S(() => document.querySelector('.timeline').getBoundingClientRect().height)
+check('Kéo co giãn sidebar + timeline', Math.abs(left1 - left0 - 80) < 3 && tlH > 360, `${left0}->${left1}, timeline ${tlH}`)
+
+// 9. Font trong máy
+await win.locator('.sidebar .segmented button', { hasText: 'Brand kit' }).click()
+await win.locator('.element', { hasText: 'Font' }).locator('.fp-current').click()
+const nFonts = await win.locator('.fp-item').count()
+check('Đọc font cài trong máy', nFonts >= 20, `${nFonts} font`)
+await win.keyboard.press('Escape')
+await win.mouse.click(5, 300)
+if (fontReady) {
+  execFileSync('cp', [newFont, join(fakeHome, '.local/share/fonts/')])
+  try { execFileSync('fc-cache', ['-f', join(fakeHome, '.local/share/fonts')], { env: { ...process.env, HOME: fakeHome } }) } catch {}
+  let found = false
+  for (let i = 0; i < 20 && !found; i++) {
+    await win.waitForTimeout(500)
+    found = await S(() => window.__laila.fonts?.getState().families.some((f) => f.family === 'CC Test Sans'))
+  }
+  check('Cài font mới -> app tự nhận', found)
+  const usable = await S(async () => { await document.fonts.ready; await new Promise((r) => setTimeout(r, 500)); return document.fonts.check('24px "CC Test Sans"') && [...document.fonts].some((f) => f.family.replace(/"/g, '') === 'CC Test Sans' && f.status === 'loaded') })
+  check('Font mới dùng được ngay để vẽ chữ', usable)
+}
+
+// 10. Motion Editor: rê chuột xem thử hiệu ứng
+await win.locator('.scene-card').first().locator('text=Chỉnh sửa').click()
+await win.waitForSelector('.motion-editor')
+await S(() => { const e = window.__laila.editor.getState(); e.select('bar'); e.setTime(1.8) })
+await win.waitForTimeout(300)
+const thumbsMoving = await S(async () => {
+  const c = document.querySelector('.left-panels .preset-thumb')
+  const a = c.toDataURL()
+  await new Promise((r) => setTimeout(r, 300))
+  return a !== c.toDataURL()
+})
+check('Hình thu nhỏ hiệu ứng tự chạy lặp', thumbsMoving)
+await win.locator('.left-panels .preset-btn', { hasText: 'Xoay vào' }).hover()
+await win.waitForTimeout(250)
+const pv1 = await S(() => { const e = window.__laila.editor.getState(); return { has: !!e.preview, t: e.time } })
+await win.waitForTimeout(350)
+const pv2 = await S(() => { const e = window.__laila.editor.getState(); return { has: !!e.preview, t: e.time, keys: e.scene.layers.find((l) => l.id === 'bar').transform.rotation.keys } })
+check('Rê chuột: chạy thử hiệu ứng lặp trên layer, chưa áp thật', pv1.has && pv2.has && pv1.t !== pv2.t && !pv2.keys)
+await shot('10-preset-hover')
+await win.mouse.move(700, 300)
+await win.waitForTimeout(200)
+const pv3 = await S(() => { const e = window.__laila.editor.getState(); return { has: !!e.preview, t: e.time } })
+check('Rời chuột: thôi xem thử, playhead về chỗ cũ', !pv3.has && Math.abs(pv3.t - 1.8) < 0.001, String(pv3.t))
+await win.locator('.left-panels .preset-btn', { hasText: 'Xoay vào' }).click()
+const rk = await S(() => window.__laila.editor.getState().scene.layers.find((l) => l.id === 'bar').transform.rotation.keys)
+check('Bấm: áp hiệu ứng thật', Array.isArray(rk) && rk.length >= 2)
+await win.locator('.me-toolbar button', { hasText: 'Studio' }).click()
+
+// 11. Giao diện tối
 await S(() => document.documentElement.setAttribute('data-theme', 'dark'))
 await win.waitForTimeout(300)
 await shot('06-dark')

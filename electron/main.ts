@@ -1,16 +1,20 @@
 import { app, BrowserWindow, dialog, ipcMain, protocol, safeStorage, shell } from 'electron'
-import { createReadStream, existsSync, mkdirSync, statSync } from 'node:fs'
+import { createReadStream, existsSync, mkdirSync, statSync, watch, type FSWatcher } from 'node:fs'
+import { homedir } from 'node:os'
 import { readFile, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import { Readable } from 'node:stream'
 import { randomUUID } from 'node:crypto'
 import { ClaudeService, DEFAULT_MODEL } from './claude'
-import { FrameEncoder, makeFilmstrip, probe, runExport } from './ffmpeg'
+import { scanFontDirs } from './fonts'
+import { extractFrame, FrameEncoder, makeFilmstrip, makeWaveform, probe, runExport } from './ffmpeg'
 import type {
   AppSettings,
   ExportRequest,
   GenerateRequest,
   MediaItem,
+  ReferenceRequest,
+  SoundDesignRequest,
   Project,
   StoryboardRequest
 } from '../shared/types'
@@ -90,6 +94,10 @@ function createWindow() {
     }
   })
   // Không cho mở link ngoài trong app
+  // Cho phép đọc danh sách font cài trong máy (Local Font Access API)
+  const ses = win.webContents.session
+  ses.setPermissionCheckHandler((_wc, permission) => permission === 'local-fonts')
+  ses.setPermissionRequestHandler((_wc, permission, cb) => cb(permission === 'local-fonts'))
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('https://')) shell.openExternal(url)
     return { action: 'deny' }
@@ -114,7 +122,10 @@ function registerMediaProtocol() {
     '.jpeg': 'image/jpeg',
     '.webp': 'image/webp',
     '.gif': 'image/gif',
-    '.svg': 'image/svg+xml'
+    '.svg': 'image/svg+xml',
+    '.ttf': 'font/ttf',
+    '.otf': 'font/otf',
+    '.ttc': 'font/collection'
   }
   protocol.handle('media', (req) => {
     const url = new URL(req.url)
@@ -194,15 +205,72 @@ function registerIpc() {
       aborters.delete(reqId)
     }
   })
+  // ---------- reference: trích khung hình rồi nhờ Claude phân tích ----------
+  ipcMain.handle('reference:pick', async () => {
+    const r = await dialog.showOpenDialog(win!, {
+      properties: ['openFile'],
+      filters: [{ name: 'Ảnh / video tham khảo', extensions: ['mp4', 'mov', 'm4v', 'webm', 'gif', 'png', 'jpg', 'jpeg', 'webp'] }]
+    })
+    return r.canceled ? null : r.filePaths[0]
+  })
+  ipcMain.handle('reference:analyze', async (_e, reqId: string, req: ReferenceRequest) => {
+    const ac = new AbortController()
+    aborters.set(reqId, ac)
+    try {
+      const isImage = /\.(png|jpe?g|webp)$/i.test(req.path)
+      const dir = join(userDir(), 'reference', randomUUID())
+      mkdirSync(dir, { recursive: true })
+      let duration = 0
+      let times = [0]
+      if (!isImage) {
+        duration = (await probe(req.path)).duration
+        // 2 khung/giây, tối thiểu 3, tối đa 8, rải đều trong đoạn
+        const n = Math.max(3, Math.min(8, Math.round(duration * 2)))
+        times = Array.from({ length: n }, (_, i) => duration * (0.04 + (0.92 * i) / Math.max(1, n - 1)))
+      }
+      const frames: { t: number; data: string }[] = []
+      for (let i = 0; i < times.length; i++) {
+        const out = join(dir, `f${i}.jpg`)
+        await extractFrame(req.path, times[i], out)
+        frames.push({ t: times[i], data: (await readFile(out)).toString('base64') })
+      }
+      return await claude.analyzeReference({ ...req, model: req.model || appSettings().model }, frames, duration, ac.signal)
+    } finally {
+      aborters.delete(reqId)
+    }
+  })
+
+  ipcMain.handle('claude:sound', async (_e, reqId: string, req: SoundDesignRequest) => {
+    const ac = new AbortController()
+    aborters.set(reqId, ac)
+    try {
+      return await claude.designSound({ ...req, model: req.model || appSettings().model }, ac.signal)
+    } finally {
+      aborters.delete(reqId)
+    }
+  })
+
+  // lưu file WAV do bộ tổng hợp âm thanh tạo ra -> media
+  ipcMain.handle('audio:save', async (_e, name: string, data: Uint8Array) => {
+    const dir = join(userDir(), 'audio')
+    mkdirSync(dir, { recursive: true })
+    const safe = name.replace(/[^\w\-]+/g, '_').slice(0, 40) || 'audio'
+    const path = join(dir, `${safe}_${Date.now()}.wav`)
+    await writeFile(path, Buffer.from(data))
+    const info = await probe(path)
+    const item: MediaItem = { id: randomUUID(), kind: 'audio', name, path, duration: info.duration, hasAudio: true }
+    return item
+  })
+
   ipcMain.handle('claude:cancel', (_e, reqId: string) => {
     aborters.get(reqId)?.abort()
   })
 
   // Render frame-by-frame: renderer vẽ trong sandbox iframe, gửi PNG qua đây.
-  ipcMain.handle('render:start', (_e, jobId: string, fps: number, label: string) => {
+  ipcMain.handle('render:start', (_e, jobId: string, fps: number, label: string, alpha = false) => {
     const safe = label.replace(/[^\w\-]+/g, '_').slice(0, 40) || 'scene'
-    const path = join(rendersDir(), `${safe}_${Date.now()}_${jobId.slice(0, 6)}.mp4`)
-    encoders.set(jobId, { enc: new FrameEncoder(path, fps), path })
+    const path = join(rendersDir(), `${safe}_${Date.now()}_${jobId.slice(0, 6)}.${alpha ? 'webm' : 'mp4'}`)
+    encoders.set(jobId, { enc: new FrameEncoder(path, fps, alpha), path })
     return path
   })
   ipcMain.handle('render:frame', async (_e, jobId: string, frame: Uint8Array) => {
@@ -265,6 +333,24 @@ function registerIpc() {
     return p
   })
 
+  const waves = new Map<string, Promise<string | null>>()
+  ipcMain.handle('media:waveform', (_e, path: string) => {
+    if (!existsSync(path)) return null
+    const key = path + ':' + statSync(path).mtimeMs
+    let p = waves.get(key)
+    if (!p) {
+      const dir = join(userDir(), 'thumbs')
+      mkdirSync(dir, { recursive: true })
+      const out = join(dir, `${randomUUID()}.png`)
+      p = makeWaveform(path, out).then(
+        () => out,
+        () => null
+      )
+      waves.set(key, p)
+    }
+    return p
+  })
+
   ipcMain.handle('file:pickImage', async () => {
     const r = await dialog.showOpenDialog(win!, {
       properties: ['openFile'],
@@ -323,6 +409,37 @@ function registerIpc() {
 
 app.setName('CC Motion Editor')
 
+// Theo dõi thư mục font: cài/xoá font thì báo renderer nạp lại danh sách
+const fontWatchers: FSWatcher[] = []
+function fontDirs() {
+  return (
+    process.platform === 'darwin'
+      ? [join(homedir(), 'Library/Fonts'), '/Library/Fonts']
+      : process.platform === 'win32'
+        ? [join(process.env.WINDIR || 'C:/Windows', 'Fonts'), join(homedir(), 'AppData/Local/Microsoft/Windows/Fonts')]
+        : [join(homedir(), '.local/share/fonts'), join(homedir(), '.fonts'), '/usr/share/fonts']
+  )
+}
+
+function watchFonts() {
+  const dirs = fontDirs()
+  let timer: NodeJS.Timeout | null = null
+  for (const d of dirs) {
+    if (!existsSync(d)) continue
+    try {
+      fontWatchers.push(
+        watch(d, { recursive: process.platform !== 'linux' }, () => {
+          if (timer) clearTimeout(timer)
+          // chờ macOS đăng ký font xong rồi mới báo
+          timer = setTimeout(() => win?.webContents.send('fonts:changed'), 1500)
+        })
+      )
+    } catch {
+      /* thư mục không theo dõi được thì bỏ qua; vẫn còn nút Làm mới */
+    }
+  }
+}
+
 app.whenReady().then(async () => {
   app.setAboutPanelOptions({
     applicationName: 'CC Motion Editor',
@@ -334,6 +451,8 @@ app.whenReady().then(async () => {
   registerMediaProtocol()
   registerIpc()
   createWindow()
+  watchFonts()
+  ipcMain.handle('fonts:scan', () => scanFontDirs(fontDirs()))
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
