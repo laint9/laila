@@ -25,6 +25,13 @@ export function Preview() {
           </button>
         </div>
         <div className="spacer" />
+        <button
+          className={'btn small fill-toggle' + (settings.fill ? ' tinted' : '')}
+          title="Video khác tỉ lệ khung: lấp đầy (cắt viền) hoặc vừa khung (viền đen)"
+          onClick={() => setSettings({ fill: !settings.fill })}
+        >
+          {settings.fill ? 'Lấp đầy' : 'Vừa khung'}
+        </button>
         <select
           className="ratio-select"
           title="Tỉ lệ khung hình"
@@ -43,7 +50,7 @@ export function Preview() {
         </select>
       </div>
       <div className="screen-wrap">
-        <div className="screen" style={{ aspectRatio: `${settings.width} / ${settings.height}` }}>
+        <div className={'screen' + (settings.fill ? ' fill' : '')} style={{ aspectRatio: `${settings.width} / ${settings.height}` }}>
           {preview.type === 'timeline' ? <TimelinePlayer /> : <ClipPlayer mediaId={preview.mediaId} />}
         </div>
       </div>

@@ -10,6 +10,8 @@ import type {
   ReferenceResult,
   SoundDesignRequest,
   SoundDesignResult,
+  ShotRatingRequest,
+  ShotRatingResult,
   StoryboardRequest,
   StoryboardScene
 } from '../shared/types'
@@ -103,11 +105,19 @@ Reply with ONLY one JSON object:
 
 SfxSpec: { "kind": "whoosh"|"swish"|"riser"|"impact"|"boom"|"pop"|"click"|"glitch"|"chime"|"sparkle"|"typing"|"notification",
   "duration": seconds (0.03-8), "pitch": 0.5-2 (1 = normal), "intensity": 0-1, "brightness": 0-1 (dark to bright), "reverb": 0-1 }
-MusicSpec: { "style": "corporate"|"upbeat"|"chill"|"tech"|"cinematic"|"lofi", "bpm": 60-180, "key": "C".."B" (sharps as C#), "mode": "major"|"minor",
+MusicSpec: { "style": "hiphop"|"oldschool"|"trap"|"club"|"corporate"|"upbeat"|"chill"|"tech"|"cinematic"|"lofi", "bpm": 60-180, "swing": 0-0.3 (hip hop/old school 0.08-0.15), "key": "C".."B" (sharps as C#), "mode": "major"|"minor",
   "progression": chord scale degrees per bar, 2-8 numbers 1-7 (e.g. [1,5,6,4]), "length": seconds, "energy": 0-1,
   "instruments": { "pad": bool, "bass": bool, "arp": bool, "drums": bool, "lead": bool },
   "drums": { "kick": 16-step pattern like "x---x---x---x---", "snare": ..., "hat": ... } }
+Nightlife/bar/club briefs: hiphop (boom bap ~88-95 BPM), oldschool (funk/old school hip hop ~95-105), trap (~135-150, 808), club (house ~120-128).
 Pick "music" for background tracks/beds/songs, "sfx" for single sounds. Respect a requested type when given.`
+
+const SHOTS_SYSTEM = `You are a senior video editor cutting short social videos (Reels/TikTok) for nightlife venues: bars, clubs, hip hop and old school nights.
+You get one still per shot from the client's raw footage. Rate how strong each shot is for a fast, beat-synced promo cut.
+Reward: energy (crowd hands up, dancing, DJ action, performers), atmosphere (lights, lasers, smoke, neon, colour), hero details (drinks being made, bottles, logo/signage), sharp and well exposed frames.
+Penalise: blur, near-black or blown-out frames, empty rooms, awkward unflattering faces or people clearly not wanting to be filmed, staff-only/backstage mess, duplicates of a better shot.
+Reply with ONLY one JSON object: { "shots": [ { "id": shot id, "score": 0-10, "tag": "crowd"|"dj"|"performer"|"drinks"|"venue"|"logo"|"people"|"detail"|"other", "skip": true when it should never be used } ], "notes": one short Vietnamese sentence about the footage overall }
+Include every shot id exactly once.`
 
 const STORYBOARD_SYSTEM = `You are a creative director planning a short motion graphics video that will be built from several independent scenes. Each scene is generated separately by a motion designer who only sees that scene's prompt plus the brand elements, so every scene prompt must be self-contained: describe layout, which brand elements appear (by exact name), motion style, colours, pacing and how it should start/end so cuts between scenes feel continuous. Write prompts in the same language as the brief.`
 
@@ -334,6 +344,29 @@ export class ClaudeService {
       }
     }
     throw new Error('Claude trả về phân tích không đọc được: ' + lastErr)
+  }
+
+  /** Chấm điểm từng cảnh (1 ảnh đại diện mỗi cảnh) để dựng video theo nhạc */
+  async rateShots(req: ShotRatingRequest, signal?: AbortSignal): Promise<ShotRatingResult> {
+    const content: Anthropic.Beta.BetaContentBlockParam[] = []
+    for (const s of req.shots) {
+      content.push({ type: 'text', text: `Shot ${s.id} (${s.length.toFixed(1)}s):` })
+      content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: s.image } })
+    }
+    content.push({ type: 'text', text: req.brief?.trim() ? `What the client wants:\n${req.brief.trim()}` : 'No extra brief: a high-energy nightlife promo.' })
+    const text = await this.call({ system: SHOTS_SYSTEM, content, model: req.model, effort: 'low', signal })
+    const out = parseJsonObject(text) as { shots?: unknown[]; notes?: unknown }
+    const ids = new Set(req.shots.map((s) => s.id))
+    const ratings = (Array.isArray(out.shots) ? out.shots : [])
+      .map((x) => x as Record<string, unknown>)
+      .filter((x) => ids.has(String(x.id)))
+      .map((x) => ({
+        id: String(x.id),
+        score: Math.max(0, Math.min(10, Number(x.score) || 0)),
+        tag: typeof x.tag === 'string' ? x.tag : 'other',
+        skip: x.skip === true
+      }))
+    return { ratings, notes: typeof out.notes === 'string' ? out.notes : '' }
   }
 
   async designSound(req: SoundDesignRequest, signal?: AbortSignal): Promise<SoundDesignResult> {

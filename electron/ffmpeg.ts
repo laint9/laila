@@ -185,7 +185,9 @@ export function buildExportArgs(req: ExportRequest): { args: string[]; total: nu
     filters.push(
       // ảnh nền trong đặt lên nền đen (giống preview)
       `[${k}:v]${c.image ? 'format=rgba,premultiply=inplace=1,' : ''}trim=start=${n(c.in)}:end=${n(c.out)},setpts=(PTS-STARTPTS)/${speed},` +
-        `scale=${W}:${H}:force_original_aspect_ratio=decrease,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=black,` +
+        (req.settings.fill
+          ? `scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},`
+          : `scale=${W}:${H}:force_original_aspect_ratio=decrease,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=black,`) +
         `setsar=1,fps=${fps},format=yuv420p,settb=AVTB[v${i}]`
     )
     if (c.hasAudio) {
@@ -381,14 +383,14 @@ export function makeWaveform(path: string, outPath: string): Promise<void> {
 }
 
 /** Trích khung hình JPEG (rộng tối đa 768px) tại các thời điểm cho trước — dùng để Claude xem reference */
-export function extractFrame(path: string, t: number, outPath: string): Promise<void> {
+export function extractFrame(path: string, t: number, outPath: string, maxW = 768): Promise<void> {
   return new Promise((resolve, reject) => {
     const p = spawn(FFMPEG, [
       '-y',
       ...(t > 0 ? ['-ss', t.toFixed(3)] : []),
       '-i', path,
       '-frames:v', '1',
-      '-vf', "scale='min(768,iw)':-2",
+      '-vf', `scale='min(${maxW},iw)':-2`,
       '-q:v', '4',
       outPath
     ])
@@ -396,5 +398,62 @@ export function extractFrame(path: string, t: number, outPath: string): Promise<
     p.stderr.on('data', (d) => (err = (err + d).slice(-2000)))
     p.on('error', reject)
     p.on('close', (code) => (code === 0 && existsSync(outPath) ? resolve() : reject(new Error('Không trích được khung hình: ' + err.slice(-300)))))
+  })
+}
+
+export interface VideoFrames {
+  /** số mẫu mỗi giây */
+  fps: number
+  /** độ thay đổi so với khung trước 0..1 (chuyển động / cắt cảnh) */
+  motion: number[]
+  /** độ sáng trung bình 0..255 */
+  luma: number[]
+  /** độ bão hoà màu trung bình */
+  sat: number[]
+}
+
+/** Đọc kết quả `metadata=print` của ffmpeg (signalstats + scene score) */
+export function parseFrameStats(text: string, fps: number): VideoFrames {
+  const motion: number[] = []
+  const luma: number[] = []
+  const sat: number[] = []
+  let i = -1
+  for (const line of text.split('\n')) {
+    if (line.startsWith('frame:')) {
+      i++
+      motion[i] = 0
+      luma[i] = 0
+      sat[i] = 0
+      continue
+    }
+    if (i < 0) continue
+    const eq = line.indexOf('=')
+    if (eq < 0) continue
+    const key = line.slice(0, eq)
+    const v = parseFloat(line.slice(eq + 1))
+    if (!Number.isFinite(v)) continue
+    if (key === 'lavfi.scene_score') motion[i] = v
+    else if (key === 'lavfi.signalstats.YAVG') luma[i] = v
+    else if (key === 'lavfi.signalstats.SATAVG') sat[i] = v
+  }
+  return { fps, motion, luma, sat }
+}
+
+/** Lấy mẫu video ở `fps` khung/giây (ảnh nhỏ) để đo chuyển động, độ sáng, màu */
+export function analyzeVideoFrames(path: string, fps = 8): Promise<VideoFrames> {
+  return new Promise((resolve, reject) => {
+    const p = spawn(FFMPEG, [
+      '-hide_banner', '-nostats',
+      '-i', path,
+      '-an',
+      '-vf', `fps=${fps},scale=96:-2,signalstats,select='gte(scene\\,0)',metadata=print:file=-`,
+      '-f', 'null', '-'
+    ])
+    const chunks: Buffer[] = []
+    let err = ''
+    p.stdout.on('data', (d: Buffer) => chunks.push(d))
+    p.stderr.on('data', (d) => (err = (err + d).slice(-2000)))
+    p.on('error', reject)
+    p.on('close', (code) => (code === 0 ? resolve(parseFrameStats(Buffer.concat(chunks).toString(), fps)) : reject(new Error('Không phân tích được video: ' + err.slice(-300)))))
   })
 }

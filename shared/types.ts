@@ -16,6 +16,8 @@ export interface ProjectSettings {
   width: number
   height: number
   fps: number
+  /** video khác tỉ lệ khung: true = phóng to lấp đầy (cắt viền), false = thu nhỏ vừa khung (viền đen) */
+  fill?: boolean
 }
 
 export type SceneStatus = 'idle' | 'generating' | 'rendering' | 'ready' | 'error'
@@ -136,6 +138,8 @@ export interface Project {
   timeline: TimelineClip[]
   /** track phụ: video phủ (đứng trước = nằm trên) và âm thanh */
   tracks?: Track[]
+  /** vạch beat của nhạc trên timeline (giây) — hiện trên thước và để hít khi chỉnh tay */
+  beatMarkers?: number[]
   music?: MusicTrack
 }
 
@@ -288,5 +292,17 @@ export interface SoundDesignResult {
   name: string
   /** SfxSpec hoặc MusicSpec thô, renderer chuẩn hoá */
   spec: unknown
+  notes: string
+}
+
+// ---------- dựng theo nhạc ----------
+export interface ShotRatingRequest {
+  shots: { id: string; length: number; image: string }[]
+  brief?: string
+  model?: string
+}
+
+export interface ShotRatingResult {
+  ratings: { id: string; score: number; tag: string; skip: boolean }[]
   notes: string
 }

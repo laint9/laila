@@ -56,7 +56,7 @@ export function emptyProject(): Project {
 
 export type PreviewTarget = { type: 'timeline' } | { type: 'media'; mediaId: string }
 
-type Snapshot = Pick<Project, 'timeline' | 'tracks'>
+type Snapshot = Pick<Project, 'timeline' | 'tracks' | 'beatMarkers'>
 
 interface State {
   project: Project
@@ -105,6 +105,12 @@ interface State {
   removeTrack: (id: string) => void
   /** thêm media vào track (không truyền trackId: tự chọn/ tạo track phù hợp) tại thời điểm start */
   addToTrack: (mediaId: string, start: number, trackId?: string) => void
+  /** đặt kết quả dựng theo nhạc lên timeline (1 bước undo) */
+  applyAutoEdit: (
+    plan: { musicStart: number; duration: number; slots: { mediaId: string; in: number; out: number }[]; beats: number[] },
+    musicId: string,
+    opts: { mode: 'replace' | 'append'; sourceVolume: number }
+  ) => void
   setTrackClip: (id: string, patch: Partial<TrackClip>, history?: boolean) => void
   /** dời clip sang thời điểm / track khác (không ghi lịch sử, gọi beginTrim trước) */
   moveTrackClip: (id: string, start: number, trackId?: string) => boolean
@@ -120,7 +126,7 @@ interface State {
   setHoverTransition: (h: { clipId: string; kind: TransitionKind } | null) => void
 }
 
-const snap = (p: Project): Snapshot => ({ timeline: p.timeline, tracks: p.tracks })
+const snap = (p: Project): Snapshot => ({ timeline: p.timeline, tracks: p.tracks, beatMarkers: p.beatMarkers })
 
 /** Tìm clip theo id trên track phụ */
 export function findTrackClip(p: Project, id: string | null): { track: Track; clip: TrackClip } | null {
@@ -371,6 +377,47 @@ export const useStore = create<State>((set, get) => {
       const tid = target.id
       commit((p) => ({ tracks: (p.tracks ?? []).map((t) => (t.id === tid ? { ...t, clips: [...t.clips, clip] } : t)) }))
       set({ selectedClipId: clip.id, preview: { type: 'timeline' } })
+    },
+    applyAutoEdit: (plan, musicId, opts) => {
+      commit((p) => {
+        const offset = opts.mode === 'append' ? totalDuration(p.timeline) : 0
+        const clips: TimelineClip[] = plan.slots.map((sl) => ({
+          id: uid(),
+          mediaId: sl.mediaId,
+          in: sl.in,
+          out: sl.out,
+          volume: opts.sourceVolume,
+          speed: 1,
+          transition: 'none',
+          transitionDuration: 0.5
+        }))
+        const music: TrackClip = {
+          id: uid(),
+          mediaId: musicId,
+          start: offset,
+          in: plan.musicStart,
+          out: plan.musicStart + plan.duration,
+          volume: 1,
+          speed: 1,
+          audioFadeIn: plan.musicStart > 0.5 ? 0.05 : 0,
+          audioFadeOut: Math.min(1.5, plan.duration * 0.1)
+        }
+        let tracks = p.tracks ?? []
+        const NAME = 'Nhạc dựng'
+        if (opts.mode === 'replace') tracks = tracks.filter((t) => t.name !== NAME)
+        const existing = tracks.find((t) => t.name === NAME)
+        tracks = existing
+          ? tracks.map((t) => (t === existing ? { ...t, clips: [...t.clips, music] } : t))
+          : [...tracks, { id: uid(), kind: 'audio', name: NAME, clips: [music] }]
+        const beats = plan.beats.map((t) => +(t + offset).toFixed(3))
+        return {
+          timeline: opts.mode === 'replace' ? clips : [...p.timeline, ...clips],
+          tracks,
+          beatMarkers: opts.mode === 'replace' ? beats : [...(p.beatMarkers ?? []), ...beats]
+        }
+      })
+      const total = projectDuration(get().project)
+      set({ selectedClipId: null, playhead: 0, preview: { type: 'timeline' }, zoom: Math.max(8, Math.min(200, 1100 / Math.max(1, total))) })
     },
     setTrackClip: (id, patch, history = true) => {
       const fn = (p: Project) => ({ tracks: (p.tracks ?? []).map((t) => ({ ...t, clips: t.clips.map((c) => (c.id === id ? { ...c, ...patch } : c)) })) })

@@ -56,6 +56,22 @@ Phím tắt trong editor: `Space` phát, `J`/`K` keyframe trước/sau, `F9` Eas
 
 Preview dùng 2 trình phát luân phiên nên không bị chớp ở điểm cắt, và xem trước được chuyển cảnh. Chuyển cảnh chồng lên 2 clip giống CapCut, nên thời lượng tổng ngắn lại đúng bằng phần chồng lấn.
 
+## Dựng theo nhạc (nightlife / hip hop / old school)
+
+Nút **Dựng theo nhạc** ở khu Scenes: chọn các video quay sẵn + 1 bài nhạc + thời lượng, app tự cắt ghép khớp beat.
+
+| Bước | App làm gì |
+|---|---|
+| Nhạc | Dò tempo (BPM), từng beat, phách đầu ô nhịp và độ sôi động của bài. Tự chọn đoạn sôi động nhất (thường là lúc trống vào / drop) hoặc lấy từ đầu bài. Không có nhạc thì tạo beat mới: Hip hop boom bap 90, Old school/funk 98, Trap 140 (808), Club house 124 |
+| Video | Xem từng video (chuyển động, độ sáng, màu), tách cảnh tại các điểm cắt có sẵn, bỏ đoạn tối/đen |
+| Claude (tuỳ chọn) | Xem 1 ảnh mỗi cảnh, chấm điểm theo tiêu chí video nightlife (đám đông, DJ, ánh đèn, quầy bar, logo; bỏ cảnh mờ, phòng trống), có thể ghi ưu tiên riêng |
+| Dựng | Mọi điểm cắt nằm trên beat. "Theo nhạc": đoạn nhẹ cắt thưa (1 ô nhịp), đoạn mạnh cắt dồn (1 beat), không cảnh nào ngắn hơn 0.33s. Cảnh mở đầu là cảnh mạnh nhất, không lặp đoạn, không 2 cảnh liền nhau cùng video |
+| Kết quả | Track chính + track "Nhạc dựng" (fade cuối), tiếng gốc video mặc định tắt, vạch beat xanh trên thước timeline để chỉnh tay (kéo mép clip tự hít vào beat) |
+
+Khung hình: chọn 9:16 Reels/TikTok, 4:5, 1:1, 16:9; **Lấp đầy khung** phóng to cắt viền để video quay ngang lên khung dọc không bị viền đen (nút "Lấp đầy / Vừa khung" cạnh khung xem).
+
+Lưu ý: dò beat chính xác nhất với nhạc có trống rõ (hip hop, old school, house). Nhạc tự tạo trong app chỉ là beat cơ bản; muốn chất lượng như nhạc DJ thật thì dùng bài của quán. Dùng nhạc có bản quyền đăng mạng xã hội có thể bị tắt tiếng.
+
 ## Kéo thả file
 
 Kéo file từ Finder thả thẳng vào app:
@@ -157,7 +173,7 @@ Model mặc định là Claude Opus 5.5, đổi được trong Cài đặt. Requ
 
 ```bash
 npm test          # unit test: easing, keyframe, chuẩn hoá dữ liệu, preset, timeline (tốc độ, chuyển cảnh, Q/W)
-npm run test:e2e  # chạy app thật, Claude được giả lập bằng server cục bộ, bấm qua 61 chức năng:
+npm run test:e2e  # chạy app thật, Claude được giả lập bằng server cục bộ, bấm qua 85 chức năng:
                   # kịch bản, generate + tự sửa lỗi, Motion Editor (chọn/kéo/undo/stopwatch/preset/keyframe/ease/
                   # text animator/công cụ chữ/vẽ hình/align/nhờ Claude sửa), render lại, timeline (tốc độ,
                   # chuyển cảnh, tách, W, undo, phát, track phủ alpha, track âm thanh), SFX/nhạc,

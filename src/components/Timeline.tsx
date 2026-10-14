@@ -104,6 +104,7 @@ export function Timeline() {
   const snapList = (ignoreId?: string) => [
     s().playhead,
     ...snapPoints(clips),
+    ...(project.beatMarkers ?? []),
     ...tracks.flatMap((t) => t.clips.filter((c) => c.id !== ignoreId).flatMap((c) => [c.start, tEnd(c)]))
   ]
   const snapTime = (t: number, ignoreId?: string) => {
@@ -391,6 +392,9 @@ export function Timeline() {
                 <div key={t} className="tick" style={{ left: PAD + t * zoom }}>
                   {Number.isInteger(t) ? fmtTime(t).replace(/\.0$/, '') : ''}
                 </div>
+              ))}
+              {(project.beatMarkers ?? []).map((t, i) => (
+                <div key={'b' + i} className={'beat-mark' + (i % 4 === 0 ? ' bar' : '')} style={{ left: PAD + t * zoom }} />
               ))}
             </div>
           </div>

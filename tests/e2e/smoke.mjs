@@ -54,6 +54,8 @@ let generateCalls = 0
 let soundCalls = 0
 let referenceCalls = 0
 let referenceImages = 0
+let shotCalls = 0
+let shotImages = 0
 function sse(res, text) {
   const ev = (type, data) => res.write(`event: ${type}\ndata: ${JSON.stringify({ type, ...data })}\n\n`)
   res.writeHead(200, { 'content-type': 'text/event-stream' })
@@ -75,6 +77,13 @@ const server = http.createServer((req, res) => {
     if (j.system?.[0]?.text?.startsWith('You are a sound designer')) {
       soundCalls++
       return sse(res, JSON.stringify({ type: 'sfx', name: 'Vút sáng', notes: 'test', spec: { kind: 'swish', duration: 0.4, pitch: 1.3, intensity: 0.8, brightness: 0.9, reverb: 0.1 } }))
+    }
+    if (j.system?.[0]?.text?.startsWith('You are a senior video editor')) {
+      shotCalls++
+      const ids = j.messages[0].content.filter((b) => b.type === 'text' && /^Shot \d+/.test(b.text)).map((b) => b.text.match(/^Shot (\d+)/)[1])
+      shotImages = j.messages[0].content.filter((b) => b.type === 'image').length
+      // cảnh 1 bị đánh dấu bỏ, còn lại chấm điểm giảm dần
+      return sse(res, JSON.stringify({ shots: ids.map((id, i) => ({ id, score: 9 - (i % 5), tag: i % 2 ? 'crowd' : 'dj', skip: id === '1' })), notes: 'Tư liệu đủ sáng, nhiều cảnh đám đông.' }))
     }
     if (j.system?.[1]?.text?.startsWith('REFERENCE MODE')) {
       referenceCalls++
@@ -132,6 +141,43 @@ writeFileSync(join(dropDir, 'Logo Chợ.svg'), '<svg xmlns="http://www.w3.org/20
 }
 writeFileSync(join(dropDir, 'old.eps'), '%!PS-Adobe-3.0 EPSF-3.0\n')
 execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'sine=f=660', '-t', '1.5', join(dropDir, 'beep.wav')])
+
+// tư liệu dựng theo nhạc: bài beat 95 BPM (8s intro nhẹ rồi trống vào) + 3 video có cắt cảnh
+const aeDir = join(userData, 'nightlife')
+mkdirSync(aeDir)
+{
+  const SR = 22050, secs = 40, bpm = 95, intro = 8
+  const n = SR * secs
+  const x = new Float32Array(n)
+  let seed = 3
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff) * 2 - 1
+  for (let i = 0; i < n; i++) x[i] = 0.04 * Math.sin((2 * Math.PI * 110 * i) / SR) + 0.005 * rnd()
+  const sp = 60 / bpm
+  const hit = (t, f, len) => { const a = Math.round(t * SR); for (let k = 0; k < len * SR && a + k < n; k++) x[a + k] += f(k) }
+  for (let b = 0, t = intro; t < secs - 0.3; b++, t = intro + b * sp) {
+    if (b % 4 === 0 || b % 4 === 2) hit(t, (k) => 0.8 * Math.exp(-k / (SR * 0.08)) * Math.sin(2 * Math.PI * (55 + 90 * Math.exp(-k / (SR * 0.03))) * (k / SR)), 0.3)
+    if (b % 4 === 1 || b % 4 === 3) hit(t, (k) => 0.4 * Math.exp(-k / (SR * 0.06)) * rnd(), 0.2)
+    hit(t, (k) => 0.1 * Math.exp(-k / (SR * 0.01)) * rnd(), 0.05)
+    hit(t + sp / 2, (k) => 0.1 * Math.exp(-k / (SR * 0.01)) * rnd(), 0.05)
+  }
+  const buf = Buffer.alloc(44 + n * 2)
+  buf.write('RIFF', 0); buf.writeUInt32LE(36 + n * 2, 4); buf.write('WAVE', 8); buf.write('fmt ', 12)
+  buf.writeUInt32LE(16, 16); buf.writeUInt16LE(1, 20); buf.writeUInt16LE(1, 22); buf.writeUInt32LE(SR, 24); buf.writeUInt32LE(SR * 2, 28); buf.writeUInt16LE(2, 32); buf.writeUInt16LE(16, 34)
+  buf.write('data', 36); buf.writeUInt32LE(n * 2, 40)
+  for (let i = 0; i < n; i++) buf.writeInt16LE(Math.max(-32767, Math.min(32767, Math.round(x[i] * 32767))), 44 + i * 2)
+  writeFileSync(join(aeDir, 'beat95.wav'), buf)
+}
+const clipSrc = [
+  ['dj.mp4', "testsrc2=size=640x360:rate=25,hue=h=t*40"],
+  ['crowd.mp4', "mandelbrot=size=640x360:rate=25"],
+  ['bar.mp4', "smptehdbars=size=640x360:rate=25"]
+]
+for (const [name, src] of clipSrc) {
+  // 3 cảnh 4s nối nhau (cắt cảnh bằng đổi màu mạnh), có 1 đoạn đen ở giữa video bar
+  execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', src, '-f', 'lavfi', '-i', 'sine=f=200', '-filter_complex',
+    `[0:v]split=3[a][b][c];[b]negate[b2];[c]hue=h=180${name === 'bar.mp4' ? ',drawbox=c=black:t=fill:enable=between(t\\,8.5\\,11)' : ''}[c2];[a]trim=0:4,setpts=PTS-STARTPTS[x];[b2]trim=4:8,setpts=PTS-STARTPTS[y];[c2]trim=8:12,setpts=PTS-STARTPTS[z];[x][y][z]concat=n=3[v]`,
+    '-map', '[v]', '-map', '1:a', '-t', '12', '-pix_fmt', 'yuv420p', '-shortest', join(aeDir, name)])
+}
 
 // thư mục font người dùng riêng cho lần test (để thử tự nhận font mới cài)
 const fakeHome = mkdtempSync(join(tmpdir(), 'cc-home-'))
@@ -664,6 +710,85 @@ const total2 = await S(() => {
 const px0 = [...execFileSync('ffmpeg', ['-v', 'error', '-ss', '1', '-i', out2, '-frames:v', '1', '-vf', 'scale=64:36,crop=2:2:31:17', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'])]
 check('Xuất video có clip ảnh + logo phủ', Math.abs(dur2 - total2) < 0.1 && px0[0] > 200 && px0[1] > 170 && px0[2] < 80, `${dur2.toFixed(2)}s/${total2.toFixed(2)}s, pixel ảnh ${px0.slice(0, 3)}`)
 await win.locator('.modal.export button', { hasText: 'Đóng' }).click()
+
+// 9c. Dựng theo nhạc
+await S((ps) => window.__laila.importer.importPaths(ps), [join(aeDir, 'beat95.wav'), join(aeDir, 'dj.mp4'), join(aeDir, 'crowd.mp4'), join(aeDir, 'bar.mp4')])
+await win.waitForFunction(() => ['beat95.wav', 'dj.mp4', 'crowd.mp4', 'bar.mp4'].every((n) => window.__laila.store.getState().project.media.some((m) => m.name === n)))
+await win.locator('.board-bar button', { hasText: 'Dựng theo nhạc' }).click()
+await win.waitForSelector('.modal.autoedit')
+// chỉ dùng 3 video quay ở quán
+await S(() => {
+  for (const l of document.querySelectorAll('.ae-video')) {
+    const name = l.querySelector('.ae-vname').textContent
+    const cb = l.querySelector('input')
+    if (cb.checked !== ['dj.mp4', 'crowd.mp4', 'bar.mp4'].includes(name)) cb.click()
+  }
+})
+const beatId = await S(() => window.__laila.store.getState().project.media.find((m) => m.name === 'beat95.wav').id)
+await win.locator('.modal.autoedit select').first().selectOption(beatId)
+await win.locator('.modal.autoedit .chip', { hasText: '15s' }).click()
+await win.locator('.modal.autoedit select').nth(1).selectOption({ label: '9:16 Reels / TikTok' })
+await win.locator('.modal.autoedit textarea').fill('ưu tiên DJ và đám đông')
+await shot('14-autoedit-form')
+await win.locator('.modal.autoedit button', { hasText: 'Dựng video' }).click()
+await win.waitForSelector('.modal.autoedit .ae-result', { timeout: 120000 })
+const resText = await win.locator('.modal.autoedit .ae-result').innerText()
+await shot('15-autoedit-result')
+pj = await S(() => window.__laila.store.getState().project)
+const ids3 = new Set(pj.media.filter((m) => ['dj.mp4', 'crowd.mp4', 'bar.mp4'].includes(m.name)).map((m) => m.id))
+const mainLen = pj.timeline.reduce((s, c) => s + (c.out - c.in) / (c.speed || 1), 0)
+check('Dựng theo nhạc: đúng 15s, toàn cảnh từ 3 video', Math.abs(mainLen - 15) < 0.02 && pj.timeline.length >= 8 && pj.timeline.every((c) => ids3.has(c.mediaId)), `${pj.timeline.length} cảnh, ${mainLen.toFixed(2)}s`)
+check('Nhận đúng tempo bài nhạc', /\b9[45] BPM/.test(resText), resText.split('\n')[0])
+let acc = 0
+const offBeat = []
+for (const c of pj.timeline.slice(0, -1)) {
+  acc += c.out - c.in
+  const d = Math.min(...pj.beatMarkers.map((b) => Math.abs(b - acc)))
+  if (d > 0.02) offBeat.push(acc.toFixed(2))
+}
+check('Mọi điểm cắt rơi đúng beat', offBeat.length === 0 && pj.beatMarkers.length >= 20, offBeat.join(',') || `${pj.beatMarkers.length} beat`)
+const ae = pj.tracks.find((t) => t.name === 'Nhạc dựng')
+const mclip = ae?.clips[0]
+check('Tự chọn đoạn nhạc lúc trống vào (bỏ intro nhẹ)', mclip && mclip.in >= 7.5 && mclip.in < 12 && Math.abs(mclip.out - mclip.in - 15) < 0.01 && mclip.audioFadeOut > 0, mclip ? `từ ${mclip.in.toFixed(2)}s` : 'không có track nhạc')
+check('Không 2 cảnh liền nhau cùng 1 video, tắt tiếng gốc', pj.timeline.every((c, i) => i === 0 || c.mediaId !== pj.timeline[i - 1].mediaId) && pj.timeline.every((c) => c.volume === 0))
+const barM = pj.media.find((m) => m.name === 'bar.mp4')
+check('Tránh đoạn đen trong video', !pj.timeline.some((c) => c.mediaId === barM.id && c.out > 8.6 && c.in < 10.9))
+check('Claude xem từng cảnh qua ảnh', shotCalls === 1 && shotImages >= 6 && /Claude chấm \d+ cảnh/.test(resText), `${shotImages} ảnh`)
+check('Khung 9:16 lấp đầy', pj.settings.width === 1080 && pj.settings.height === 1920 && pj.settings.fill === true)
+const marks = await win.locator('.ruler .beat-mark').count()
+check('Vạch beat hiện trên timeline', marks >= 20, String(marks))
+await win.locator('.modal.autoedit button', { hasText: 'Xong' }).click()
+await shot('16-autoedit-timeline')
+// xuất thử: dọc 9:16, không viền đen, đúng 15s
+const out3 = join(userData, 'reels.mp4')
+await stubDialog(null, out3)
+await win.locator('.topbar button', { hasText: 'Xuất video' }).click()
+await win.locator('.modal.export select').first().selectOption({ index: 0 })
+await win.locator('.modal.export button', { hasText: 'Nháp' }).click()
+await win.locator('.modal.export button', { hasText: 'Chọn nơi lưu và xuất' }).click()
+await win.waitForSelector('.modal.export .ok', { timeout: 120000 })
+const wh = execFileSync('ffprobe', ['-v', 'error', '-select_streams', 'v', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', out3]).toString().trim().split(',').map(Number)
+const dur3 = Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', out3]).toString())
+const edge = [...execFileSync('ffmpeg', ['-v', 'error', '-ss', '0.5', '-i', out3, '-frames:v', '1', '-vf', 'scale=36:64,crop=36:2:0:0', '-f', 'rawvideo', '-pix_fmt', 'gray', '-'])]
+const edgeMean = edge.reduce((a, b) => a + b, 0) / edge.length
+check('Xuất Reels dọc 9:16 lấp đầy, đúng 15s', Math.abs(wh[0] / wh[1] - 9 / 16) < 0.01 && Math.abs(dur3 - 15) < 0.1 && edgeMean > 20, `${wh.join('x')} ${dur3.toFixed(2)}s, mép trên ${edgeMean.toFixed(0)}`)
+await win.locator('.modal.export button', { hasText: 'Đóng' }).click()
+// tạo beat trap 140 rồi dựng 10s
+await win.locator('.board-bar button', { hasText: 'Dựng theo nhạc' }).click()
+await win.locator('.modal.autoedit .segmented button', { hasText: 'Tạo beat mới' }).click()
+await win.locator('.modal.autoedit select').first().selectOption('trap')
+await win.locator('.modal.autoedit .chip', { hasText: '15s' }).click()
+await win.locator('.modal.autoedit label.inline input[type=number]').nth(1).fill('10')
+await win.locator('.modal.autoedit .segmented button', { hasText: 'Mỗi beat' }).click()
+await S(() => { const c = [...document.querySelectorAll('.modal.autoedit label.inline input[type=checkbox]')].find((x) => x.parentElement.textContent.includes('Claude')); if (c.checked) c.click() })
+await win.locator('.modal.autoedit button', { hasText: 'Dựng video' }).click()
+await win.waitForSelector('.modal.autoedit .ae-result', { timeout: 120000 })
+pj = await S(() => window.__laila.store.getState().project)
+const trapLen = pj.timeline.reduce((s, c) => s + (c.out - c.in), 0)
+const trapMusic = pj.media.find((m) => m.id === pj.tracks.find((t) => t.name === 'Nhạc dựng').clips[0].mediaId)
+const cutLens = pj.timeline.slice(0, -1).map((c) => c.out - c.in)
+check('Tạo beat trap 140 + dựng 10s cắt mỗi beat (≥0.33s)', Math.abs(trapLen - 10) < 0.02 && trapMusic.name.startsWith('Trap') && cutLens.every((l) => Math.abs(l - 60 / 140 * Math.round(l / (60 / 140))) < 0.01 && l >= 0.33) && shotCalls === 1, `${pj.timeline.length} cảnh, ${trapMusic.name}`)
+await win.locator('.modal.autoedit button', { hasText: 'Xong' }).click()
 
 // 10. Motion Editor: rê chuột xem thử hiệu ứng
 await win.locator('.scene-card').first().locator('text=Chỉnh sửa').click()

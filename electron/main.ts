@@ -4,16 +4,17 @@ import { homedir } from 'node:os'
 import { readFile, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import { Readable } from 'node:stream'
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { ClaudeService, DEFAULT_MODEL } from './claude'
 import { scanFontDirs } from './fonts'
 import { ALL_EXT, AUDIO_EXT, IMAGE_EXT, importPath, makeImageItem, VECTOR_EXT, VIDEO_EXT } from './importer'
-import { extractFrame, FrameEncoder, makeFilmstrip, makeWaveform, probe, runExport } from './ffmpeg'
+import { analyzeVideoFrames, extractFrame, FrameEncoder, type VideoFrames, makeFilmstrip, makeWaveform, probe, runExport } from './ffmpeg'
 import type {
   AppSettings,
   ExportRequest,
   GenerateRequest,
   MediaItem,
+  ShotRatingRequest,
   ReferenceRequest,
   SoundDesignRequest,
   Project,
@@ -254,6 +255,55 @@ function registerIpc() {
     aborters.set(reqId, ac)
     try {
       return await claude.designSound({ ...req, model: req.model || appSettings().model }, ac.signal)
+    } finally {
+      aborters.delete(reqId)
+    }
+  })
+
+  // ---------- dựng theo nhạc ----------
+  // đo chuyển động / độ sáng / màu của video, lưu cache theo file + thời gian sửa
+  const frameCache = new Map<string, Promise<VideoFrames>>()
+  ipcMain.handle('autoedit:analyze', (_e, path: string) => {
+    if (!existsSync(path)) throw new Error('Không thấy file ' + basename(path))
+    const st = statSync(path)
+    const key = createHash('sha1').update(`${path}:${st.size}:${st.mtimeMs}`).digest('hex')
+    let p = frameCache.get(key)
+    if (!p) {
+      const file = join(userDir(), 'analysis', key + '.json')
+      p = readFile(file, 'utf8')
+        .then((t) => JSON.parse(t) as VideoFrames)
+        .catch(async () => {
+          const r = await analyzeVideoFrames(path)
+          mkdirSync(join(userDir(), 'analysis'), { recursive: true })
+          await writeFile(file, JSON.stringify(r))
+          return r
+        })
+      p.catch(() => frameCache.delete(key))
+      frameCache.set(key, p)
+    }
+    return p
+  })
+  // ảnh đại diện nhỏ (base64 JPEG) cho từng cảnh
+  ipcMain.handle('autoedit:thumbs', async (_e, items: { path: string; t: number }[]) => {
+    const dir = join(userDir(), 'thumbs', 'shots')
+    mkdirSync(dir, { recursive: true })
+    const out: string[] = []
+    for (const it of items) {
+      const f = join(dir, `${randomUUID()}.jpg`)
+      try {
+        await extractFrame(it.path, it.t, f, 384)
+        out.push((await readFile(f)).toString('base64'))
+      } catch {
+        out.push('')
+      }
+    }
+    return out
+  })
+  ipcMain.handle('claude:rateShots', async (_e, reqId: string, req: ShotRatingRequest) => {
+    const ac = new AbortController()
+    aborters.set(reqId, ac)
+    try {
+      return await claude.rateShots({ ...req, model: req.model || appSettings().model }, ac.signal)
     } finally {
       aborters.delete(reqId)
     }

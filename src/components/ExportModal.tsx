@@ -36,7 +36,7 @@ export function ExportModal(props: { onClose: () => void }) {
     try {
       await window.laila.exporter.run({
         outPath,
-        settings: { width: W, height: H, fps },
+        settings: { width: W, height: H, fps, fill: !!project.settings.fill },
         quality,
         clips: project.timeline
           .filter((c) => byId.has(c.mediaId))

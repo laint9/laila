@@ -5,6 +5,8 @@ import type {
   GenerateRequest,
   GenerateResult,
   ImportedFile,
+  ShotRatingRequest,
+  ShotRatingResult,
   ReferenceRequest,
   ReferenceResult,
   SoundDesignRequest,
@@ -53,6 +55,11 @@ const api = {
     saveRaster: (source: string, data: Uint8Array): Promise<MediaItem> => ipcRenderer.invoke('media:saveRaster', source, data),
     filmstrip: (path: string, duration: number): Promise<string | null> => ipcRenderer.invoke('media:filmstrip', path, duration),
     waveform: (path: string): Promise<string | null> => ipcRenderer.invoke('media:waveform', path)
+  },
+  autoedit: {
+    analyze: (path: string): Promise<{ fps: number; motion: number[]; luma: number[]; sat: number[] }> => ipcRenderer.invoke('autoedit:analyze', path),
+    thumbs: (items: { path: string; t: number }[]): Promise<string[]> => ipcRenderer.invoke('autoedit:thumbs', items),
+    rateShots: (reqId: string, req: ShotRatingRequest): Promise<ShotRatingResult> => ipcRenderer.invoke('claude:rateShots', reqId, req)
   },
   file: {
     pickImage: (): Promise<string | null> => ipcRenderer.invoke('file:pickImage'),

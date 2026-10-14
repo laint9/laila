@@ -11,6 +11,7 @@ import { ExportModal } from './components/ExportModal'
 import { MotionEditor } from './editor/MotionEditor'
 import { ReferenceModal } from './components/ReferenceModal'
 import { SoundPanel } from './components/SoundPanel'
+import { AutoEditModal } from './components/AutoEditModal'
 import { Splitter } from './components/Splitter'
 import { useLayout } from './lib/layout'
 import { applyTheme } from './lib/theme'
@@ -28,6 +29,7 @@ export function App() {
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
   const [showReference, setShowReference] = useState(false)
+  const [showAutoEdit, setShowAutoEdit] = useState(false)
   const sizes = useLayout((s) => s.sizes)
   const editingRef = useRef<string | null>(null)
   editingRef.current = editing
@@ -179,7 +181,7 @@ export function App() {
           <Splitter k="left" dir="right" className="edge-right" />
         </aside>
         <main className="content">
-          <Studio onNeedKey={() => setShowSettings(true)} apiReady={!!appSettings?.hasApiKey} onEdit={setEditing} onReference={() => setShowReference(true)} />
+          <Studio onNeedKey={() => setShowSettings(true)} apiReady={!!appSettings?.hasApiKey} onEdit={setEditing} onReference={() => setShowReference(true)} onAutoEdit={() => setShowAutoEdit(true)} />
         </main>
         <section className="inspector-pane">
           <Splitter k="right" dir="left" className="edge-left" />
@@ -195,6 +197,7 @@ export function App() {
       )}
       {showExport && <ExportModal onClose={() => setShowExport(false)} />}
       {showReference && <ReferenceModal onClose={() => setShowReference(false)} onEdit={setEditing} />}
+      {showAutoEdit && <AutoEditModal apiReady={!!appSettings?.hasApiKey} onClose={() => setShowAutoEdit(false)} />}
       {editing && <MotionEditor sceneId={editing} onClose={() => setEditing(null)} />}
       {fileDrag && (
         <div className="drop-hint">

@@ -257,7 +257,8 @@ input::placeholder, textarea::placeholder { color: var(--tertiary); }
 .sb-row { display: flex; gap: 12px; align-items: center; }
 .sb-row label { display: flex; align-items: center; gap: 6px; color: var(--secondary); font-size: 12px; }
 .sb-row input { width: 56px; }
-.board-bar { display: flex; gap: 8px; align-items: center; padding: 14px 14px 8px; }
+.board-bar { display: flex; gap: 8px; align-items: center; padding: 14px 14px 8px; flex-wrap: wrap; row-gap: 6px; }
+.board-bar .btn { white-space: nowrap; }
 .board { flex: 1; overflow: auto; padding: 6px 14px 14px; display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; align-content: start; }
 
 .scene-card { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
@@ -631,3 +632,32 @@ body.resizing-v, body.resizing-v * { cursor: row-resize !important; user-select:
 .import-errors { position: fixed; right: 16px; bottom: 16px; z-index: 210; max-width: 420px; background: var(--card); color: var(--label); border-left: 3px solid var(--danger, #ff3b30); border-radius: 10px; padding: 10px 14px; font-size: 12px; line-height: 1.5; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); cursor: pointer; }
 .import-errors b { display: block; margin-bottom: 2px; }
 .ref-drop.file-over { outline-offset: -4px; }
+
+.screen.fill > video:not(.overlay-video), .screen.fill > img.screen-img:not(.overlay-img) { object-fit: cover; }
+.fill-toggle { margin-right: 6px; }
+.ruler .beat-mark { position: absolute; bottom: 0; width: 2px; height: 5px; margin-left: -1px; background: var(--accent); opacity: 0.55; border-radius: 1px; pointer-events: none; }
+.ruler .beat-mark.bar { height: 9px; opacity: 0.9; }
+
+/* ---------- dựng theo nhạc ---------- */
+.modal.autoedit { width: min(980px, calc(100vw - 32px)); max-height: calc(100vh - 40px); display: flex; flex-direction: column; }
+.ae-body { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; overflow: auto; min-height: 0; padding: 4px 2px; }
+.ae-body section { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.ae-title { font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.ae-title .small { font-weight: 400; }
+.ae-videos { flex-shrink: 0; width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-height: 470px; overflow: auto; padding: 2px; }
+.ae-video { display: block; min-width: 0; position: relative; border-radius: 8px; overflow: hidden; background: #000; aspect-ratio: 16 / 10; cursor: pointer; outline: 2px solid transparent; opacity: 0.55; transition: opacity 0.15s; }
+.ae-video.on { outline-color: var(--accent); opacity: 1; }
+.ae-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ae-video input { position: absolute; left: 6px; top: 6px; z-index: 1; width: auto; box-shadow: none; }
+.ae-video .ae-vname { position: absolute; left: 6px; right: 46px; bottom: 5px; color: #fff; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px #000; }
+.ae-video .dur { position: absolute; right: 5px; bottom: 4px; background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 4px; }
+.ae-form .row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ae-form label.inline { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
+.ae-form label.inline input[type='number'] { width: 64px; }
+.ae-form label.inline input[type='checkbox'] { width: auto; box-shadow: none; }
+.ae-form select { max-width: 100%; }
+.chip { border: 1px solid var(--separator); background: var(--card); color: var(--label); border-radius: 14px; padding: 3px 11px; font-size: 12px; cursor: pointer; }
+.chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.ae-progress { display: flex; flex-direction: column; gap: 6px; font-size: 12px; margin-top: 10px; }
+.ae-result { display: flex; flex-direction: column; gap: 3px; font-size: 12px; margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--ok) 10%, transparent); }
+@media (max-width: 760px) { .ae-body { grid-template-columns: 1fr; } }

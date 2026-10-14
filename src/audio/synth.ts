@@ -248,6 +248,36 @@ export function renderSfxTimeline(events: { t: number; spec: SfxSpec }[], length
 
 // ---------- nhạc nền ----------
 
+const softClip = (() => {
+  const c = new Float32Array(1024)
+  for (let i = 0; i < c.length; i++) {
+    const x = (i / (c.length - 1)) * 2 - 1
+    c[i] = Math.tanh(2.2 * x)
+  }
+  return c
+})()
+
+/** Tiếng lạo xạo đĩa than cho hip hop / old school */
+function vinyl(ctx: OfflineAudioContext, dest: AudioNode, seconds: number, level: number) {
+  const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * seconds), ctx.sampleRate)
+  const d = buf.getChannelData(0)
+  let seed = 99
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff)
+  for (let i = 0; i < d.length; i++) {
+    d[i] = (rnd() - 0.5) * 0.02
+    if (rnd() < 0.0004) d[i] += (rnd() - 0.5) * 0.9
+  }
+  const src = ctx.createBufferSource()
+  src.buffer = buf
+  const f = ctx.createBiquadFilter()
+  f.type = 'bandpass'
+  f.frequency.value = 2500
+  const g = ctx.createGain()
+  g.gain.value = level
+  src.connect(f).connect(g).connect(dest)
+  src.start(0)
+}
+
 export function renderMusic(spec: MusicSpec): Promise<AudioBuffer> {
   const beat = 60 / spec.bpm
   const bar = beat * 4
@@ -263,6 +293,7 @@ export function renderMusic(spec: MusicSpec): Promise<AudioBuffer> {
     mix.gain.linearRampToValueAtTime(0.0001, spec.length)
     mix.connect(master)
     const space = outBus(ctx, mix, spec.style === 'cinematic' ? 0.6 : spec.style === 'chill' || spec.style === 'lofi' ? 0.4 : 0.25)
+    if (spec.style === 'hiphop' || spec.style === 'oldschool' || spec.style === 'lofi') vinyl(ctx, mix, spec.length, 0.5)
 
     for (let b = 0; b < bars; b++) {
       const t0 = b * bar
@@ -275,7 +306,7 @@ export function renderMusic(spec: MusicSpec): Promise<AudioBuffer> {
         chord.forEach((m) => {
           for (const det of [-6, 6]) {
             const o = ctx.createOscillator()
-            o.type = spec.style === 'lofi' || spec.style === 'chill' ? 'triangle' : 'sawtooth'
+            o.type = ['lofi', 'chill', 'hiphop', 'trap'].includes(spec.style) ? 'triangle' : 'sawtooth'
             o.frequency.value = midiToHz(m)
             o.detune.value = det
             const f = ctx.createBiquadFilter()
@@ -295,21 +326,52 @@ export function renderMusic(spec: MusicSpec): Promise<AudioBuffer> {
 
       if (spec.instruments.bass && !intro) {
         const root = chordNotes(spec.key, spec.mode, degree, 2)[0]
-        const hits = spec.style === 'cinematic' ? [0] : spec.style === 'chill' || spec.style === 'lofi' ? [0, 2.5] : [0, 1, 2, 3]
-        hits.forEach((h) => {
-          const tt = t0 + h * beat
-          const o = ctx.createOscillator()
-          o.type = spec.style === 'tech' ? 'square' : 'sine'
-          o.frequency.value = midiToHz(root)
-          const f = ctx.createBiquadFilter()
-          f.type = 'lowpass'
-          f.frequency.value = 400 + e * 300
-          const g = ctx.createGain()
-          env(g.gain, tt, 0.01, 0.22 + e * 0.1, beat * (spec.style === 'cinematic' ? 3.5 : 0.85))
-          o.connect(f).connect(g).connect(mix)
-          o.start(tt)
-          o.stop(tt + beat * 4)
-        })
+        if (spec.style === 'trap') {
+          // 808: sine dài, trượt cao độ xuống nốt gốc
+          ;[0, 1.75, 2.5].forEach((h, k) => {
+            const tt = t0 + h * beat
+            const o = ctx.createOscillator()
+            o.type = 'sine'
+            o.frequency.setValueAtTime(midiToHz(root + (k === 2 ? 7 : 0)), tt)
+            if (k === 2) o.frequency.exponentialRampToValueAtTime(midiToHz(root), tt + 0.12)
+            const sat = ctx.createWaveShaper()
+            sat.curve = softClip
+            const g = ctx.createGain()
+            env(g.gain, tt, 0.005, 0.45 + e * 0.15, beat * (k === 0 ? 1.6 : 0.7))
+            o.connect(sat).connect(g).connect(mix)
+            o.start(tt)
+            o.stop(tt + beat * 2)
+          })
+        } else {
+          // [beat, độ lệch quãng tám]
+          const hits: [number, number][] =
+            spec.style === 'cinematic'
+              ? [[0, 0]]
+              : spec.style === 'chill' || spec.style === 'lofi'
+                ? [[0, 0], [2.5, 0]]
+                : spec.style === 'hiphop'
+                  ? [[0, 0], [1.75, 0], [2.5, 0], [3.5, 12]]
+                  : spec.style === 'oldschool'
+                    ? [[0, 0], [0.75, 12], [1.5, 0], [2, 0], [2.75, 12], [3.25, 7], [3.5, 0]]
+                    : spec.style === 'club'
+                      ? [[0.5, 0], [1.5, 0], [2.5, 0], [3.5, 12]]
+                      : [[0, 0], [1, 0], [2, 0], [3, 0]]
+          hits.forEach(([h, oct]) => {
+            const tt = t0 + h * beat
+            const o = ctx.createOscillator()
+            o.type = spec.style === 'tech' || spec.style === 'club' ? 'square' : spec.style === 'oldschool' ? 'sawtooth' : 'sine'
+            o.frequency.value = midiToHz(root + oct)
+            const f = ctx.createBiquadFilter()
+            f.type = 'lowpass'
+            f.frequency.value = spec.style === 'oldschool' ? 700 + e * 500 : 400 + e * 300
+            const g = ctx.createGain()
+            const len = spec.style === 'cinematic' ? 3.5 : spec.style === 'oldschool' || spec.style === 'club' ? 0.4 : 0.85
+            env(g.gain, tt, 0.01, 0.22 + e * 0.1, beat * len)
+            o.connect(f).connect(g).connect(mix)
+            o.start(tt)
+            o.stop(tt + beat * 4)
+          })
+        }
       }
 
       if (spec.instruments.arp && !intro) {
@@ -331,7 +393,25 @@ export function renderMusic(spec: MusicSpec): Promise<AudioBuffer> {
         }
       }
 
-      if (spec.instruments.lead && !intro && b % 2 === 1) {
+      if (spec.instruments.lead && !intro && spec.style === 'oldschool') {
+        // kèn "stab" kiểu funk ở phách 2 lẻ và 4
+        ;[1.5, 3].forEach((h) => {
+          const tt = t0 + h * beat
+          chord.forEach((m) => {
+            const o = ctx.createOscillator()
+            o.type = 'sawtooth'
+            o.frequency.value = midiToHz(m + 12)
+            const f = ctx.createBiquadFilter()
+            f.type = 'lowpass'
+            f.frequency.value = 2400
+            const g = ctx.createGain()
+            env(g.gain, tt, 0.01, 0.035, beat * 0.35)
+            o.connect(f).connect(g).connect(space)
+            o.start(tt)
+            o.stop(tt + beat * 0.5)
+          })
+        })
+      } else if (spec.instruments.lead && !intro && b % 2 === 1) {
         // câu giai điệu ngắn trên nốt hợp âm
         const motif = [0, 2, 1, 2]
         motif.forEach((k, i) => {
@@ -351,19 +431,36 @@ export function renderMusic(spec: MusicSpec): Promise<AudioBuffer> {
       }
 
       if (spec.instruments.drums && !intro) {
+        const swing = (spec.swing ?? 0) * step
+        const nightlife = ['hiphop', 'oldschool', 'trap', 'club'].includes(spec.style)
         for (let i = 0; i < 16; i++) {
-          const tt = t0 + i * step
+          const tt = t0 + i * step + (i % 2 === 1 ? swing : 0)
           if (spec.drums.kick[i % spec.drums.kick.length] === 'x') {
             const o = ctx.createOscillator()
-            o.frequency.setValueAtTime(150, tt)
-            o.frequency.exponentialRampToValueAtTime(45, tt + 0.12)
+            // nightlife: kick đậm và dài hơn
+            o.frequency.setValueAtTime(nightlife ? 170 : 150, tt)
+            o.frequency.exponentialRampToValueAtTime(nightlife ? 42 : 45, tt + (nightlife ? 0.09 : 0.12))
             const g = ctx.createGain()
-            env(g.gain, tt, 0.002, 0.5 + e * 0.3, 0.28)
+            env(g.gain, tt, 0.002, (0.5 + e * 0.3) * (nightlife ? 1.25 : 1), nightlife ? 0.36 : 0.28)
             o.connect(g).connect(mix)
             o.start(tt)
             o.stop(tt + 0.32)
           }
-          if (spec.drums.snare[i % spec.drums.snare.length] === 'x') {
+          if (spec.drums.snare[i % spec.drums.snare.length] === 'x' && (spec.style === 'club' || spec.style === 'oldschool' || spec.style === 'trap')) {
+            // clap: 3 tiếng vỗ sát nhau
+            for (let k = 0; k < 3; k++) {
+              const n = noiseSrc(ctx, 0.2, b * 16 + i + k * 101)
+              const f = ctx.createBiquadFilter()
+              f.type = 'bandpass'
+              f.frequency.value = 1300
+              f.Q.value = 0.9
+              const g = ctx.createGain()
+              env(g.gain, tt + k * 0.011, 0.001, (0.3 + e * 0.15) * (k === 2 ? 1 : 0.6), k === 2 ? 0.16 : 0.02)
+              n.connect(f).connect(g).connect(space)
+              n.start(tt + k * 0.011)
+              n.stop(tt + k * 0.011 + 0.2)
+            }
+          } else if (spec.drums.snare[i % spec.drums.snare.length] === 'x') {
             const n = noiseSrc(ctx, 0.25, b * 16 + i)
             const f = ctx.createBiquadFilter()
             f.type = 'bandpass'
@@ -380,6 +477,22 @@ export function renderMusic(spec: MusicSpec): Promise<AudioBuffer> {
             o.connect(og).connect(mix)
             o.start(tt)
             o.stop(tt + 0.12)
+          }
+          // trap: hi-hat roll (móc tam) cuối mỗi 2 ô nhịp
+          const roll = spec.style === 'trap' && b % 2 === 1 && i >= 12
+          if (roll) {
+            for (let k = 1; k < 3; k++) {
+              const n = noiseSrc(ctx, 0.04, 9 + b * 16 + i + k * 37)
+              const f = ctx.createBiquadFilter()
+              f.type = 'highpass'
+              f.frequency.value = 8000
+              const g = ctx.createGain()
+              const tk = tt + (k * step) / 3
+              env(g.gain, tk, 0.001, 0.05 + e * 0.03, 0.03)
+              n.connect(f).connect(g).connect(mix)
+              n.start(tk)
+              n.stop(tk + 0.04)
+            }
           }
           if (spec.drums.hat[i % spec.drums.hat.length] === 'x') {
             const n = noiseSrc(ctx, 0.06, 7 + b * 16 + i)

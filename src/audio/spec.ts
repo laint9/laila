@@ -47,10 +47,14 @@ export const SFX_DEFAULTS: Record<SfxKind, Omit<SfxSpec, 'kind'>> = {
   notification: { duration: 0.6, pitch: 1, intensity: 0.7, brightness: 0.6, reverb: 0.3 }
 }
 
-export const MUSIC_STYLES = ['corporate', 'upbeat', 'chill', 'tech', 'cinematic', 'lofi'] as const
+export const MUSIC_STYLES = ['hiphop', 'oldschool', 'trap', 'club', 'corporate', 'upbeat', 'chill', 'tech', 'cinematic', 'lofi'] as const
 export type MusicStyle = (typeof MUSIC_STYLES)[number]
 
 export const MUSIC_STYLE_LABELS: Record<MusicStyle, string> = {
+  hiphop: 'Hip hop boom bap (nightlife, 90 BPM)',
+  oldschool: 'Old school / funk (nightlife, 98 BPM)',
+  trap: 'Trap (nightlife, 140 BPM, 808)',
+  club: 'Club house (nightlife, 124 BPM)',
   corporate: 'Corporate (doanh nghiệp, tích cực)',
   upbeat: 'Upbeat (sôi động, quảng cáo)',
   chill: 'Chill (nhẹ nhàng)',
@@ -75,11 +79,17 @@ export interface MusicSpec {
   instruments: { pad: boolean; bass: boolean; arp: boolean; drums: boolean; lead: boolean }
   /** pattern 16 bước, 'x' = đánh, '-' = nghỉ */
   drums: { kick: string; snare: string; hat: string }
+  /** độ lắc (swing) của nốt móc kép lẻ 0..0.3 — hip hop/old school thường 0.08–0.15 */
+  swing?: number
 }
 
 const D = (kick: string, snare: string, hat: string) => ({ kick, snare, hat })
 
 export const MUSIC_PRESETS: Record<MusicStyle, Omit<MusicSpec, 'length'>> = {
+  hiphop: { style: 'hiphop', bpm: 90, key: 'A', mode: 'minor', progression: [1, 1, 6, 7], energy: 0.75, swing: 0.12, instruments: { pad: true, bass: true, arp: false, drums: true, lead: false }, drums: D('x------x--x-----', '----x-------x---', 'x-x-x-x-x-x-x-x-') },
+  oldschool: { style: 'oldschool', bpm: 98, key: 'E', mode: 'minor', progression: [1, 4, 1, 5], energy: 0.8, swing: 0.08, instruments: { pad: false, bass: true, arp: false, drums: true, lead: true }, drums: D('x-----x---x-x---', '----x-------x---', 'x-x-x-x-x-x-x-xx') },
+  trap: { style: 'trap', bpm: 140, key: 'F#', mode: 'minor', progression: [1, 6, 4, 5], energy: 0.9, swing: 0, instruments: { pad: true, bass: true, arp: false, drums: true, lead: false }, drums: D('x------x--x-----', '--------x-------', 'xxxxxxxxxxxxxxxx') },
+  club: { style: 'club', bpm: 124, key: 'G', mode: 'minor', progression: [1, 6, 3, 7], energy: 0.9, swing: 0, instruments: { pad: true, bass: true, arp: true, drums: true, lead: false }, drums: D('x---x---x---x---', '----x-------x---', '--x---x---x---x-') },
   corporate: { style: 'corporate', bpm: 112, key: 'C', mode: 'major', progression: [1, 5, 6, 4], energy: 0.6, instruments: { pad: true, bass: true, arp: true, drums: true, lead: false }, drums: D('x---x---x---x---', '----x-------x---', 'x-x-x-x-x-x-x-x-') },
   upbeat: { style: 'upbeat', bpm: 124, key: 'G', mode: 'major', progression: [1, 6, 4, 5], energy: 0.85, instruments: { pad: true, bass: true, arp: true, drums: true, lead: true }, drums: D('x---x---x---x---', '----x-------x---', 'xxxxxxxxxxxxxxxx') },
   chill: { style: 'chill', bpm: 88, key: 'F', mode: 'major', progression: [1, 3, 6, 4], energy: 0.35, instruments: { pad: true, bass: true, arp: true, drums: true, lead: false }, drums: D('x-------x-x-----', '----x-------x---', '--x---x---x---x-') },
@@ -112,7 +122,7 @@ export function normSfx(raw: unknown): SfxSpec {
 /** Chuẩn hoá thông số nhạc */
 export function normMusic(raw: unknown, fallbackLength = 15): MusicSpec {
   const r = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
-  const style = (MUSIC_STYLES as readonly string[]).includes(r.style as string) ? (r.style as MusicStyle) : 'corporate'
+  const style = (MUSIC_STYLES as readonly string[]).includes(r.style as string) ? (r.style as MusicStyle) : 'hiphop'
   const p = MUSIC_PRESETS[style]
   const inst = (r.instruments && typeof r.instruments === 'object' ? r.instruments : {}) as Record<string, unknown>
   const dr = (r.drums && typeof r.drums === 'object' ? r.drums : {}) as Record<string, unknown>
@@ -132,7 +142,8 @@ export function normMusic(raw: unknown, fallbackLength = 15): MusicSpec {
       drums: typeof inst.drums === 'boolean' ? inst.drums : p.instruments.drums,
       lead: typeof inst.lead === 'boolean' ? inst.lead : p.instruments.lead
     },
-    drums: { kick: pattern(dr.kick, p.drums.kick), snare: pattern(dr.snare, p.drums.snare), hat: pattern(dr.hat, p.drums.hat) }
+    drums: { kick: pattern(dr.kick, p.drums.kick), snare: pattern(dr.snare, p.drums.snare), hat: pattern(dr.hat, p.drums.hat) },
+    swing: clampN(r.swing, p.swing ?? 0, 0, 0.3)
   }
 }
 

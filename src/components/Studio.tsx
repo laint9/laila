@@ -4,7 +4,7 @@ import { cleanError, generateAll, planStoryboard, sendReadyScenesToTimeline } fr
 import { SceneCard } from './SceneCard'
 import { Icon } from './Icon'
 
-export function Studio(props: { apiReady: boolean; onNeedKey: () => void; onEdit: (sceneId: string) => void; onReference: () => void }) {
+export function Studio(props: { apiReady: boolean; onNeedKey: () => void; onEdit: (sceneId: string) => void; onReference: () => void; onAutoEdit: () => void }) {
   const scenes = useStore((s) => s.project.scenes)
   const addScene = useStore((s) => s.addScene)
   const [brief, setBrief] = useState('')
@@ -66,6 +66,9 @@ export function Studio(props: { apiReady: boolean; onNeedKey: () => void; onEdit
           Scenes <span className="count">{scenes.length}</span>
         </div>
         <div className="spacer" />
+        <button className="btn tinted" onClick={props.onAutoEdit} title="Cắt ghép video có sẵn khớp beat nhạc, đúng thời lượng">
+          <Icon name="music" /> Dựng theo nhạc
+        </button>
         <button className="btn" onClick={guard(props.onReference)} title="Phân tích effect từ ảnh / video mẫu rồi dựng scene tương tự">
           <Icon name="film" /> Phân tích reference
         </button>
