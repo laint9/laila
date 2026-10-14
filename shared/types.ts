@@ -63,6 +63,8 @@ export interface MediaItem {
   alpha?: boolean
   /** file gốc khi khác `path` (vd .svg, .pdf, .ai đã chuyển sang PNG) */
   source?: string
+  /** âm thanh tách ra từ media video nào */
+  from?: string
 }
 
 /** Kết quả phân loại file kéo thả / chọn từ máy */
@@ -93,6 +95,14 @@ export interface TimelineClip {
 }
 
 /** Clip trên track phụ (đặt tự do theo thời gian, không hút như track chính) */
+/** Clip chữ / hình vẽ trên track phủ: 1 layer của engine motion (kiểu đối tượng để shared không phụ thuộc engine) */
+export interface GraphicData {
+  layer: Record<string, unknown>
+  /** hiệu ứng vào / ra (preset motion), áp lại mỗi khi clip đổi độ dài */
+  motionIn?: string | null
+  motionOut?: string | null
+}
+
 export interface TrackClip {
   id: string
   mediaId: string
@@ -109,6 +119,8 @@ export interface TrackClip {
   scale?: number // %
   x?: number // px lệch so với tâm khung
   y?: number
+  /** clip chữ / hình (mediaId rỗng) — vị trí, cỡ nằm trong layer */
+  graphic?: GraphicData
 }
 
 export interface Track {

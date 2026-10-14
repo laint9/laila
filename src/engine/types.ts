@@ -61,13 +61,24 @@ export interface TextData {
   size: number
   weight: number
   color: string
-  align: 'left' | 'center' | 'right'
+  align: 'left' | 'center' | 'right' | 'justify'
   lineHeight: number
   tracking: Prop
   /** 0 = không xuống dòng tự động */
   maxWidth: number
   animIn: TextAnimator | null
   animOut: TextAnimator | null
+  // ---- định dạng đoạn & kiểu chữ (tuỳ chọn) ----
+  italic?: boolean
+  uppercase?: boolean
+  /** khoảng cách thêm giữa các đoạn (xuống dòng bằng Enter), tính theo cỡ chữ */
+  paraSpacing?: number
+  /** thụt đầu dòng đầu mỗi đoạn (px) */
+  indent?: number
+  stroke?: { color: string; width: number } | null
+  shadow?: { color: string; blur: number; x: number; y: number } | null
+  /** nền sau chữ (hộp bo góc) */
+  box?: { color: string; opacity: number; padding: number; radius: number } | null
 }
 
 export interface ShapeData {

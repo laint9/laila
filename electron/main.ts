@@ -8,7 +8,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { ClaudeService, DEFAULT_MODEL } from './claude'
 import { scanFontDirs } from './fonts'
 import { ALL_EXT, AUDIO_EXT, IMAGE_EXT, importPath, makeImageItem, VECTOR_EXT, VIDEO_EXT } from './importer'
-import { analyzeVideoFrames, extractFrame, FrameEncoder, type VideoFrames, makeFilmstrip, makeWaveform, probe, runExport } from './ffmpeg'
+import { analyzeVideoFrames, extractAudio, extractFrame, FrameEncoder, type VideoFrames, makeFilmstrip, makeWaveform, probe, runExport } from './ffmpeg'
 import type {
   AppSettings,
   ExportRequest,
@@ -258,6 +258,17 @@ function registerIpc() {
     } finally {
       aborters.delete(reqId)
     }
+  })
+
+  ipcMain.handle('media:extractAudio', async (_e, path: string) => {
+    const dir = join(userDir(), 'audio')
+    mkdirSync(dir, { recursive: true })
+    const base = basename(path, extname(path))
+    const out = join(dir, `${base}-${randomUUID().slice(0, 6)}.m4a`)
+    await extractAudio(path, out)
+    const info = await probe(out)
+    const item: MediaItem = { id: randomUUID(), kind: 'audio', name: `${base} (âm thanh).m4a`, path: out, duration: info.duration, hasAudio: true }
+    return item
   })
 
   // ---------- dựng theo nhạc ----------

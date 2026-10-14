@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { TimelineClip } from '../../shared/types'
 import { useStore, RESOLUTIONS } from '../lib/store'
 import { fmtTime, mediaUrl } from '../lib/media'
 import { activeClips, clipLength, clipStarts, projectDuration, speedOf, tLength, trackClipAt, transitionAfter, tSpeed } from '../lib/timeline'
 import { Icon } from './Icon'
 import { transitionStyles } from '../lib/transitions'
+import { drawGraphic, Stage, useGraphicsRunner, useScreenDrop } from './PreviewStage'
 
 export function Preview() {
   const preview = useStore((s) => s.preview)
@@ -12,6 +13,8 @@ export function Preview() {
   const settings = useStore((s) => s.project.settings)
   const setSettings = useStore((s) => s.setSettings)
   const resIndex = RESOLUTIONS.findIndex((r) => r.width === settings.width && r.height === settings.height)
+  const screen = useRef<HTMLDivElement>(null)
+  const drop = useScreenDrop(screen)
 
   return (
     <div className="preview">
@@ -50,7 +53,12 @@ export function Preview() {
         </select>
       </div>
       <div className="screen-wrap">
-        <div className={'screen' + (settings.fill ? ' fill' : '')} style={{ aspectRatio: `${settings.width} / ${settings.height}` }}>
+        <div
+          ref={screen}
+          className={'screen' + (settings.fill ? ' fill' : '') + (drop.over ? ' drop-over' : '')}
+          style={{ aspectRatio: `${settings.width} / ${settings.height}` }}
+          {...(preview.type === 'timeline' ? drop.props : {})}
+        >
           {preview.type === 'timeline' ? <TimelinePlayer /> : <ClipPlayer mediaId={preview.mediaId} />}
         </div>
       </div>
@@ -89,6 +97,17 @@ function TimelinePlayer() {
   const imgs = [useRef<HTMLImageElement>(null), useRef<HTMLImageElement>(null)]
   const isImg = useRef([false, false])
   const trackImgs = useRef(new Map<string, HTMLImageElement>())
+  const trackCanvas = useRef(new Map<string, HTMLCanvasElement>())
+  const runner = useGraphicsRunner()
+  const [tick, setTick] = useState(0)
+  // nạp font/ảnh brand cho chữ xong thì vẽ lại khung chọn
+  useEffect(() => {
+    let alive = true
+    runner.prepare({ background: null, layers: [] }).then(() => alive && setTick((n) => n + 1))
+    return () => {
+      alive = false
+    }
+  }, [runner])
   const overlay = useRef<HTMLDivElement>(null)
   // phần tử phát cho track phụ (video phủ / âm thanh), theo id track
   const trackEls = useRef(new Map<string, HTMLVideoElement | HTMLAudioElement>())
@@ -131,8 +150,25 @@ function TimelinePlayer() {
         if (tr.kind === 'video') el.style.opacity = '0'
         const im = trackImgs.current.get(tr.id)
         if (im) im.style.opacity = '0'
+        const cv = trackCanvas.current.get(tr.id)
+        if (cv) cv.style.opacity = '0'
         continue
       }
+      const cv = trackCanvas.current.get(tr.id)
+      if (c.graphic && tr.kind === 'video') {
+        // clip chữ / hình: vẽ bằng engine motion lên canvas của track
+        if (!el.paused) el.pause()
+        el.style.opacity = '0'
+        const im = trackImgs.current.get(tr.id)
+        if (im) im.style.opacity = '0'
+        if (cv) {
+          drawGraphic(runner, cv, c, t, W, H)
+          cv.style.opacity = '1'
+          cv.style.zIndex = String(10 + videoTracks.length - videoTracks.indexOf(tr))
+        }
+        continue
+      }
+      if (cv) cv.style.opacity = '0'
       const m = project.media.find((x) => x.id === c.mediaId)
       if (!m) continue
       const url = mediaUrl(m.path)
@@ -271,7 +307,7 @@ function TimelinePlayer() {
   useEffect(() => {
     if (!playing && !hover) sync(playhead, false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playhead, project.timeline, project.tracks, project.media, playing, hover])
+  }, [playhead, project.timeline, project.tracks, project.media, playing, hover, tick])
 
   // rê chuột lên kiểu chuyển cảnh: phát lặp đoạn nối giữa 2 clip
   useEffect(() => {
@@ -358,6 +394,14 @@ function TimelinePlayer() {
                 else trackImgs.current.delete(tr.id)
               }}
             />
+            <canvas
+              className="overlay-canvas"
+              style={{ opacity: 0 }}
+              ref={(el) => {
+                if (el) trackCanvas.current.set(tr.id, el)
+                else trackCanvas.current.delete(tr.id)
+              }}
+            />
           </span>
         ) : (
           <audio
@@ -370,6 +414,7 @@ function TimelinePlayer() {
           />
         )
       )}
+      <Stage runner={runner} tick={tick} />
       <div className="transport">
         <button className="round" onClick={() => setPlaying(!playing)} disabled={total === 0} title="Phát / dừng (Space)">
           <Icon name={playing ? 'pause' : 'play'} size={14} />

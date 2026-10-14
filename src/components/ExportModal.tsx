@@ -4,6 +4,8 @@ import { projectDuration } from '../lib/timeline'
 import { fmtTime } from '../lib/media'
 import { cleanError } from '../lib/pipeline'
 import { Icon } from './Icon'
+import { graphicFile } from '../lib/graphics'
+import type { ExportOverlay } from '../../shared/types'
 
 const SIZES = [
   { id: 0.5, label: '50% (nháp)' },
@@ -19,6 +21,7 @@ export function ExportModal(props: { onClose: () => void }) {
   const [progress, setProgress] = useState<number | null>(null)
   const [done, setDone] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [step, setStep] = useState<string | null>(null)
 
   useEffect(() => window.laila.exporter.onProgress(setProgress), [])
 
@@ -34,6 +37,42 @@ export function ExportModal(props: { onClose: () => void }) {
     setProgress(0)
     const byId = new Map(project.media.map((m) => [m.id, m]))
     try {
+      // lớp phủ: media + clip chữ/hình (render ra PNG hoặc WebM trong suốt trước)
+      const overlays: ExportOverlay[] = []
+      const vtracks = (project.tracks ?? []).filter((t) => t.kind === 'video' && !t.hidden).reverse() // track đầu danh sách nằm trên cùng -> vẽ sau cùng
+      const graphics = vtracks.flatMap((t) => t.clips.filter((c) => c.graphic))
+      let gi = 0
+      for (const t of vtracks) {
+        for (const c of t.clips) {
+          if (c.graphic) {
+            setStep(`Đang vẽ chữ / hình ${++gi}/${graphics.length}…`)
+            const f = await graphicFile(c, project.settings, project.elements)
+            overlays.push({ path: f.path, alpha: f.video, image: !f.video, hasAudio: false, start: c.start, in: c.in, out: c.out, speed: 1, volume: 0, fadeIn: 0, fadeOut: 0, opacity: 100, scale: 100, x: 0, y: 0 })
+            continue
+          }
+          const m = byId.get(c.mediaId)
+          if (!m) continue
+          overlays.push({
+            path: m.path,
+            alpha: !!m.alpha,
+            image: m.kind === 'image',
+            hasAudio: m.hasAudio,
+            start: c.start,
+            in: c.in,
+            out: c.out,
+            speed: c.speed ?? 1,
+            volume: c.volume,
+            fadeIn: c.audioFadeIn ?? 0,
+            fadeOut: c.audioFadeOut ?? 0,
+            opacity: c.opacity ?? 100,
+            scale: c.scale ?? 100,
+            // vị trí tính theo khung project -> đổi sang cỡ xuất
+            x: (c.x ?? 0) * scale,
+            y: (c.y ?? 0) * scale
+          })
+        }
+      }
+      setStep(null)
       await window.laila.exporter.run({
         outPath,
         settings: { width: W, height: H, fps, fill: !!project.settings.fill },
@@ -56,33 +95,7 @@ export function ExportModal(props: { onClose: () => void }) {
               fadeOut: c.audioFadeOut ?? 0
             }
           }),
-        overlays: (project.tracks ?? [])
-          .filter((t) => t.kind === 'video' && !t.hidden)
-          .reverse() // track đứng đầu danh sách nằm trên cùng -> vẽ sau cùng
-          .flatMap((t) =>
-            t.clips
-              .filter((c) => byId.has(c.mediaId))
-              .map((c) => {
-                const m = byId.get(c.mediaId)!
-                return {
-                  path: m.path,
-                  alpha: !!m.alpha,
-                  image: m.kind === 'image',
-                  hasAudio: m.hasAudio,
-                  start: c.start,
-                  in: c.in,
-                  out: c.out,
-                  speed: c.speed ?? 1,
-                  volume: c.volume,
-                  fadeIn: c.audioFadeIn ?? 0,
-                  fadeOut: c.audioFadeOut ?? 0,
-                  opacity: c.opacity ?? 100,
-                  scale: c.scale ?? 100,
-                  x: c.x ?? 0,
-                  y: c.y ?? 0
-                }
-              })
-          ),
+        overlays,
         audios: (project.tracks ?? [])
           .filter((t) => t.kind === 'audio' && !t.muted)
           .flatMap((t) =>
@@ -105,6 +118,7 @@ export function ExportModal(props: { onClose: () => void }) {
       setError(cleanError((e as Error).message))
     } finally {
       setProgress(null)
+      setStep(null)
     }
   }
 
@@ -162,6 +176,7 @@ export function ExportModal(props: { onClose: () => void }) {
           <span>MP4 · H.264 + AAC</span>
         </div>
         {stale > 0 && <p className="warn-text">{stale} scene đã chỉnh nhưng chưa render lại. Bản xuất sẽ dùng clip cũ.</p>}
+        {step && <span className="muted small">{step}</span>}
         {running && (
           <div className="bar big">
             <div style={{ width: `${Math.round(progress! * 100)}%` }} />

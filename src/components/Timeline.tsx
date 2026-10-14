@@ -17,7 +17,11 @@ import {
 import { TRANSITIONS, transitionStyles } from '../lib/transitions'
 import { useLoopProgress } from '../lib/ticker'
 import { Icon } from './Icon'
-import { hasFiles, importDropped } from '../lib/importer'
+import { hasFiles, importDropped, reportErrors } from '../lib/importer'
+import { canDetach, detachClipAudio } from '../lib/audioExtract'
+import { addGraphicFromDrag, DRAG_GRAPHIC, type GraphicDrag } from './TextPanel'
+import { graphicLabel } from '../lib/graphics'
+import { useUi } from '../lib/ui'
 
 const HEAD_W = 132 // cột tên track
 const PAD = 12 // lề trái trong lane
@@ -53,6 +57,7 @@ const stripStyle = (m: MediaItem | undefined, url: string, full: number, offset:
     : { backgroundImage: `url("${url}")`, backgroundSize: `${full}px 100%`, backgroundPosition: `${-offset}px 0` }
 
 export function Timeline() {
+  const [detaching, setDetaching] = useState(false)
   const project = useStore((s) => s.project)
   const playhead = useStore((s) => s.playhead)
   const playing = useStore((s) => s.playing)
@@ -217,6 +222,13 @@ export function Timeline() {
   const onDropTrack = (e: React.DragEvent, track: Track) => {
     e.preventDefault()
     setDropTrack(null)
+    const gd = e.dataTransfer.getData(DRAG_GRAPHIC)
+    if (gd) {
+      s().setPlayhead(snapTime(timeAt(e.clientX)))
+      addGraphicFromDrag(JSON.parse(gd) as GraphicDrag)
+      useUi.getState().setLeftTab('text')
+      return
+    }
     if (dropFiles(e, (m, _i, t) => toTrackAt(m, t, (m.kind === 'audio' ? 'audio' : 'video') === track.kind ? track.id : undefined))) return
     const mediaId = e.dataTransfer.getData('text/laila-media')
     const m = mediaId && mediaOf(mediaId)
@@ -230,7 +242,9 @@ export function Timeline() {
   for (let t = 0; t <= width / zoom; t += step) ticks.push(t)
   const transClip = clips.find((c) => c.id === transFor)
   const sel = selMain ?? selTrack?.clip
-  const selIsOverlay = selTrack?.track.kind === 'video'
+  const selGraphic = !!selTrack?.clip.graphic
+  const selIsOverlay = selTrack?.track.kind === 'video' && !selGraphic
+  const detachable = canDetach(selectedId)
 
   const setSel = (patch: Partial<TimelineClip & TrackClip>, history = true) => {
     if (selMain) s().setClip(selMain.id, patch, history)
@@ -324,8 +338,37 @@ export function Timeline() {
         <button className="tbtn labeled" title="Thêm track âm thanh" onClick={() => s().addTrack('audio')}>
           <Icon name="plus" size={12} /> Track âm thanh
         </button>
+        <button
+          className="tbtn labeled"
+          title="Thêm chữ tại playhead (chỉnh ở tab Chữ)"
+          onClick={() => {
+            addGraphicFromDrag({ kind: 'text', id: 'title' })
+            useUi.getState().setLeftTab('text')
+          }}
+        >
+          <Icon name="text" size={13} /> Chữ
+        </button>
+        {detachable && (
+          <button
+            className="tbtn labeled"
+            disabled={detaching}
+            title="Tách tiếng của clip ra track âm thanh riêng (clip gốc tắt tiếng)"
+            onClick={async () => {
+              setDetaching(true)
+              try {
+                await detachClipAudio(selectedId!)
+              } catch (err) {
+                reportErrors([(err as Error).message])
+              } finally {
+                setDetaching(false)
+              }
+            }}
+          >
+            <Icon name="detach" size={13} /> {detaching ? 'Đang tách…' : 'Tách âm thanh'}
+          </button>
+        )}
 
-        {sel && (
+        {sel && !selGraphic && (
           <>
             <div className="divider" />
             <label className="clip-prop" title="Tốc độ">
@@ -616,6 +659,21 @@ function TrackClipBlock(props: {
   const sp = tSpeed(c)
   const full = m ? (m.duration / sp) * props.zoom : props.width
   const offset = (c.in / sp) * props.zoom
+  if (c.graphic) {
+    const isText = (c.graphic.layer as { type?: string }).type === 'text'
+    return (
+      <div className={'clip kind-graphic' + (props.selected ? ' selected' : '')} style={{ left: props.left, width: props.width }} onMouseDown={props.onMouseDown}>
+        <div className="handle in" onMouseDown={(e) => props.onTrim(e, 'in')} />
+        <div className="clip-label">
+          <span className="clip-name">
+            <Icon name={isText ? 'text' : 'shape'} size={11} /> {graphicLabel(c.graphic)}
+          </span>
+          <small>{tLength(c).toFixed(1)}s</small>
+        </div>
+        <div className="handle out" onMouseDown={(e) => props.onTrim(e, 'out')} />
+      </div>
+    )
+  }
   const kind = m?.kind === 'audio' ? 'audio' : m?.alpha ? 'overlay' : m?.kind ?? 'video'
   return (
     <div className={'clip kind-' + kind + (props.selected ? ' selected' : '')} style={{ left: props.left, width: props.width }} onMouseDown={props.onMouseDown}>

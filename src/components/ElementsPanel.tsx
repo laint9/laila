@@ -95,6 +95,17 @@ function ElementRow({ el }: { el: BrandElement }) {
   return (
     <div className="element">
       <div className="element-head">
+        <span
+          className="drag-grip"
+          draggable
+          title="Kéo thả lên khung xem video để thêm vào video"
+          onDragStart={(e) => {
+            e.dataTransfer.setData('text/laila-element', el.id)
+            e.dataTransfer.effectAllowed = 'copy'
+          }}
+        >
+          ⠿
+        </span>
         <span className={'kind-badge k-' + el.kind}>
           {el.kind === 'color' ? <i className="dot" style={{ background: el.value }} /> : <Icon name={KIND[el.kind].icon} size={11} />}
           {KIND[el.kind].label}

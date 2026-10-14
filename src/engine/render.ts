@@ -29,11 +29,14 @@ export const isActive = (l: Layer, t: number) => l.visible && t >= l.in && t < l
 
 // ---------- text layout ----------
 
-export function fontString(fonts: Record<string, string>, font: string, size: number, weight: number) {
+export function fontString(fonts: Record<string, string>, font: string, size: number, weight: number, italic = false) {
   const fam = fonts[font] || font || Object.values(fonts)[0] || ''
   const stack = '-apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif'
-  return `${Math.round(weight)} ${Math.max(1, size)}px ${fam ? `"${fam}", ` : ''}${stack}`
+  return `${italic ? 'italic ' : ''}${Math.round(weight)} ${Math.max(1, size)}px ${fam ? `"${fam}", ` : ''}${stack}`
 }
+
+/** lề của hộp nền chữ (0 nếu không có nền) */
+export const textPad = (d: TextLayer['text']) => (d.box ? Math.max(0, d.box.padding) : 0)
 
 interface CharBox {
   ch: string
@@ -47,50 +50,67 @@ export interface TextLayout {
   width: number
   height: number
   lineH: number
-  lines: { text: string; x: number; y: number; width: number }[]
+  lines: { text: string; x: number; y: number; width: number; justify: number }[]
   chars: CharBox[]
   words: number
+  justified: boolean
 }
 
 const layoutCache = new Map<string, TextLayout>()
 
 export function layoutText(ctx: Ctx, l: TextLayer, tracking: number, fonts: Record<string, string>): TextLayout {
   const d = l.text
-  const font = fontString(fonts, d.font, d.size, d.weight)
-  const key = [d.content, font, tracking.toFixed(2), d.maxWidth, d.align, d.lineHeight].join('|')
+  const font = fontString(fonts, d.font, d.size, d.weight, d.italic)
+  const content = d.uppercase ? d.content.toLocaleUpperCase('vi') : d.content
+  const indent = Math.max(0, d.indent ?? 0)
+  const paraGap = Math.max(0, d.paraSpacing ?? 0) * d.size
+  const key = [content, font, tracking.toFixed(2), d.maxWidth, d.align, d.lineHeight, indent, paraGap].join('|')
   const hit = layoutCache.get(key)
   if (hit) return hit
   ctx.font = font
   const measure = (s: string) => (s ? ctx.measureText(s).width + tracking * Math.max(0, [...s].length - 1) : 0)
 
-  const rawLines: string[] = []
-  for (const para of d.content.split('\n')) {
+  // mỗi dòng nhớ đoạn của nó, có phải dòng đầu / cuối đoạn không (để thụt đầu dòng và căn đều)
+  const raw: { text: string; para: number; first: boolean; last: boolean }[] = []
+  content.split('\n').forEach((para, pi) => {
     if (!d.maxWidth) {
-      rawLines.push(para)
-      continue
+      raw.push({ text: para, para: pi, first: true, last: true })
+      return
     }
     let line = ''
+    let first = true
     for (const w of para.split(/\s+/).filter(Boolean)) {
       const test = line ? line + ' ' + w : w
-      if (line && measure(test) > d.maxWidth) {
-        rawLines.push(line)
+      const room = d.maxWidth - (first ? indent : 0)
+      if (line && measure(test) > room) {
+        raw.push({ text: line, para: pi, first, last: false })
         line = w
+        first = false
       } else line = test
     }
-    rawLines.push(line)
-  }
-  const widths = rawLines.map(measure)
+    raw.push({ text: line, para: pi, first, last: true })
+  })
+  const widths = raw.map((r) => measure(r.text) + (r.first ? indent : 0))
   const width = Math.max(d.maxWidth || 0, ...widths, 1)
   const lineH = d.size * d.lineHeight
-  const lines = rawLines.map((text, i) => {
-    const x = d.align === 'left' ? 0 : d.align === 'right' ? width - widths[i] : (width - widths[i]) / 2
-    return { text, x, y: i * lineH + lineH / 2, width: widths[i] }
+  let y = lineH / 2
+  const lines = raw.map((r, i) => {
+    if (i > 0 && r.para !== raw[i - 1].para) y += paraGap
+    const ind = r.first ? indent : 0
+    const x = d.align === 'left' || d.align === 'justify' ? ind : d.align === 'right' ? width - widths[i] + ind : (width - widths[i]) / 2 + ind
+    const ln = { text: r.text, x, y, width: widths[i] - ind, justify: d.align === 'justify' && !r.last && !!d.maxWidth ? width - widths[i] : 0 }
+    y += lineH
+    return ln
   })
   const chars: CharBox[] = []
   let word = 0
   let inWord = false
   lines.forEach((ln, li) => {
     const glyphs = [...ln.text]
+    // căn đều: chia phần dư cho các khoảng trắng của dòng
+    const gaps = ln.justify ? glyphs.filter((g) => /\s/.test(g)).length : 0
+    const extra = gaps ? ln.justify / gaps : 0
+    let spaces = 0
     for (let i = 0; i < glyphs.length; i++) {
       const ch = glyphs[i]
       const space = /\s/.test(ch)
@@ -98,7 +118,8 @@ export function layoutText(ctx: Ctx, l: TextLayer, tracking: number, fonts: Reco
         word++
         inWord = false
       } else if (!space) inWord = true
-      const left = ctx.measureText(glyphs.slice(0, i).join('')).width + tracking * i
+      const left = ctx.measureText(glyphs.slice(0, i).join('')).width + tracking * i + spaces * extra
+      if (space) spaces++
       const w = ctx.measureText(ch).width
       chars.push({ ch, x: ln.x + left + w / 2, y: ln.y, w, line: li, word })
     }
@@ -107,7 +128,7 @@ export function layoutText(ctx: Ctx, l: TextLayer, tracking: number, fonts: Reco
       inWord = false
     }
   })
-  const out: TextLayout = { width, height: lines.length * lineH, lineH, lines, chars, words: word }
+  const out: TextLayout = { width, height: y - lineH / 2, lineH, lines, chars, words: word, justified: lines.some((l) => l.justify > 0) }
   if (layoutCache.size > 400) layoutCache.clear()
   layoutCache.set(key, out)
   return out
@@ -119,7 +140,8 @@ export function layerBox(ctx: Ctx, l: Layer, t: number, a: RenderAssets): { w: n
   switch (l.type) {
     case 'text': {
       const lay = layoutText(ctx, l, valueAt(l.text.tracking, t), a.fonts)
-      return { w: lay.width, h: lay.height }
+      const pad = textPad(l.text)
+      return { w: lay.width + 2 * pad, h: lay.height + 2 * pad }
     }
     case 'image': {
       const img = a.images[l.image.src]
@@ -190,10 +212,38 @@ function drawText(ctx: Ctx, l: TextLayer, t: number, a: RenderAssets) {
   const d = l.text
   const tracking = valueAt(d.tracking, t)
   const lay = layoutText(ctx, l, tracking, a.fonts)
-  ctx.font = fontString(a.fonts, d.font, d.size, d.weight)
+  const pad = textPad(d)
+  // nền chữ: hộp bo góc phủ cả khối chữ + lề
+  if (d.box && d.box.opacity > 0) {
+    ctx.save()
+    ctx.globalAlpha *= Math.min(1, Math.max(0, d.box.opacity))
+    ctx.fillStyle = d.box.color
+    ctx.beginPath()
+    ctx.roundRect(0, 0, lay.width + 2 * pad, lay.height + 2 * pad, Math.max(0, d.box.radius))
+    ctx.fill()
+    ctx.restore()
+  }
+  if (pad) ctx.translate(pad, pad)
+  ctx.font = fontString(a.fonts, d.font, d.size, d.weight, d.italic)
   ctx.fillStyle = d.color
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'left'
+  if (d.shadow) {
+    ctx.shadowColor = d.shadow.color
+    ctx.shadowBlur = Math.max(0, d.shadow.blur)
+    ctx.shadowOffsetX = d.shadow.x
+    ctx.shadowOffsetY = d.shadow.y
+  }
+  const stroke = d.stroke && d.stroke.width > 0 ? d.stroke : null
+  if (stroke) {
+    ctx.strokeStyle = stroke.color
+    ctx.lineWidth = stroke.width * 2 // nửa nét bị chữ đè lên nên nhân đôi
+    ctx.lineJoin = 'round'
+  }
+  const put = (s: string, x: number, y: number) => {
+    if (stroke) ctx.strokeText(s, x, y)
+    ctx.fillText(s, x, y)
+  }
 
   const unitOf = (c: CharBox, i: number, anim: TextAnimator) =>
     anim.unit === 'char' ? i : anim.unit === 'word' ? c.word : c.line
@@ -203,8 +253,8 @@ function drawText(ctx: Ctx, l: TextLayer, t: number, a: RenderAssets) {
   const pout = animProgress(d.animOut, nUnits(d.animOut), t, l, 'out')
 
   const settled = (!pin || pin.every((k) => k >= 1)) && (!pout || pout.every((k) => k >= 1))
-  if (settled && Math.abs(tracking) < 0.01) {
-    for (const ln of lay.lines) ctx.fillText(ln.text, ln.x, ln.y)
+  if (settled && Math.abs(tracking) < 0.01 && !lay.justified) {
+    for (const ln of lay.lines) put(ln.text, ln.x, ln.y)
     return
   }
 
@@ -277,7 +327,7 @@ function drawText(ctx: Ctx, l: TextLayer, t: number, a: RenderAssets) {
     ctx.translate(c.x + dx, c.y + dy)
     if (rot) ctx.rotate((rot * Math.PI) / 180)
     if (sc !== 1) ctx.scale(sc, sc)
-    ctx.fillText(c.ch, -c.w / 2, 0)
+    put(c.ch, -c.w / 2, 0)
     ctx.restore()
   })
 }

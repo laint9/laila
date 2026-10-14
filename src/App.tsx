@@ -12,6 +12,8 @@ import { MotionEditor } from './editor/MotionEditor'
 import { ReferenceModal } from './components/ReferenceModal'
 import { SoundPanel } from './components/SoundPanel'
 import { AutoEditModal } from './components/AutoEditModal'
+import { TextPanel } from './components/TextPanel'
+import { useUi } from './lib/ui'
 import { Splitter } from './components/Splitter'
 import { useLayout } from './lib/layout'
 import { applyTheme } from './lib/theme'
@@ -23,7 +25,8 @@ applyTheme()
 
 export function App() {
   const project = useStore((s) => s.project)
-  const [leftTab, setLeftTab] = useState<'elements' | 'media' | 'sound'>('elements')
+  const leftTab = useUi((s) => s.leftTab)
+  const setLeftTab = useUi((s) => s.setLeftTab)
   const [showSettings, setShowSettings] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null)
@@ -166,6 +169,9 @@ export function App() {
               <button className={leftTab === 'media' ? 'on' : ''} onClick={() => setLeftTab('media')}>
                 Media <span className="count">{project.media.length}</span>
               </button>
+              <button className={leftTab === 'text' ? 'on' : ''} onClick={() => setLeftTab('text')}>
+                Chữ
+              </button>
               <button className={leftTab === 'sound' ? 'on' : ''} onClick={() => setLeftTab('sound')}>
                 Âm thanh
               </button>
@@ -175,6 +181,8 @@ export function App() {
             <ElementsPanel />
           ) : leftTab === 'media' ? (
             <MediaBin />
+          ) : leftTab === 'text' ? (
+            <TextPanel />
           ) : (
             <SoundPanel apiReady={!!appSettings?.hasApiKey} onNeedKey={() => setShowSettings(true)} />
           )}

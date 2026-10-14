@@ -9,7 +9,8 @@ import type {
   TimelineClip,
   Track,
   TrackClip,
-  TransitionKind
+  TransitionKind,
+  GraphicData
 } from '../../shared/types'
 import { uid } from './media'
 import {
@@ -27,8 +28,10 @@ import {
   trimRightAt,
   trimTrackClip,
   tSpeed,
-  mediaLimit
+  mediaLimit,
+  clipStarts
 } from './timeline'
+import { GRAPHIC_TRACK } from './graphics'
 
 export const RESOLUTIONS: { label: string; width: number; height: number }[] = [
   { label: '16:9 · 1920×1080', width: 1920, height: 1080 },
@@ -112,6 +115,13 @@ interface State {
     opts: { mode: 'replace' | 'append'; sourceVolume: number }
   ) => void
   setTrackClip: (id: string, patch: Partial<TrackClip>, history?: boolean) => void
+  /** thêm clip chữ / hình vào track "Chữ & hình" (trên cùng) */
+  addGraphic: (g: GraphicData, start: number, len?: number) => string
+  updateGraphic: (id: string, fn: (g: GraphicData) => GraphicData, history?: boolean) => void
+  /** đặt media lên track phủ tại thời điểm + vị trí (toạ độ khung hình) */
+  addOverlayAt: (mediaId: string, start: number, at: { x: number; y: number }) => void
+  /** tách âm thanh của clip video ra track âm thanh riêng, tắt tiếng clip gốc */
+  detachAudio: (clipId: string, audio: MediaItem) => void
   /** dời clip sang thời điểm / track khác (không ghi lịch sử, gọi beginTrim trước) */
   moveTrackClip: (id: string, start: number, trackId?: string) => boolean
   trimTrack: (id: string, edge: 'in' | 'out', value: number) => void
@@ -378,6 +388,71 @@ export const useStore = create<State>((set, get) => {
       commit((p) => ({ tracks: (p.tracks ?? []).map((t) => (t.id === tid ? { ...t, clips: [...t.clips, clip] } : t)) }))
       set({ selectedClipId: clip.id, preview: { type: 'timeline' } })
     },
+    addGraphic: (g, start, len = 3) => {
+      const clip: TrackClip = { id: uid(), mediaId: '', start: Math.max(0, start), in: 0, out: len, volume: 0, speed: 1, graphic: g }
+      const tracks = get().project.tracks ?? []
+      const isG = (t: Track) => t.kind === 'video' && t.name.startsWith(GRAPHIC_TRACK)
+      // đặt đúng tại playhead: track chữ nào còn trống chỗ đó thì dùng, không thì thêm track chữ mới ở trên
+      const target = tracks.find((t) => isG(t) && freeStart(t.clips, clip.start, len) === clip.start)
+      const n = tracks.filter(isG).length
+      const fresh: Track = target ?? { id: uid(), kind: 'video', name: n ? `${GRAPHIC_TRACK} ${n + 1}` : GRAPHIC_TRACK, clips: [] }
+      commit((p) => {
+        const ts = p.tracks ?? []
+        return { tracks: target ? ts.map((t) => (t.id === target.id ? { ...t, clips: [...t.clips, clip] } : t)) : [{ ...fresh, clips: [clip] }, ...ts] }
+      })
+      set({ selectedClipId: clip.id, preview: { type: 'timeline' } })
+      return clip.id
+    },
+    updateGraphic: (id, fn, history = true) => {
+      const f = (p: Project) => ({
+        tracks: (p.tracks ?? []).map((t) => ({ ...t, clips: t.clips.map((c) => (c.id === id && c.graphic ? { ...c, graphic: fn(c.graphic) } : c)) }))
+      })
+      history ? commit(f) : patchProject(f)
+    },
+    addOverlayAt: (mediaId, start, at) => {
+      get().addToTrack(mediaId, start)
+      const id = get().selectedClipId
+      const { width: W, height: H } = get().project.settings
+      if (id) get().setTrackClip(id, { x: Math.round(at.x - W / 2), y: Math.round(at.y - H / 2) }, false)
+    },
+    detachAudio: (clipId, audio) => {
+      const p = get().project
+      const main = p.timeline.findIndex((c) => c.id === clipId)
+      const tc = main < 0 ? findTrackClip(p, clipId) : null
+      const src = main >= 0 ? p.timeline[main] : tc?.clip
+      if (!src) return
+      const start = main >= 0 ? clipStarts(p.timeline)[main] : tc!.clip.start
+      const clip: TrackClip = {
+        id: uid(),
+        mediaId: audio.id,
+        start,
+        in: src.in,
+        out: src.out,
+        volume: src.volume || 1,
+        speed: src.speed ?? 1,
+        audioFadeIn: src.audioFadeIn,
+        audioFadeOut: src.audioFadeOut
+      }
+      const len = tLength(clip)
+      commit((pp) => {
+        let tracks = pp.tracks ?? []
+        let target = tracks.find((t) => t.kind === 'audio' && t.clips.every((c) => start >= tEnd(c) - 1e-6 || start + len <= c.start + 1e-6))
+        if (!target) {
+          target = { id: uid(), kind: 'audio', name: `Âm thanh ${tracks.filter((t) => t.kind === 'audio').length + 1}`, clips: [] }
+          tracks = [...tracks, target]
+        }
+        const tid = target.id
+        return {
+          tracks: tracks.map((t) =>
+            t.id === tid
+              ? { ...t, clips: [...t.clips, clip] }
+              : { ...t, clips: t.clips.map((c) => (c.id === clipId ? { ...c, volume: 0 } : c)) }
+          ),
+          timeline: pp.timeline.map((c) => (c.id === clipId ? { ...c, volume: 0 } : c))
+        }
+      })
+      set({ selectedClipId: clip.id })
+    },
     applyAutoEdit: (plan, musicId, opts) => {
       commit((p) => {
         const offset = opts.mode === 'append' ? totalDuration(p.timeline) : 0
@@ -446,8 +521,9 @@ export const useStore = create<State>((set, get) => {
       const p = get().project
       const tc = findTrackClip(p, id)
       const m = tc && p.media.find((x) => x.id === tc.clip.mediaId)
-      if (!tc || !m) return
-      const next = trimTrackClip(tc.clip, edge, value, mediaLimit(m))
+      // clip chữ / hình không có file gốc: kéo dài tuỳ ý
+      if (!tc || (!m && !tc.clip.graphic)) return
+      const next = trimTrackClip(tc.clip, edge, value, m ? mediaLimit(m) : 1e9)
       // không cho đè clip bên cạnh
       const others = tc.track.clips.filter((c) => c.id !== id)
       if (others.some((c) => next.start < tEnd(c) - 1e-6 && c.start < tEnd(next) - 1e-6)) return

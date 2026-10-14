@@ -56,6 +56,30 @@ Phím tắt trong editor: `Space` phát, `J`/`K` keyframe trước/sau, `F9` Eas
 
 Preview dùng 2 trình phát luân phiên nên không bị chớp ở điểm cắt, và xem trước được chuyển cảnh. Chuyển cảnh chồng lên 2 clip giống CapCut, nên thời lượng tổng ngắn lại đúng bằng phần chồng lấn.
 
+## Chữ trên video
+
+Tab **Chữ** (hoặc nút **Chữ** trên timeline): 7 mẫu (tiêu đề, phụ đề, đoạn văn, lower third, neon, viền chữ, nhãn), chữ trong brand kit, 4 hình khối. Bấm để thêm tại playhead, hoặc kéo thả thẳng lên khung xem để đặt đúng chỗ. Clip chữ nằm trên track "Chữ & hình", cắt / kéo dài / tách như clip thường.
+
+| Nhóm | Chỉnh được |
+|---|---|
+| Kiểu chữ | Font (font trong máy + font brand), cỡ, độ đậm, màu, nghiêng, VIẾT HOA |
+| Đoạn văn | Căn trái / giữa / phải / đều 2 bên, khung chữ tự xuống dòng (độ rộng), giãn dòng, giãn chữ, cách đoạn, thụt đầu dòng |
+| Hiệu ứng | Viền chữ, đổ bóng (làm neon), nền chữ (màu, độ mờ, lề, bo góc) |
+| Chuyển động | Chữ vào / ra theo từng chữ, từ, dòng (hiện dần, trượt, đánh máy, trồi từ vạch…) + hiệu ứng khối vào / ra |
+
+Chữ được vẽ bằng đúng engine của Motion Editor nên khung xem và bản xuất giống nhau. Khi xuất, chữ đứng yên thành ảnh PNG, chữ có chuyển động thành video nền trong suốt rồi phủ lên.
+
+## Kéo thả trên khung xem
+
+- Kéo mẫu chữ / hình, ảnh hoặc video trong Media, element trong Brand kit (tay kéo ⠿: chữ → clip chữ, màu → hình khối màu đó, logo → lớp phủ ảnh), hoặc file từ Finder thả lên khung xem: đặt tại playhead, đúng vị trí thả.
+- Bấm vào lớp phủ / chữ trên khung xem để chọn, kéo để di chuyển (hít vào đường giữa khung), kéo góc dưới phải để phóng to / thu nhỏ, nhấp đúp vào chữ để sửa nội dung. Undo được.
+
+## Tách âm thanh
+
+- Chọn clip video trên timeline → **Tách âm thanh**: tiếng ra track âm thanh riêng đúng vị trí, clip gốc tắt tiếng (giống "Trích xuất âm thanh" của CapCut).
+- Trong Media: nút tách âm thanh trên video → file M4A riêng để dùng làm nhạc.
+- Đây là tách cả track tiếng của video, chưa tách riêng giọng hát khỏi nhạc nền.
+
 ## Dựng theo nhạc (nightlife / hip hop / old school)
 
 Nút **Dựng theo nhạc** ở khu Scenes: chọn các video quay sẵn + 1 bài nhạc + thời lượng, app tự cắt ghép khớp beat.
@@ -173,7 +197,7 @@ Model mặc định là Claude Opus 5.5, đổi được trong Cài đặt. Requ
 
 ```bash
 npm test          # unit test: easing, keyframe, chuẩn hoá dữ liệu, preset, timeline (tốc độ, chuyển cảnh, Q/W)
-npm run test:e2e  # chạy app thật, Claude được giả lập bằng server cục bộ, bấm qua 85 chức năng:
+npm run test:e2e  # chạy app thật, Claude được giả lập bằng server cục bộ, bấm qua 99 chức năng:
                   # kịch bản, generate + tự sửa lỗi, Motion Editor (chọn/kéo/undo/stopwatch/preset/keyframe/ease/
                   # text animator/công cụ chữ/vẽ hình/align/nhờ Claude sửa), render lại, timeline (tốc độ,
                   # chuyển cảnh, tách, W, undo, phát, track phủ alpha, track âm thanh), SFX/nhạc,

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useStore } from '../lib/store'
-import { hasFiles, importDialog, importDropped } from '../lib/importer'
+import { hasFiles, importDialog, importDropped, reportErrors } from '../lib/importer'
+import { extractAudioOf } from '../lib/audioExtract'
 import { fmtTime, mediaUrl } from '../lib/media'
 import { Icon } from './Icon'
 
@@ -87,6 +88,17 @@ export function MediaBin() {
                 >
                   <Icon name="plus" size={13} />
                 </button>
+                {m.kind === 'video' && m.hasAudio && (
+                  <button
+                    title="Tách âm thanh ra file riêng"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      run(extractAudioOf(m.id).catch((err) => reportErrors([(err as Error).message])))
+                    }}
+                  >
+                    <Icon name="detach" size={13} />
+                  </button>
+                )}
                 <button
                   title="Hiện trong Finder"
                   onClick={(e) => {

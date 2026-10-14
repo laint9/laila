@@ -24,6 +24,23 @@ const num = (v: unknown, d: number, min = -1e6, max = 1e6) => {
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : d
 }
 const str = (v: unknown, d: string) => (typeof v === 'string' ? v : d)
+const obj = (v: unknown) => (v && typeof v === 'object' ? (v as Record<string, unknown>) : null)
+
+/** Các tuỳ chọn kiểu chữ / đoạn văn: chỉ giữ khi có, để scene cũ không đổi */
+function normTextStyle(t: Record<string, unknown>) {
+  const out: Record<string, unknown> = {}
+  if (t.italic === true) out.italic = true
+  if (t.uppercase === true) out.uppercase = true
+  if (t.paraSpacing !== undefined) out.paraSpacing = num(t.paraSpacing, 0, 0, 10)
+  if (t.indent !== undefined) out.indent = num(t.indent, 0, 0, 2000)
+  const st = obj(t.stroke)
+  if (st) out.stroke = { color: color(st.color, '#000000'), width: num(st.width, 2, 0, 200) }
+  const sh = obj(t.shadow)
+  if (sh) out.shadow = { color: color(sh.color, 'rgba(0,0,0,0.6)'), blur: num(sh.blur, 8, 0, 200), x: num(sh.x, 0, -500, 500), y: num(sh.y, 3, -500, 500) }
+  const bx = obj(t.box)
+  if (bx) out.box = { color: color(bx.color, '#000000'), opacity: num(bx.opacity, 0.6, 0, 1), padding: num(bx.padding, 16, 0, 1000), radius: num(bx.radius, 8, 0, 1000) }
+  return out
+}
 const color = (v: unknown, d: string | null) => (typeof v === 'string' && v.trim() ? v.trim() : d)
 
 let idSeq = 0
@@ -137,12 +154,13 @@ export function normLayer(raw: unknown, duration: number, W: number, H: number):
         size: num(t.size, Math.round(H * 0.08), 1, 2000),
         weight: num(t.weight, 600, 100, 900),
         color: color(t.color, '#FFFFFF')!,
-        align: t.align === 'left' || t.align === 'right' ? t.align : 'center',
+        align: t.align === 'left' || t.align === 'right' || t.align === 'justify' ? t.align : 'center',
         lineHeight: num(t.lineHeight, 1.15, 0.5, 4),
         tracking: normProp(t.tracking, 0, -500, 2000),
         maxWidth: num(t.maxWidth, 0, 0, 20000),
         animIn: normAnimator(t.animIn),
-        animOut: normAnimator(t.animOut)
+        animOut: normAnimator(t.animOut),
+        ...normTextStyle(t)
       }
     }
   }

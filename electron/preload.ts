@@ -53,6 +53,7 @@ const api = {
     importPaths: (paths: string[]): Promise<ImportedFile[]> => ipcRenderer.invoke('media:importPaths', paths),
     saveDropped: (name: string, data: Uint8Array): Promise<string> => ipcRenderer.invoke('media:saveDropped', name, data),
     saveRaster: (source: string, data: Uint8Array): Promise<MediaItem> => ipcRenderer.invoke('media:saveRaster', source, data),
+    extractAudio: (path: string): Promise<MediaItem> => ipcRenderer.invoke('media:extractAudio', path),
     filmstrip: (path: string, duration: number): Promise<string | null> => ipcRenderer.invoke('media:filmstrip', path, duration),
     waveform: (path: string): Promise<string | null> => ipcRenderer.invoke('media:waveform', path)
   },

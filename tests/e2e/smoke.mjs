@@ -790,6 +790,140 @@ const cutLens = pj.timeline.slice(0, -1).map((c) => c.out - c.in)
 check('Tạo beat trap 140 + dựng 10s cắt mỗi beat (≥0.33s)', Math.abs(trapLen - 10) < 0.02 && trapMusic.name.startsWith('Trap') && cutLens.every((l) => Math.abs(l - 60 / 140 * Math.round(l / (60 / 140))) < 0.01 && l >= 0.33) && shotCalls === 1, `${pj.timeline.length} cảnh, ${trapMusic.name}`)
 await win.locator('.modal.autoedit button', { hasText: 'Xong' }).click()
 
+// 9d. Tách âm thanh, chữ trên video, kéo thả lên khung xem
+await S(() => { const s = window.__laila.store.getState(); s.setPlayhead(0); s.select(s.project.timeline[0].id) })
+await win.locator('.tl-toolbar button', { hasText: 'Tách âm thanh' }).click()
+await win.waitForFunction(() => window.__laila.store.getState().project.media.some((m) => m.kind === 'audio' && m.from), null, { timeout: 30000 })
+pj = await S(() => window.__laila.store.getState().project)
+const exA = pj.media.find((m) => m.kind === 'audio' && m.from)
+const exClip = pj.tracks.flatMap((t) => t.clips).find((c) => c.mediaId === exA.id)
+const exStreams = execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'stream=codec_type:format=duration', '-of', 'csv=p=0', exA.path]).toString()
+check('Tách âm thanh clip: ra track riêng đúng vị trí, clip gốc tắt tiếng', exClip && exClip.start === 0 && exClip.in === pj.timeline[0].in && exClip.out === pj.timeline[0].out && pj.timeline[0].volume === 0 && /audio/.test(exStreams) && !/video/.test(exStreams) && Math.abs(exA.duration - 12) < 0.2, `${exA.name} ${exA.duration.toFixed(1)}s`)
+await win.locator('.sidebar .segmented button', { hasText: 'Media' }).click()
+const crowdItem = win.locator('.media-item', { hasText: 'crowd.mp4' })
+await crowdItem.hover()
+const nAud = await S(() => window.__laila.store.getState().project.media.filter((m) => m.kind === 'audio' && m.from).length)
+await crowdItem.locator('button[title="Tách âm thanh ra file riêng"]').click()
+await win.waitForFunction((n) => window.__laila.store.getState().project.media.filter((m) => m.kind === 'audio' && m.from).length === n + 1, nAud, { timeout: 30000 })
+check('Tách âm thanh từ Media', true)
+
+// mẫu chữ "Đoạn văn": kéo từ tab Chữ thả lên khung xem
+await S(() => { const s = window.__laila.store.getState(); s.select(null); s.setPlayhead(1) })
+await win.locator('.sidebar .segmented button', { hasText: 'Chữ' }).click()
+await win.waitForSelector('.text-lib .lib-card')
+const dragTo = (data, at) =>
+  S(([d, pos]) => {
+    const dt = new DataTransfer()
+    for (const [k, v] of Object.entries(d)) dt.setData(k, v)
+    const el = document.querySelector('.screen')
+    const r = el.getBoundingClientRect()
+    const x = r.left + pos[0] * r.width, y = r.top + pos[1] * r.height
+    const target = document.elementFromPoint(x, y)
+    for (const type of ['dragenter', 'dragover', 'drop']) target.dispatchEvent(new DragEvent(type, { dataTransfer: dt, bubbles: true, cancelable: true, clientX: x, clientY: y }))
+  }, [data, at])
+await dragTo({ 'text/laila-graphic': JSON.stringify({ kind: 'text', id: 'paragraph' }) }, [0.3, 0.25])
+await win.waitForSelector('.graphic-insp')
+const W9 = pj.settings.width, H9 = pj.settings.height
+let gclip = await S(() => { const s = window.__laila.store.getState(); const t = s.project.tracks.find((t) => t.name === 'Chữ & hình'); return t && t.clips.find((c) => c.id === s.selectedClipId) })
+check('Kéo mẫu chữ thả lên khung xem: tạo clip chữ đúng chỗ, tại playhead', gclip && gclip.start === 1 && Math.abs(gclip.graphic.layer.transform.x.v - W9 * 0.3) < 3 && Math.abs(gclip.graphic.layer.transform.y.v - H9 * 0.25) < 3, gclip ? `${gclip.graphic.layer.transform.x.v},${gclip.graphic.layer.transform.y.v}` : 'không có')
+await win.locator('.graphic-insp .text-content').fill('Đêm nay Laila mở cửa tới khuya, nhạc hip hop và old school cả đêm\nĐặt bàn qua Instagram')
+await win.locator('.graphic-insp button[title="Căn đều 2 bên"]').click()
+const typeNum = async (row, v) => {
+  await win.locator('.graphic-insp .field-row', { hasText: row }).locator('.num-scrub').first().click()
+  const inp = win.locator('.graphic-insp .field-row', { hasText: row }).locator('input.num-input')
+  await inp.fill(v)
+  await inp.press('Enter')
+}
+await typeNum('Giãn dòng', '1.6')
+await typeNum('Cách đoạn', '1')
+await win.locator('.graphic-insp label.inline', { hasText: 'Nền chữ' }).locator('input').check()
+gclip = await S((id) => window.__laila.store.getState().project.tracks.flatMap((t) => t.clips).find((c) => c.id === id), gclip.id)
+const gt = gclip.graphic.layer.text
+check('Chỉnh đoạn văn: nội dung, căn đều, giãn dòng, cách đoạn, nền chữ', gt.content.includes('\n') && gt.align === 'justify' && gt.maxWidth > 0 && gt.lineHeight === 1.6 && gt.paraSpacing === 1 && !!gt.box, JSON.stringify({ a: gt.align, lh: gt.lineHeight, ps: gt.paraSpacing }))
+await win.waitForTimeout(300)
+const inked = await S(() => {
+  const c = [...document.querySelectorAll('.screen canvas.overlay-canvas')].find((x) => getComputedStyle(x).opacity === '1')
+  if (!c) return 0
+  const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data
+  let n = 0
+  for (let i = 3; i < d.length; i += 64) if (d[i] > 0) n++
+  return n
+})
+check('Khung xem vẽ chữ ngay', inked > 100, String(inked))
+await shot('17-text-on-video')
+
+// kéo chữ trực tiếp trên khung xem + kéo góc để phóng to
+const sbox = await win.locator('.stage-box.selected').boundingBox()
+const screenBox = await win.locator('.screen').boundingBox()
+const k = W9 / screenBox.width
+const x0 = gclip.graphic.layer.transform.x.v
+await win.mouse.move(sbox.x + sbox.width / 2, sbox.y + sbox.height / 2)
+await win.mouse.down()
+await win.mouse.move(sbox.x + sbox.width / 2 + 30, sbox.y + sbox.height / 2 + 5, { steps: 6 })
+await win.mouse.up()
+let moved = await S((id) => window.__laila.store.getState().project.tracks.flatMap((t) => t.clips).find((c) => c.id === id).graphic.layer.transform, gclip.id)
+check('Kéo chữ trên khung xem để di chuyển', Math.abs(moved.x.v - (x0 + 30 * k)) < 3 * k, `${x0} -> ${moved.x.v}`)
+const hd = await win.locator('.stage-box.selected .stage-handle').boundingBox()
+await win.mouse.move(hd.x + hd.width / 2, hd.y + hd.height / 2)
+await win.mouse.down()
+await win.mouse.move(hd.x + hd.width / 2 + 40, hd.y + hd.height / 2 + 40, { steps: 6 })
+await win.mouse.up()
+moved = await S((id) => window.__laila.store.getState().project.tracks.flatMap((t) => t.clips).find((c) => c.id === id).graphic.layer.transform, gclip.id)
+check('Kéo góc để phóng to', moved.scale.v > 110, String(moved.scale.v))
+await win.keyboard.press('Escape')
+await S(() => document.activeElement?.blur())
+await win.keyboard.press(process.platform === 'darwin' ? 'Meta+z' : 'Control+z')
+const und = await S((id) => window.__laila.store.getState().project.tracks.flatMap((t) => t.clips).find((c) => c.id === id).graphic.layer.transform.scale.v, gclip.id)
+check('Undo phóng to', und === 100, String(und))
+
+// thả ảnh từ Media, màu + logo từ Brand kit, chữ nhãn lên khung xem
+const photoId = await S(() => window.__laila.store.getState().project.media.find((m) => m.name === 'photo.jpg').id)
+await dragTo({ 'text/laila-media': photoId }, [0.75, 0.8])
+pj = await S(() => window.__laila.store.getState().project)
+const phClip = pj.tracks.flatMap((t) => t.clips).find((c) => c.id === pj.selectedClipId) ?? pj.tracks.flatMap((t) => t.clips).find((c) => c.mediaId === photoId && c.start === 1)
+const sel9 = await S(() => { const s = window.__laila.store.getState(); return s.project.tracks.flatMap((t) => t.clips).find((c) => c.id === s.selectedClipId) })
+check('Thả ảnh từ Media lên khung xem: lớp phủ đúng vị trí', sel9 && sel9.mediaId === photoId && Math.abs(sel9.x - (W9 * 0.75 - W9 / 2)) < 2 * k && Math.abs(sel9.y - (H9 * 0.8 - H9 / 2)) < 2 * k, sel9 ? `${sel9.x},${sel9.y}` : 'không có')
+void phClip
+const els = await S(() => window.__laila.store.getState().project.elements.map((e) => ({ id: e.id, kind: e.kind, name: e.name, value: e.value })))
+const colorEl = els.find((e) => e.kind === 'color')
+const logoEl = els.find((e) => e.name === 'logo_cho')
+await dragTo({ 'text/laila-element': colorEl.id }, [0.5, 0.5])
+const shp = await S(() => { const s = window.__laila.store.getState(); return s.project.tracks.flatMap((t) => t.clips).find((c) => c.id === s.selectedClipId) })
+check('Thả màu brand lên khung xem: thành hình khối màu đó, đúng tại playhead', shp?.graphic?.layer.type === 'shape' && shp.graphic.layer.shape.fill === colorEl.value && shp.start === 1)
+const nm = await S(() => window.__laila.store.getState().project.tracks.flatMap((t) => t.clips).length)
+await dragTo({ 'text/laila-element': logoEl.id }, [0.5, 0.15])
+await win.waitForFunction((n) => window.__laila.store.getState().project.tracks.flatMap((t) => t.clips).length === n + 1, nm, { timeout: 15000 })
+const lg = await S(() => { const s = window.__laila.store.getState(); const c = s.project.tracks.flatMap((t) => t.clips).find((c) => c.id === s.selectedClipId); return { c, m: s.project.media.find((m) => m.id === c.mediaId) } })
+check('Thả logo brand lên khung xem: lớp phủ ảnh ở trên', lg.m?.kind === 'image' && Math.abs(lg.c.y - (H9 * 0.15 - H9 / 2)) < 2 * k, lg.m ? `${lg.m.kind} y=${lg.c.y}` : 'không có media')
+await dragTo({ 'text/laila-graphic': JSON.stringify({ kind: 'text', id: 'tag' }) }, [0.5, 0.62])
+await win.locator('.graphic-insp .field-row', { hasText: 'Chữ vào' }).locator('select').selectOption('none')
+const tagClip = await S(() => { const s = window.__laila.store.getState(); return s.project.tracks.flatMap((t) => t.clips).find((c) => c.id === s.selectedClipId) })
+check('Thả thêm chữ khi track chữ đã kín: tự thêm track, vẫn đúng playhead', tagClip.start === 1, String(tagClip.start))
+await S(() => { const s = window.__laila.store.getState(); s.select(null); s.setPlayhead(2) })
+await win.waitForTimeout(400)
+await shot('18-drop-on-preview')
+// thêm chữ bằng nút trên timeline
+const ng = await S(() => window.__laila.store.getState().project.tracks.filter((t) => t.name.startsWith('Chữ & hình')).reduce((n, t) => n + t.clips.length, 0))
+await win.locator('.tl-toolbar button', { hasText: /^\s*Chữ\s*$/ }).click()
+const ng2 = await S(() => window.__laila.store.getState().project.tracks.filter((t) => t.name.startsWith('Chữ & hình')).reduce((n, t) => n + t.clips.length, 0))
+check('Nút Chữ trên timeline thêm clip chữ', ng2 === ng + 1)
+await S(() => window.__laila.store.getState().deleteSelected())
+
+// xuất: chữ / hình được vẽ vào video
+const out4 = join(userData, 'text.mp4')
+await stubDialog(null, out4)
+await win.locator('.topbar button', { hasText: 'Xuất video' }).click()
+await win.locator('.modal.export select').first().selectOption({ index: 0 })
+await win.locator('.modal.export button', { hasText: 'Nháp' }).click()
+await win.locator('.modal.export button', { hasText: 'Chọn nơi lưu và xuất' }).click()
+await win.waitForSelector('.modal.export .ok', { timeout: 180000 })
+const ow = W9 / 2, oh = H9 / 2
+const tx = Math.round(tagClip.graphic.layer.transform.x.v / 2), ty = Math.round(tagClip.graphic.layer.transform.y.v / 2)
+const tagPx = [...execFileSync('ffmpeg', ['-v', 'error', '-ss', '2', '-i', out4, '-frames:v', '1', '-vf', `crop=4:4:${tx - 30}:${ty - 2}`, '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'])]
+const paraPx = (() => { const d = [...execFileSync('ffmpeg', ['-v', 'error', '-ss', '2.5', '-i', out4, '-frames:v', '1', '-vf', `crop=${Math.round(ow * 0.5)}:${Math.round(oh * 0.15)}:${Math.round(ow * 0.08)}:${Math.round(oh * 0.2)},scale=32:8`, '-f', 'rawvideo', '-pix_fmt', 'gray', '-'])]; return Math.max(...d) - Math.min(...d) })()
+check('Xuất video có chữ (nhãn vàng + đoạn văn)', tagPx[0] > 200 && tagPx[1] > 170 && tagPx[2] < 90 && paraPx > 60, `nhãn ${tagPx.slice(0, 3)}, tương phản đoạn văn ${paraPx}`)
+await win.locator('.modal.export button', { hasText: 'Đóng' }).click()
+
 // 10. Motion Editor: rê chuột xem thử hiệu ứng
 await win.locator('.scene-card').first().locator('text=Chỉnh sửa').click()
 await win.waitForSelector('.motion-editor')

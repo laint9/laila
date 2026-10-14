@@ -457,3 +457,14 @@ export function analyzeVideoFrames(path: string, fps = 8): Promise<VideoFrames> 
     p.on('close', (code) => (code === 0 ? resolve(parseFrameStats(Buffer.concat(chunks).toString(), fps)) : reject(new Error('Không phân tích được video: ' + err.slice(-300)))))
   })
 }
+
+/** Tách âm thanh của video ra file M4A (AAC 256k) */
+export function extractAudio(path: string, outPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const p = spawn(FFMPEG, ['-y', '-i', path, '-vn', '-map', '0:a:0', '-c:a', 'aac', '-b:a', '256k', '-movflags', '+faststart', outPath])
+    let err = ''
+    p.stderr.on('data', (d) => (err = (err + d).slice(-2000)))
+    p.on('error', reject)
+    p.on('close', (code) => (code === 0 && existsSync(outPath) ? resolve() : reject(new Error(/matches no streams|does not contain any stream/i.test(err) ? 'Video này không có tiếng' : 'Không tách được âm thanh: ' + err.slice(-300)))))
+  })
+}

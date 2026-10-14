@@ -49,8 +49,10 @@ Ease: "linear" | "hold" | "easyEase" | "easeIn" | "easeOut" | "easeOutCubic" | "
 
 type "text": "text": {
   "content": string (\\n for line breaks), "font": brand font element name or a macOS font family, "size": px, "weight": 100..900,
-  "color": "#hex", "align": "left"|"center"|"right", "lineHeight": multiplier, "tracking": Prop (px between letters),
-  "maxWidth": px (0 = no wrapping),
+  "color": "#hex", "align": "left"|"center"|"right"|"justify", "lineHeight": multiplier, "tracking": Prop (px between letters),
+  "maxWidth": px (0 = no wrapping; justify needs it),
+  optional: "italic": bool, "uppercase": bool, "paraSpacing": extra gap between paragraphs in multiples of size, "indent": px first-line indent,
+  "stroke": { "color", "width" px } | null, "shadow": { "color", "blur", "x", "y" } | null (use for neon glow), "box": { "color", "opacity" 0..1, "padding" px, "radius" px } | null (caption/label background),
   "animIn":  TextAnimator | null,   // per char/word/line reveal, like AE text animators with a range selector
   "animOut": TextAnimator | null
 }
