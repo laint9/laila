@@ -26,7 +26,8 @@ import {
   trimLeftAt,
   trimRightAt,
   trimTrackClip,
-  tSpeed
+  tSpeed,
+  mediaLimit
 } from './timeline'
 
 export const RESOLUTIONS: { label: string; width: number; height: number }[] = [
@@ -276,7 +277,7 @@ export const useStore = create<State>((set, get) => {
       const tc = findTrackClip(project, selectedClipId)
       if (tc && playhead > tc.clip.start && playhead < tEnd(tc.clip)) {
         const m = project.media.find((x) => x.id === tc.clip.mediaId)
-        return get().setTrackClip(tc.clip.id, trimTrackClip(tc.clip, 'in', tc.clip.in + (playhead - tc.clip.start) * tSpeed(tc.clip), m?.duration ?? 1e9))
+        return get().setTrackClip(tc.clip.id, trimTrackClip(tc.clip, 'in', tc.clip.in + (playhead - tc.clip.start) * tSpeed(tc.clip), m ? mediaLimit(m) : 1e9))
       }
       const next = trimLeftAt(project.timeline, playhead)
       if (next !== project.timeline) commit(() => ({ timeline: next }))
@@ -286,7 +287,7 @@ export const useStore = create<State>((set, get) => {
       const tc = findTrackClip(project, selectedClipId)
       if (tc && playhead > tc.clip.start && playhead < tEnd(tc.clip)) {
         const m = project.media.find((x) => x.id === tc.clip.mediaId)
-        return get().setTrackClip(tc.clip.id, trimTrackClip(tc.clip, 'out', tc.clip.in + (playhead - tc.clip.start) * tSpeed(tc.clip), m?.duration ?? 1e9))
+        return get().setTrackClip(tc.clip.id, trimTrackClip(tc.clip, 'out', tc.clip.in + (playhead - tc.clip.start) * tSpeed(tc.clip), m ? mediaLimit(m) : 1e9))
       }
       const next = trimRightAt(project.timeline, playhead)
       if (next !== project.timeline) commit(() => ({ timeline: next }))
@@ -331,7 +332,7 @@ export const useStore = create<State>((set, get) => {
       const clip = p.timeline.find((c) => c.id === id)
       const m = clip && p.media.find((x) => x.id === clip.mediaId)
       if (!m) return
-      patchProject((p) => ({ timeline: trimClip(p.timeline, id, edge, value, m.duration) }))
+      patchProject((p) => ({ timeline: trimClip(p.timeline, id, edge, value, mediaLimit(m)) }))
     },
     move: (id, toIndex) => commit((p) => ({ timeline: moveClip(p.timeline, id, toIndex) })),
     setClipVolume: (id, v) =>
@@ -399,7 +400,7 @@ export const useStore = create<State>((set, get) => {
       const tc = findTrackClip(p, id)
       const m = tc && p.media.find((x) => x.id === tc.clip.mediaId)
       if (!tc || !m) return
-      const next = trimTrackClip(tc.clip, edge, value, m.duration)
+      const next = trimTrackClip(tc.clip, edge, value, mediaLimit(m))
       // không cho đè clip bên cạnh
       const others = tc.track.clips.filter((c) => c.id !== id)
       if (others.some((c) => next.start < tEnd(c) - 1e-6 && c.start < tEnd(next) - 1e-6)) return

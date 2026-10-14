@@ -7,12 +7,15 @@ import type { SceneRunner } from '../engine/player'
 import type { Layer } from '../engine/types'
 import { useEditor } from './state'
 import { Icon } from '../components/Icon'
+import { hasFiles } from '../lib/importer'
 
 interface Props {
   runner: SceneRunner
   width: number
   height: number
   accent: string
+  /** thả ảnh / vector từ Finder vào khung hình (toạ độ composition) */
+  onDropFiles?: (files: File[], at: { x: number; y: number }) => void
 }
 
 type Drag =
@@ -21,7 +24,7 @@ type Drag =
   | { kind: 'rotate'; id: string; p0: DOMPoint; r0: number; a0: DOMPoint }
   | { kind: 'draw'; id: string; p0: DOMPoint; shape: 'rect' | 'ellipse' | 'line' }
 
-export function Viewer({ runner, width: W, height: H, accent }: Props) {
+export function Viewer({ runner, width: W, height: H, accent, onDropFiles }: Props) {
   const scene = useEditor((s) => s.scene)
   const previewScene = useEditor((s) => s.preview?.scene)
   const time = useEditor((s) => s.time)
@@ -35,6 +38,7 @@ export function Viewer({ runner, width: W, height: H, accent }: Props) {
   const wrap = useRef<HTMLDivElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
   const [scale, setScale] = useState(0.4)
+  const [fileOver, setFileOver] = useState(false)
   const [guides, setGuides] = useState<{ x: number[]; y: number[] }>({ x: [], y: [] })
   const [, force] = useState(0)
   const drag = useRef<Drag | null>(null)
@@ -266,7 +270,28 @@ export function Viewer({ runner, width: W, height: H, accent }: Props) {
     })()
 
   return (
-    <div className="viewer" ref={wrap}>
+    <div
+      className={'viewer' + (fileOver ? ' file-over' : '')}
+      ref={wrap}
+      onDragOver={(e) => {
+        if (!onDropFiles || !hasFiles(e)) return
+        e.preventDefault()
+        e.stopPropagation()
+        e.dataTransfer.dropEffect = 'copy'
+        setFileOver(true)
+      }}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) setFileOver(false)
+      }}
+      onDrop={(e) => {
+        if (!onDropFiles || !hasFiles(e)) return
+        e.preventDefault()
+        e.stopPropagation()
+        setFileOver(false)
+        const p = toComp(e)
+        onDropFiles([...e.dataTransfer.files], { x: Math.min(W, Math.max(0, p.x)), y: Math.min(H, Math.max(0, p.y)) })
+      }}
+    >
       <div className="viewer-stage" style={{ width: W * scale, height: H * scale }}>
         <canvas ref={canvas} width={W} height={H} className={scene.background ? '' : 'checker'} />
         <svg

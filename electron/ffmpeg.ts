@@ -164,9 +164,11 @@ export function buildExportArgs(req: ExportRequest): { args: string[]; total: nu
   const filters: string[] = []
   const lens: number[] = []
   let input = 0
-  const addInput = (path: string, alpha = false) => {
+  const addInput = (path: string, alpha = false, image?: { until: number }) => {
+    // ảnh tĩnh: lặp 1 khung thành luồng video đủ dài cho đoạn cần dùng
+    if (image) args.push('-loop', '1', '-framerate', String(fps), '-t', n(image.until + 1))
     // webm có alpha phải giải mã bằng libvpx mới giữ được kênh trong suốt
-    if (alpha) args.push('-c:v', 'libvpx-vp9')
+    else if (alpha) args.push('-c:v', 'libvpx-vp9')
     args.push('-i', path)
     return input++
   }
@@ -176,12 +178,13 @@ export function buildExportArgs(req: ExportRequest): { args: string[]; total: nu
   const AF = 'aformat=sample_rates=48000:channel_layouts=stereo'
 
   req.clips.forEach((c, i) => {
-    const k = addInput(c.path)
+    const k = addInput(c.path, false, c.image ? { until: c.out } : undefined)
     const speed = Math.min(4, Math.max(0.25, c.speed || 1))
     const d = Math.max(0.04, (c.out - c.in) / speed)
     lens.push(d)
     filters.push(
-      `[${k}:v]trim=start=${n(c.in)}:end=${n(c.out)},setpts=(PTS-STARTPTS)/${speed},` +
+      // ảnh nền trong đặt lên nền đen (giống preview)
+      `[${k}:v]${c.image ? 'format=rgba,premultiply=inplace=1,' : ''}trim=start=${n(c.in)}:end=${n(c.out)},setpts=(PTS-STARTPTS)/${speed},` +
         `scale=${W}:${H}:force_original_aspect_ratio=decrease,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=black,` +
         `setsar=1,fps=${fps},format=yuv420p,settb=AVTB[v${i}]`
     )
@@ -241,7 +244,7 @@ export function buildExportArgs(req: ExportRequest): { args: string[]; total: nu
   // lớp phủ: vẽ lần lượt từ dưới lên trên
   const mixIns: string[] = [`[${aAcc}]`]
   overlays.forEach((o, j) => {
-    const k = addInput(o.path, o.alpha)
+    const k = addInput(o.path, o.alpha, o.image ? { until: o.out } : undefined)
     const sp = Math.min(4, Math.max(0.25, o.speed || 1))
     const d = clipLen(o)
     const sc = Math.max(0.05, (o.scale || 100) / 100)

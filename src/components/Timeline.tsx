@@ -17,6 +17,7 @@ import {
 import { TRANSITIONS, transitionStyles } from '../lib/transitions'
 import { useLoopProgress } from '../lib/ticker'
 import { Icon } from './Icon'
+import { hasFiles, importDropped } from '../lib/importer'
 
 const HEAD_W = 132 // cột tên track
 const PAD = 12 // lề trái trong lane
@@ -29,6 +30,8 @@ function useClipThumb(m: MediaItem | undefined) {
   const [url, setUrl] = useState<string | null>(thumbCache.get(key) ?? null)
   useEffect(() => {
     if (!m) return
+    // ảnh tĩnh: lặp lại chính ảnh đó dọc theo clip
+    if (m.kind === 'image') return setUrl(mediaUrl(m.path))
     if (thumbCache.has(key)) return setUrl(thumbCache.get(key)!)
     let alive = true
     const job = m.kind === 'audio' ? window.laila.media.waveform(m.path) : window.laila.media.filmstrip(m.path, m.duration)
@@ -43,6 +46,11 @@ function useClipThumb(m: MediaItem | undefined) {
   }, [key])
   return url
 }
+
+const stripStyle = (m: MediaItem | undefined, url: string, full: number, offset: number): React.CSSProperties =>
+  m?.kind === 'image'
+    ? { backgroundImage: `url("${url}")`, backgroundSize: 'auto 100%', backgroundRepeat: 'repeat-x', backgroundPosition: '0 0' }
+    : { backgroundImage: `url("${url}")`, backgroundSize: `${full}px 100%`, backgroundPosition: `${-offset}px 0` }
 
 export function Timeline() {
   const project = useStore((s) => s.project)
@@ -142,10 +150,25 @@ export function Timeline() {
     for (let i = 0; i < clips.length; i++) if (t < starts[i] + clipLength(clips[i]) / 2) return i
     return clips.length
   }
+  // kéo file từ Finder thẳng vào timeline: nhập vào Media rồi đặt đúng chỗ thả
+  const dropFiles = (e: React.DragEvent, place: (m: MediaItem, i: number, t: number) => number) => {
+    if (!hasFiles(e)) return false
+    e.preventDefault()
+    e.stopPropagation()
+    let t = snapTime(timeAt(e.clientX))
+    importDropped([...e.dataTransfer.files]).then(({ items }) => items.forEach((m, i) => (t = place(m, i, t))))
+    return true
+  }
+  const toTrackAt = (m: MediaItem, t: number, trackId?: string) => {
+    s().addToTrack(m.id, t, trackId)
+    return t + m.duration
+  }
+
   const onDropMain = (e: React.DragEvent) => {
     e.preventDefault()
     const idx = indexAt(e.clientX)
     setDropIndex(null)
+    if (dropFiles(e, (m, i, t) => (m.kind === 'audio' || m.alpha ? toTrackAt(m, t) : (s().appendToTimeline(m.id, idx + i), t)))) return
     const mediaId = e.dataTransfer.getData('text/laila-media')
     const clipId = e.dataTransfer.getData('text/laila-clip')
     if (mediaId) {
@@ -193,6 +216,7 @@ export function Timeline() {
   const onDropTrack = (e: React.DragEvent, track: Track) => {
     e.preventDefault()
     setDropTrack(null)
+    if (dropFiles(e, (m, _i, t) => toTrackAt(m, t, (m.kind === 'audio' ? 'audio' : 'video') === track.kind ? track.id : undefined))) return
     const mediaId = e.dataTransfer.getData('text/laila-media')
     const m = mediaId && mediaOf(mediaId)
     if (!m) return
@@ -449,6 +473,7 @@ export function Timeline() {
                 onDrop={(e) => {
                   e.preventDefault()
                   setDropTrack(null)
+                  if (dropFiles(e, (m, _i, t) => toTrackAt(m, t))) return
                   const id = e.dataTransfer.getData('text/laila-media')
                   if (mediaOf(id)) s().addToTrack(id, snapTime(timeAt(e.clientX)))
                 }}
@@ -559,7 +584,7 @@ function ClipBlock(props: {
       }}
       onDoubleClick={props.onJump}
     >
-      {strip && <div className="filmstrip" style={{ backgroundImage: `url("${strip}")`, backgroundSize: `${full}px 100%`, backgroundPosition: `${-offset}px 0` }} />}
+      {strip && <div className="filmstrip" style={stripStyle(m, strip, full, offset)} />}
       <div className="handle in" onMouseDown={(e) => props.onTrim(e, 'in')} />
       <div className="clip-label">
         <span className="clip-name">{m?.name ?? 'missing'}</span>
@@ -593,7 +618,7 @@ function TrackClipBlock(props: {
       {thumb && (
         <div
           className={m?.kind === 'audio' ? 'waveform' : 'filmstrip'}
-          style={{ backgroundImage: `url("${thumb}")`, backgroundSize: `${full}px 100%`, backgroundPosition: `${-offset}px 0` }}
+          style={stripStyle(m, thumb, full, offset)}
         />
       )}
       <div className="handle in" onMouseDown={(e) => props.onTrim(e, 'in')} />

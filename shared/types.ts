@@ -47,16 +47,29 @@ export interface Scene {
 
 export interface MediaItem {
   id: string
-  kind: 'motion' | 'video' | 'audio'
+  kind: 'motion' | 'video' | 'audio' | 'image'
   name: string
+  /** file dùng để phát/xuất (vector đã được chuyển sang PNG) */
   path: string
+  /** ảnh: thời lượng mặc định khi đặt lên timeline (kéo dài tuỳ ý) */
   duration: number
   hasAudio: boolean
   width?: number
   height?: number
   sceneId?: string
-  /** video có kênh trong suốt (webm VP9 alpha) — dùng làm lớp phủ */
+  /** có kênh trong suốt (webm VP9 alpha, PNG/SVG/PDF nền trong) — dùng làm lớp phủ */
   alpha?: boolean
+  /** file gốc khi khác `path` (vd .svg, .pdf, .ai đã chuyển sang PNG) */
+  source?: string
+}
+
+/** Kết quả phân loại file kéo thả / chọn từ máy */
+export interface ImportedFile {
+  item?: MediaItem
+  /** vector cần renderer vẽ ra PNG (svg/pdf/ai) */
+  vector?: 'svg' | 'pdf'
+  path: string
+  error?: string
 }
 
 /** Clip nằm trên track video chính (kiểu magnetic như CapCut). */
@@ -178,6 +191,8 @@ export interface ExportClip {
   transitionDuration: number
   fadeIn: number
   fadeOut: number
+  /** ảnh tĩnh (lặp 1 khung) */
+  image?: boolean
 }
 
 export interface ExportRequest {
@@ -206,6 +221,7 @@ export interface ExportAudio {
 export interface ExportOverlay extends ExportAudio {
   hasAudio: boolean
   alpha: boolean
+  image?: boolean
   opacity: number
   scale: number
   x: number

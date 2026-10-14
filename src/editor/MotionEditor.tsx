@@ -1,6 +1,7 @@
 // Motion Editor: mở 1 scene như một composition trong After Effects.
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
+import { addBrandImages } from '../lib/importer'
 import { duplicateLayer, KEY_EPS, newCodeLayer, newImageLayer, nextKeyTime, setPropAt, splitLayer, toggleKeyAt, getProp, withProp } from '../engine/edit'
 import { SceneRunner } from '../engine/player'
 import { valueAt } from '../engine/ease'
@@ -318,7 +319,23 @@ export function MotionEditor({ sceneId, onClose }: { sceneId: string; onClose: (
           <aside className="me-left">
             <LeftPanels />
           </aside>
-          <Viewer runner={runner} width={settings.width} height={settings.height} accent={accent} />
+          <Viewer
+            runner={runner}
+            width={settings.width}
+            height={settings.height}
+            accent={accent}
+            onDropFiles={async (files, at) => {
+              // ảnh / vector -> brand element (Claude gọi được theo tên) + layer ảnh tại chỗ thả
+              const added = await addBrandImages(files)
+              if (!added.length) return
+              const layers = added.map((el, i) => {
+                const l = newImageLayer(settings.width, settings.height, duration, el.name)
+                return { ...l, transform: { ...l.transform, x: { v: at.x + i * 24 }, y: { v: at.y + i * 24 } } }
+              })
+              ed().edit((sc) => ({ ...sc, layers: [...layers.reverse(), ...sc.layers] }))
+              ed().select(layers[0].id)
+            }}
+          />
           <aside className="me-right">
             <Inspector />
           </aside>

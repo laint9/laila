@@ -7,6 +7,7 @@ import { Readable } from 'node:stream'
 import { randomUUID } from 'node:crypto'
 import { ClaudeService, DEFAULT_MODEL } from './claude'
 import { scanFontDirs } from './fonts'
+import { ALL_EXT, AUDIO_EXT, IMAGE_EXT, importPath, makeImageItem, VECTOR_EXT, VIDEO_EXT } from './importer'
 import { extractFrame, FrameEncoder, makeFilmstrip, makeWaveform, probe, runExport } from './ffmpeg'
 import type {
   AppSettings,
@@ -123,6 +124,14 @@ function registerMediaProtocol() {
     '.webp': 'image/webp',
     '.gif': 'image/gif',
     '.svg': 'image/svg+xml',
+    '.bmp': 'image/bmp',
+    '.pdf': 'application/pdf',
+    '.ai': 'application/pdf',
+    '.mkv': 'video/x-matroska',
+    '.flac': 'audio/flac',
+    '.ogg': 'audio/ogg',
+    '.aiff': 'audio/aiff',
+    '.aif': 'audio/aiff',
     '.ttf': 'font/ttf',
     '.otf': 'font/otf',
     '.ttc': 'font/collection'
@@ -290,28 +299,37 @@ function registerIpc() {
     encoders.delete(jobId)
   })
 
-  ipcMain.handle('media:import', async (_e, kind: 'video' | 'audio') => {
+  ipcMain.handle('media:import', async (_e, kind: 'video' | 'audio' | 'image' | 'all') => {
     const filters =
       kind === 'audio'
-        ? [{ name: 'Audio', extensions: ['mp3', 'm4a', 'wav', 'aac'] }]
-        : [{ name: 'Video', extensions: ['mp4', 'mov', 'm4v', 'webm'] }]
+        ? [{ name: 'Âm thanh', extensions: AUDIO_EXT }]
+        : kind === 'video'
+          ? [{ name: 'Video', extensions: VIDEO_EXT }]
+          : kind === 'image'
+            ? [{ name: 'Ảnh & vector', extensions: [...IMAGE_EXT, ...VECTOR_EXT] }]
+            : [{ name: 'Video, ảnh, vector, âm thanh', extensions: ALL_EXT }]
     const r = await dialog.showOpenDialog(win!, { properties: ['openFile', 'multiSelections'], filters })
     if (r.canceled) return []
-    const items: MediaItem[] = []
-    for (const p of r.filePaths) {
-      const info = await probe(p)
-      items.push({
-        id: randomUUID(),
-        kind,
-        name: basename(p),
-        path: p,
-        duration: info.duration,
-        hasAudio: info.hasAudio,
-        width: info.width,
-        height: info.height
-      })
-    }
-    return items
+    return Promise.all(r.filePaths.map(importPath))
+  })
+  // file kéo thả từ Finder
+  ipcMain.handle('media:importPaths', (_e, paths: string[]) => Promise.all(paths.filter((p) => existsSync(p)).map(importPath)))
+  // file kéo thả không có đường dẫn (vd ảnh kéo từ trình duyệt): lưu lại rồi nhập như file thường
+  ipcMain.handle('media:saveDropped', async (_e, name: string, data: Uint8Array) => {
+    // mỗi file 1 thư mục riêng để giữ nguyên tên gốc
+    const dir = join(userDir(), 'imported', randomUUID().slice(0, 8))
+    mkdirSync(dir, { recursive: true })
+    const out = join(dir, basename(name).replace(/[\\/:]+/g, '_') || 'file')
+    await writeFile(out, data)
+    return out
+  })
+  // PNG renderer vẽ từ vector (svg/pdf/ai)
+  ipcMain.handle('media:saveRaster', async (_e, source: string, data: Uint8Array) => {
+    const dir = join(userDir(), 'raster')
+    mkdirSync(dir, { recursive: true })
+    const out = join(dir, `${basename(source, extname(source)).replace(/[^\p{L}\p{N}._\- ]+/gu, '_')}-${randomUUID().slice(0, 8)}.png`)
+    await writeFile(out, data)
+    return makeImageItem(out, source)
   })
 
   // filmstrip cho timeline, cache theo đường dẫn + thời gian sửa file
@@ -354,7 +372,7 @@ function registerIpc() {
   ipcMain.handle('file:pickImage', async () => {
     const r = await dialog.showOpenDialog(win!, {
       properties: ['openFile'],
-      filters: [{ name: 'Image', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'] }]
+      filters: [{ name: 'Ảnh & vector', extensions: [...IMAGE_EXT, ...VECTOR_EXT] }]
     })
     return r.canceled ? null : r.filePaths[0]
   })

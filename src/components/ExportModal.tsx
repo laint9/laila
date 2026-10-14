@@ -44,6 +44,7 @@ export function ExportModal(props: { onClose: () => void }) {
             const m = byId.get(c.mediaId)!
             return {
               path: m.path,
+              image: m.kind === 'image',
               in: c.in,
               out: c.out,
               hasAudio: m.hasAudio,
@@ -66,6 +67,7 @@ export function ExportModal(props: { onClose: () => void }) {
                 return {
                   path: m.path,
                   alpha: !!m.alpha,
+                  image: m.kind === 'image',
                   hasAudio: m.hasAudio,
                   start: c.start,
                   in: c.in,

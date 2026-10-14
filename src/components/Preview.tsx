@@ -57,7 +57,7 @@ function ClipPlayer({ mediaId }: { mediaId: string }) {
   if (!m) return <div className="screen-empty">Clip không còn</div>
   return (
     <>
-      <video key={m.id} src={mediaUrl(m.path)} controls autoPlay loop />
+      {m.kind === 'image' ? <img key={m.id} className="screen-img" src={mediaUrl(m.path)} alt="" /> : <video key={m.id} src={mediaUrl(m.path)} controls autoPlay loop />}
       <div className="screen-actions">
         <span>{m.name}</span>
         <button className="btn small" onClick={() => append(m.id)}>
@@ -78,6 +78,10 @@ function TimelinePlayer() {
   const playing = useStore((s) => s.playing)
   const setPlaying = useStore((s) => s.setPlaying)
   const vids = [useRef<HTMLVideoElement>(null), useRef<HTMLVideoElement>(null)]
+  // ảnh tĩnh trên track chính dùng thẻ <img> riêng cho từng slot
+  const imgs = [useRef<HTMLImageElement>(null), useRef<HTMLImageElement>(null)]
+  const isImg = useRef([false, false])
+  const trackImgs = useRef(new Map<string, HTMLImageElement>())
   const overlay = useRef<HTMLDivElement>(null)
   // phần tử phát cho track phụ (video phủ / âm thanh), theo id track
   const trackEls = useRef(new Map<string, HTMLVideoElement | HTMLAudioElement>())
@@ -97,9 +101,16 @@ function TimelinePlayer() {
   const total = projectDuration(project)
   const { width: W, height: H } = project.settings
 
+  const mediaOf = (c: TimelineClip) => project.media.find((x) => x.id === c.mediaId)
   const urlOf = (c: TimelineClip) => {
-    const m = project.media.find((x) => x.id === c.mediaId)
+    const m = mediaOf(c)
     return m ? mediaUrl(m.path) : ''
+  }
+  const setSrc = (el: HTMLImageElement | null | undefined, url: string) => {
+    if (el && el.dataset.src !== url) {
+      el.dataset.src = url
+      el.src = url
+    }
   }
 
   const syncTracks = (t: number, isPlaying: boolean) => {
@@ -111,11 +122,27 @@ function TimelinePlayer() {
       if (off) {
         if (!el.paused) el.pause()
         if (tr.kind === 'video') el.style.opacity = '0'
+        const im = trackImgs.current.get(tr.id)
+        if (im) im.style.opacity = '0'
         continue
       }
       const m = project.media.find((x) => x.id === c.mediaId)
       if (!m) continue
       const url = mediaUrl(m.path)
+      const im = trackImgs.current.get(tr.id)
+      if (im) im.style.opacity = '0'
+      if (m.kind === 'image' && im && tr.kind === 'video') {
+        if (!el.paused) el.pause()
+        el.style.opacity = '0'
+        setSrc(im, url)
+        const z = 10 + videoTracks.length - videoTracks.indexOf(tr)
+        Object.assign(im.style, {
+          opacity: String((c.opacity ?? 100) / 100),
+          zIndex: String(z),
+          transform: `translate(${((c.x ?? 0) / W) * 100}%, ${((c.y ?? 0) / H) * 100}%) scale(${(c.scale ?? 100) / 100})`
+        })
+        continue
+      }
       const target = c.in + (t - c.start) * tSpeed(c)
       if (trackUrl.current.get(tr.id) !== url) {
         trackUrl.current.set(tr.id, url)
@@ -171,6 +198,14 @@ function TimelinePlayer() {
       }
       const c = clips[idx]
       const url = urlOf(c)
+      isImg.current[s] = mediaOf(c)?.kind === 'image'
+      if (isImg.current[s]) {
+        setSrc(imgs[s].current, url)
+        if (!v.paused) v.pause()
+        st.index = idx
+        if (a) styles[s] = { opacity: 1, zIndex: 1 }
+        continue
+      }
       const target = a ? a.source : c.in
       if (st.url !== url) {
         st.url = url
@@ -211,9 +246,13 @@ function TimelinePlayer() {
 
     vids.forEach((r, s) => {
       const v = r.current
+      const im = imgs[s].current
       if (!v) return
-      Object.assign(v.style, { opacity: '0', transform: '', clipPath: '', zIndex: '0' }, Object.fromEntries(Object.entries(styles[s]).map(([k, val]) => [k, String(val)])))
-      v.volume = Math.max(0, Math.min(1, gain[s]))
+      const shown = isImg.current[s] && im ? im : v
+      const hidden = shown === v ? im : v
+      Object.assign(shown.style, { opacity: '0', transform: '', clipPath: '', zIndex: '0' }, Object.fromEntries(Object.entries(styles[s]).map(([k, val]) => [k, String(val)])))
+      if (hidden) Object.assign(hidden.style, { opacity: '0', zIndex: '0' })
+      v.volume = shown === v ? Math.max(0, Math.min(1, gain[s])) : 0
     })
     if (overlay.current) {
       overlay.current.style.opacity = String(ov)
@@ -288,19 +327,31 @@ function TimelinePlayer() {
       {total === 0 && <div className="screen-empty">Timeline trống. Generate scene rồi đưa lên timeline.</div>}
       <video ref={vids[0]} playsInline preload="auto" />
       <video ref={vids[1]} playsInline preload="auto" />
+      <img ref={imgs[0]} className="screen-img" alt="" style={{ opacity: 0 }} />
+      <img ref={imgs[1]} className="screen-img" alt="" style={{ opacity: 0 }} />
       <div ref={overlay} className="screen-overlay" />
       {tracks.map((tr) =>
         tr.kind === 'video' ? (
-          <video
-            key={tr.id}
-            className="overlay-video"
-            playsInline
-            preload="auto"
-            ref={(el) => {
-              if (el) trackEls.current.set(tr.id, el)
-              else trackEls.current.delete(tr.id)
-            }}
-          />
+          <span key={tr.id} style={{ display: 'contents' }}>
+            <video
+              className="overlay-video"
+              playsInline
+              preload="auto"
+              ref={(el) => {
+                if (el) trackEls.current.set(tr.id, el)
+                else trackEls.current.delete(tr.id)
+              }}
+            />
+            <img
+              className="screen-img overlay-img"
+              alt=""
+              style={{ opacity: 0 }}
+              ref={(el) => {
+                if (el) trackImgs.current.set(tr.id, el)
+                else trackImgs.current.delete(tr.id)
+              }}
+            />
+          </span>
         ) : (
           <audio
             key={tr.id}

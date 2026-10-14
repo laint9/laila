@@ -195,3 +195,9 @@ export function migrateProject<T extends Project>(p: T, newId: () => string, med
   }
   return { ...(rest as T), tracks: [...(p.tracks ?? []), audio] }
 }
+
+/** Ảnh tĩnh kéo dài được tới mức này (giây) */
+export const IMAGE_MAX = 3600
+
+/** Giới hạn điểm ra khi trim: video/âm thanh theo độ dài file, ảnh thì gần như không giới hạn */
+export const mediaLimit = (m: { kind: string; duration: number }) => (m.kind === 'image' ? IMAGE_MAX : m.duration)

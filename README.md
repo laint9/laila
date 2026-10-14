@@ -56,6 +56,23 @@ Phím tắt trong editor: `Space` phát, `J`/`K` keyframe trước/sau, `F9` Eas
 
 Preview dùng 2 trình phát luân phiên nên không bị chớp ở điểm cắt, và xem trước được chuyển cảnh. Chuyển cảnh chồng lên 2 clip giống CapCut, nên thời lượng tổng ngắn lại đúng bằng phần chồng lấn.
 
+## Kéo thả file
+
+Kéo file từ Finder thả thẳng vào app:
+
+| Thả vào | Kết quả |
+|---|---|
+| Khung **Media** hoặc bất kỳ chỗ trống nào | Nhập vào Media (tự mở tab Media) |
+| Track chính trên timeline | Thành clip đúng vị trí thả. Ảnh mặc định 5 giây, kéo mép để dài/ngắn tuỳ ý |
+| Track phủ / track âm thanh | Đặt đúng thời điểm thả. Ảnh nền trong suốt (logo PNG, SVG, PDF) tự vào track phủ |
+| **Brand kit** | Thành element ảnh, tên đặt theo tên file (vd `Logo Chợ.svg` → `logo_cho`) để Claude gọi được |
+| Khung hình **Motion Editor** | Thêm layer ảnh ngay tại chỗ thả |
+| Cửa sổ **Phân tích reference** | Chọn file reference |
+
+Định dạng: video MP4, MOV, M4V, WebM, MKV, AVI · ảnh PNG, JPG, WebP, GIF, BMP · vector SVG, PDF, AI (bản lưu kèm PDF, mặc định của Illustrator) · âm thanh MP3, WAV, M4A, AAC, AIFF, FLAC, OGG.
+
+Vector được vẽ ra PNG nền trong suốt, cạnh dài tối thiểu 2048px (gấp đôi khung hình) nên phóng to vẫn nét; file gốc được giữ để "Hiện trong Finder". EPS, PSD, HEIC chưa hỗ trợ: app báo rõ cách đổi định dạng.
+
 ## Phân tích reference
 
 Bấm **Phân tích reference**, chọn ảnh hoặc video có effect muốn học theo. App trích tối đa 8 khung hình theo thứ tự thời gian, Claude đánh giá: copy được hoàn toàn / gần đúng / không, từng kỹ thuật làm được hay không, nhịp, bảng màu, mẹo chỉnh thêm. Sau đó bấm **Tạo scene theo reference** để dựng scene tương tự (có thể thêm bảng màu vào brand kit).

@@ -15,6 +15,7 @@ import { Splitter } from './components/Splitter'
 import { useLayout } from './lib/layout'
 import { applyTheme } from './lib/theme'
 import { startFontWatch } from './lib/fonts'
+import { hasFiles, importDropped, onImportErrors } from './lib/importer'
 import type { AppSettings } from '../shared/types'
 
 applyTheme()
@@ -60,6 +61,51 @@ export function App() {
     return () => clearTimeout(t)
   }, [project])
 
+  // Kéo file từ Finder vào bất kỳ đâu: nhập vào Media. Vùng riêng (timeline, brand kit, editor) tự xử lý trước.
+  const [fileDrag, setFileDrag] = useState(false)
+  const [importErrors, setImportErrors] = useState<string[]>([])
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const offErr = onImportErrors((msgs) => {
+      setImportErrors(msgs)
+      clearTimeout(timer)
+      timer = setTimeout(() => setImportErrors([]), 8000)
+    })
+    const over = (e: DragEvent) => {
+      if (!hasFiles(e)) return
+      // chặn Electron mở file thay cho app
+      e.preventDefault()
+      setFileDrag(true)
+    }
+    const leave = (e: DragEvent) => {
+      if (!e.relatedTarget) setFileDrag(false)
+    }
+    const end = () => setFileDrag(false)
+    const drop = (e: DragEvent) => {
+      if (!hasFiles(e)) return
+      e.preventDefault()
+      if (editingRef.current) return // Motion Editor chỉ nhận ảnh thả vào khung hình
+      const files = [...e.dataTransfer!.files]
+      if (!files.length) return
+      setLeftTab('media')
+      importDropped(files)
+    }
+    window.addEventListener('dragover', over)
+    window.addEventListener('dragleave', leave)
+    window.addEventListener('drop', end, true)
+    window.addEventListener('dragend', end)
+    window.addEventListener('drop', drop)
+    return () => {
+      offErr()
+      clearTimeout(timer)
+      window.removeEventListener('dragover', over)
+      window.removeEventListener('dragleave', leave)
+      window.removeEventListener('drop', end, true)
+      window.removeEventListener('dragend', end)
+      window.removeEventListener('drop', drop)
+    }
+  }, [])
+
   // Phím tắt kiểu CapCut
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -102,7 +148,7 @@ export function App() {
   }, [])
 
   return (
-    <div className="app" style={{ gridTemplateRows: `52px minmax(0, 1fr) ${sizes.timeline}px` }}>
+    <div className={'app' + (fileDrag ? ' file-dragging' : '')} style={{ gridTemplateRows: `52px minmax(0, 1fr) ${sizes.timeline}px` }}>
       <TopBar
         onSettings={() => setShowSettings(true)}
         onExport={() => setShowExport(true)}
@@ -150,6 +196,19 @@ export function App() {
       {showExport && <ExportModal onClose={() => setShowExport(false)} />}
       {showReference && <ReferenceModal onClose={() => setShowReference(false)} onEdit={setEditing} />}
       {editing && <MotionEditor sceneId={editing} onClose={() => setEditing(null)} />}
+      {fileDrag && (
+        <div className="drop-hint">
+          {editing ? 'Thả ảnh / vector vào khung hình để thêm layer' : 'Thả để nhập vào Media · thả xuống timeline để đặt đúng vị trí'}
+        </div>
+      )}
+      {importErrors.length > 0 && (
+        <div className="import-errors" onClick={() => setImportErrors([])}>
+          <b>Không nhập được {importErrors.length} file</b>
+          {importErrors.map((m) => (
+            <div key={m}>{m}</div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -1,9 +1,10 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import type {
   AppSettings,
   ExportRequest,
   GenerateRequest,
   GenerateResult,
+  ImportedFile,
   ReferenceRequest,
   ReferenceResult,
   SoundDesignRequest,
@@ -46,12 +47,23 @@ const api = {
     abort: (jobId: string): Promise<void> => ipcRenderer.invoke('render:abort', jobId)
   },
   media: {
-    import: (kind: 'video' | 'audio'): Promise<MediaItem[]> => ipcRenderer.invoke('media:import', kind),
+    import: (kind: 'video' | 'audio' | 'image' | 'all'): Promise<ImportedFile[]> => ipcRenderer.invoke('media:import', kind),
+    importPaths: (paths: string[]): Promise<ImportedFile[]> => ipcRenderer.invoke('media:importPaths', paths),
+    saveDropped: (name: string, data: Uint8Array): Promise<string> => ipcRenderer.invoke('media:saveDropped', name, data),
+    saveRaster: (source: string, data: Uint8Array): Promise<MediaItem> => ipcRenderer.invoke('media:saveRaster', source, data),
     filmstrip: (path: string, duration: number): Promise<string | null> => ipcRenderer.invoke('media:filmstrip', path, duration),
     waveform: (path: string): Promise<string | null> => ipcRenderer.invoke('media:waveform', path)
   },
   file: {
     pickImage: (): Promise<string | null> => ipcRenderer.invoke('file:pickImage'),
+    /** đường dẫn thật của File kéo thả từ Finder ('' nếu không có) */
+    pathOf: (f: File): string => {
+      try {
+        return webUtils.getPathForFile(f)
+      } catch {
+        return ''
+      }
+    },
     exists: (p: string): Promise<boolean> => ipcRenderer.invoke('file:exists', p),
     reveal: (p: string): Promise<void> => ipcRenderer.invoke('shell:reveal', p)
   },

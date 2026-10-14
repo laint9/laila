@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { addBrandImages, brandImagePath, hasFiles, reportErrors } from '../lib/importer'
 import { useStore } from '../lib/store'
 import { mediaUrl } from '../lib/media'
 import type { BrandElement, ElementKind } from '../../shared/types'
@@ -16,14 +18,39 @@ export function ElementsPanel() {
   const elements = useStore((s) => s.project.elements)
   const add = useStore((s) => s.addElement)
 
+  const [over, setOver] = useState(false)
   const addImage = async () => {
     const path = await window.laila.file.pickImage()
-    if (path) add('image', path)
+    if (!path) return
+    try {
+      add('image', await brandImagePath(path))
+    } catch (e) {
+      reportErrors([(e as Error).message])
+    }
   }
 
   return (
-    <div className="panel-body">
-      <p className="hint">Claude dùng các element này theo <b>tên</b>. Đặt tên ngắn gọn: logo, headline, primary…</p>
+    <div
+      className={'panel-body' + (over ? ' file-over' : '')}
+      onDragOver={(e) => {
+        if (!hasFiles(e)) return
+        e.preventDefault()
+        e.stopPropagation()
+        e.dataTransfer.dropEffect = 'copy'
+        setOver(true)
+      }}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) setOver(false)
+      }}
+      onDrop={(e) => {
+        if (!hasFiles(e)) return
+        e.preventDefault()
+        e.stopPropagation()
+        setOver(false)
+        addBrandImages([...e.dataTransfer.files])
+      }}
+    >
+      <p className="hint">Claude dùng các element này theo <b>tên</b>. Đặt tên ngắn gọn: logo, headline, primary… Kéo thả logo / ảnh (PNG, JPG, SVG, PDF, AI) vào đây để thêm.</p>
       <div className="chip-buttons">
         <button className="btn small" onClick={() => add('text')}>
           <Icon name="plus" size={12} /> Chữ
@@ -57,7 +84,12 @@ function ElementRow({ el }: { el: BrandElement }) {
 
   const replaceImage = async () => {
     const path = await window.laila.file.pickImage()
-    if (path) update(el.id, { value: path })
+    if (!path) return
+    try {
+      update(el.id, { value: await brandImagePath(path) })
+    } catch (e) {
+      reportErrors([(e as Error).message])
+    }
   }
 
   return (

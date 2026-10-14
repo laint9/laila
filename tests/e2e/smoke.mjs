@@ -109,6 +109,30 @@ const extVideo = join(userData, 'ext.mp4')
 execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'sine=f=330', '-t', '8', music])
 execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc2=size=1280x720:rate=30', '-f', 'lavfi', '-i', 'sine=f=440', '-t', '3', '-shortest', '-pix_fmt', 'yuv420p', extVideo])
 
+// file để thử kéo thả: ảnh, vector, âm thanh, file không hỗ trợ
+const dropDir = join(userData, 'drop')
+mkdirSync(dropDir)
+execFileSync('python3', ['-c', `
+from PIL import Image, ImageDraw
+im = Image.new('RGBA', (400, 200), (0, 0, 0, 0)); d = ImageDraw.Draw(im); d.ellipse((140, 40, 260, 160), fill=(255, 40, 40, 255)); im.save('${join(dropDir, 'logo.png')}')
+ph = Image.new('RGB', (800, 450), (30, 160, 90)); ImageDraw.Draw(ph).rectangle((300, 150, 500, 300), fill=(250, 220, 0)); ph.save('${join(dropDir, 'photo.jpg')}', quality=90)
+`])
+writeFileSync(join(dropDir, 'Logo Chợ.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"><rect x="50" y="25" width="100" height="50" fill="#ff2828"/></svg>')
+{
+  // PDF vector tối giản: hình chữ nhật xanh lá giữa trang 200x100pt
+  const content = '0 0.8 0.3 rg 50 25 100 50 re f'
+  const objs = ['<< /Type /Catalog /Pages 2 0 R >>', '<< /Type /Pages /Kids [3 0 R] /Count 1 >>', '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 100] /Contents 4 0 R >>', `<< /Length ${content.length} >>\nstream\n${content}\nendstream`]
+  let pdf = '%PDF-1.4\n'
+  const offs = []
+  objs.forEach((o, i) => { offs.push(pdf.length); pdf += `${i + 1} 0 obj\n${o}\nendobj\n` })
+  const xref = pdf.length
+  pdf += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n` + offs.map((o) => String(o).padStart(10, '0') + ' 00000 n \n').join('') + `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`
+  writeFileSync(join(dropDir, 'vec.pdf'), pdf)
+  writeFileSync(join(dropDir, 'mark.ai'), pdf)
+}
+writeFileSync(join(dropDir, 'old.eps'), '%!PS-Adobe-3.0 EPSF-3.0\n')
+execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'sine=f=660', '-t', '1.5', join(dropDir, 'beep.wav')])
+
 // thư mục font người dùng riêng cho lần test (để thử tự nhận font mới cài)
 const fakeHome = mkdtempSync(join(tmpdir(), 'cc-home-'))
 mkdirSync(join(fakeHome, '.local/share/fonts'), { recursive: true })
@@ -143,6 +167,22 @@ win.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
 win.on('pageerror', (e) => errors.push(String(e)))
 await win.waitForFunction(() => window.__laila)
 const S = (fn, arg) => win.evaluate(fn, arg)
+// mô phỏng kéo file từ Finder thả vào 1 phần tử (File không có đường dẫn -> app tự lưu lại rồi nhập)
+const D = (n) => join(dropDir, n)
+const dropOn = (selector, paths, at) =>
+  S(async ([sel, ps, pos]) => {
+    const dt = new DataTransfer()
+    for (const p of ps) {
+      const b = await (await fetch('media://local/' + encodeURIComponent(p))).blob()
+      dt.items.add(new File([b], p.split('/').pop(), { type: b.type }))
+    }
+    const el = document.querySelector(sel)
+    const r = el.getBoundingClientRect()
+    const x = pos ? r.left + pos[0] * r.width : r.left + r.width / 2
+    const y = pos ? r.top + pos[1] * r.height : r.top + r.height / 2
+    const target = document.elementFromPoint(x, y) || el
+    for (const type of ['dragenter', 'dragover', 'drop']) target.dispatchEvent(new DragEvent(type, { dataTransfer: dt, bubbles: true, cancelable: true, clientX: x, clientY: y }))
+  }, [selector, paths, at ?? null])
 const shot = (name) => win.screenshot({ path: join(SHOTS, name + '.png') })
 
 await S(() => {
@@ -284,10 +324,10 @@ check('Đưa scene lên timeline', tl.length === 2)
 // nhập video + nhạc qua đúng nút Media (hộp thoại được giả lập)
 await win.locator('.sidebar .segmented button', { hasText: 'Media' }).click()
 await stubDialog([extVideo], null)
-await win.locator('button', { hasText: 'Nhập video' }).click()
+await win.locator('.media-bin button', { hasText: 'Video' }).click()
 await win.waitForFunction(() => window.__laila.store.getState().project.media.some((m) => m.name === 'ext.mp4'))
 await stubDialog([music], null)
-await win.locator('button', { hasText: 'Nhạc nền' }).click()
+await win.locator('.media-bin button', { hasText: 'Âm thanh' }).click()
 await win.waitForFunction(() => window.__laila.store.getState().project.media.some((m) => m.name === 'music.mp3'))
 const ids = await S(() => {
   const p = window.__laila.store.getState().project
@@ -511,6 +551,120 @@ if (fontReady) {
   check('Font mới dùng được ngay để vẽ chữ', usable)
 }
 
+// 9b. Kéo thả file từ Finder
+await win.locator('.sidebar .segmented button', { hasText: 'Media' }).click()
+const m0 = await S(() => window.__laila.store.getState().project.media.length)
+await dropOn('.media-bin', [D('photo.jpg'), D('Logo Chợ.svg'), D('vec.pdf'), D('mark.ai'), D('beep.wav'), D('old.eps')])
+await win.waitForFunction((n) => window.__laila.store.getState().project.media.length >= n + 5, m0, { timeout: 30000 })
+pj = await S(() => window.__laila.store.getState().project)
+const byName = (n) => pj.media.find((m) => m.name === n)
+const photo = byName('photo.jpg'), svgM = byName('Logo Chợ.svg'), pdfM = byName('vec.pdf'), aiM = byName('mark.ai'), wavM = byName('beep.wav')
+check('Thả 5 file vào Media: ảnh, SVG, PDF, AI, WAV', photo?.kind === 'image' && svgM?.kind === 'image' && pdfM?.kind === 'image' && aiM?.kind === 'image' && wavM?.kind === 'audio',
+  pj.media.slice(m0).map((m) => m.name + ':' + m.kind).join(', '))
+check('Vector được vẽ ra PNG nét (giữ file gốc)', svgM?.path.endsWith('.png') && svgM.source.endsWith('.svg') && Math.max(svgM.width, svgM.height) >= 2048 && svgM.alpha && pdfM?.width >= 2048 && pdfM.alpha, `${svgM?.width}x${svgM?.height}, pdf ${pdfM?.width}x${pdfM?.height}`)
+const vecPx = await S(async ([a, b]) => {
+  const px = async (p) => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.src = 'media://local/' + encodeURIComponent(p)
+    await img.decode()
+    const c = document.createElement('canvas')
+    c.width = img.width
+    c.height = img.height
+    const x = c.getContext('2d')
+    x.drawImage(img, 0, 0)
+    return [[...x.getImageData(img.width / 2, img.height / 2, 1, 1).data], [...x.getImageData(2, 2, 1, 1).data]]
+  }
+  return [await px(a), await px(b)]
+}, [svgM.path, pdfM.path])
+check('Nội dung vector đúng màu, nền trong suốt', vecPx[0][0][0] > 200 && vecPx[0][1][3] === 0 && vecPx[1][0][1] > 150 && vecPx[1][0][0] < 60 && vecPx[1][1][3] === 0, JSON.stringify(vecPx))
+const errText = await win.locator('.import-errors').innerText().catch(() => '')
+check('Báo lỗi rõ ràng file không hỗ trợ (EPS)', /old\.eps/.test(errText) && /SVG hoặc PDF/.test(errText))
+await shot('11-drop-media')
+
+// thả ảnh xuống track chính, vào giữa clip đầu và clip thứ hai
+const tl0 = await S(() => window.__laila.store.getState().project.timeline.length)
+await dropOn('.main-lane', [D('photo.jpg')], [0.001, 0.5])
+await win.waitForFunction((n) => window.__laila.store.getState().project.timeline.length === n + 1, tl0)
+pj = await S(() => window.__laila.store.getState().project)
+const imgClip = pj.timeline[0]
+const imgMedia = pj.media.find((m) => m.id === imgClip.mediaId)
+check('Thả ảnh xuống timeline: thành clip 5s đúng vị trí', imgMedia.kind === 'image' && imgClip.out === 5, `${imgMedia.name} ${imgClip.out}s @${pj.timeline.indexOf(imgClip)}`)
+await S((id) => { const s = window.__laila.store.getState(); s.beginTrim(); s.trim(id, 'out', 9) }, imgClip.id)
+const outAfter = await S((id) => window.__laila.store.getState().project.timeline.find((c) => c.id === id).out, imgClip.id)
+check('Kéo dài clip ảnh quá 5s', outAfter === 9, String(outAfter))
+await S((id) => { const s = window.__laila.store.getState(); s.beginTrim(); s.trim(id, 'out', 3); s.setPlayhead(1); s.select(null) }, imgClip.id)
+await win.waitForTimeout(300)
+const shown = await S(() => [...document.querySelectorAll('.screen img.screen-img')].some((i) => getComputedStyle(i).opacity === '1' && i.src.includes('photo')))
+check('Preview hiện ảnh trên track chính', shown)
+// thả logo trong suốt lên track phủ ở giây ~2
+const vtId = await S(() => window.__laila.store.getState().project.tracks.find((t) => t.kind === 'video').id)
+const lane = await win.locator(`[data-track="${vtId}"]`).boundingBox()
+const zoom2 = await S(() => window.__laila.store.getState().zoom)
+const head = await S(() => document.querySelector('.main-lane').getBoundingClientRect().left)
+const scrollL = await S(() => document.querySelector('.tl-scroll').scrollLeft)
+const dropX = Math.min(lane.x + lane.width - 20, 1400)
+const tDrop = (dropX - head - 12) / zoom2
+await S(async ([sel, p, x, y]) => {
+  const b = await (await fetch('media://local/' + encodeURIComponent(p))).blob()
+  const dt = new DataTransfer()
+  dt.items.add(new File([b], 'logo.png', { type: 'image/png' }))
+  const target = document.elementFromPoint(x, y)
+  for (const type of ['dragenter', 'dragover', 'drop']) target.dispatchEvent(new DragEvent(type, { dataTransfer: dt, bubbles: true, cancelable: true, clientX: x, clientY: y }))
+}, [null, D('logo.png'), dropX, lane.y + lane.height / 2])
+await win.waitForFunction(() => window.__laila.store.getState().project.media.some((m) => m.name === 'logo.png'))
+await win.waitForTimeout(200)
+pj = await S(() => window.__laila.store.getState().project)
+const logoM = pj.media.find((m) => m.name === 'logo.png')
+const logoClip = pj.tracks.flatMap((t) => t.clips.map((c) => ({ ...c, track: t.id }))).find((c) => c.mediaId === logoM.id)
+check('Thả logo PNG trong suốt lên track phủ đúng chỗ', logoM.alpha && logoClip && logoClip.track === vtId && Math.abs(logoClip.start - tDrop) < 0.3, logoClip ? `${logoClip.start.toFixed(2)}s / thả ${tDrop.toFixed(2)}s, scroll ${scrollL}` : 'không có clip')
+await S((t) => window.__laila.store.getState().setPlayhead(t + 0.5), logoClip.start)
+await win.waitForTimeout(300)
+const ovShown = await S(() => [...document.querySelectorAll('.screen img.overlay-img')].some((i) => getComputedStyle(i).opacity !== '0' && i.src.includes('logo')))
+check('Preview hiện logo trên lớp phủ', ovShown)
+await shot('12-drop-timeline')
+
+// thả ra vùng bất kỳ (khung Studio) -> nhập vào Media
+await win.locator('.sidebar .segmented button', { hasText: 'Brand kit' }).click()
+const nBefore = await S(() => window.__laila.store.getState().project.media.length)
+await S(async (p) => {
+  const b = await (await fetch('media://local/' + encodeURIComponent(p))).blob()
+  const dt = new DataTransfer()
+  dt.items.add(new File([b], 'beep.wav', { type: 'audio/wav' }))
+  const el = document.querySelector('.content')
+  const r = el.getBoundingClientRect()
+  for (const type of ['dragenter', 'dragover', 'drop']) el.dispatchEvent(new DragEvent(type, { dataTransfer: dt, bubbles: true, cancelable: true, clientX: r.left + 50, clientY: r.top + 50 }))
+}, D('beep.wav'))
+await win.waitForFunction((n) => window.__laila.store.getState().project.media.length === n + 1, nBefore)
+const onMedia = await win.locator('.sidebar .segmented button.on').innerText()
+check('Thả ở chỗ bất kỳ: vào Media và mở tab Media', onMedia.startsWith('Media'))
+
+// thả logo vector vào Brand kit
+await win.locator('.sidebar .segmented button', { hasText: 'Brand kit' }).click()
+await dropOn('.sidebar .panel-body', [D('Logo Chợ.svg')])
+await win.waitForFunction(() => window.__laila.store.getState().project.elements.some((e) => e.name === 'logo_cho'), null, { timeout: 15000 })
+const brandEl = await S(() => window.__laila.store.getState().project.elements.find((e) => e.name === 'logo_cho'))
+check('Thả SVG vào Brand kit: thành element ảnh đặt tên theo file', brandEl.kind === 'image' && brandEl.value.endsWith('.png'), brandEl.value.split('/').pop())
+
+// xuất lại có ảnh + logo
+const out2 = join(userData, 'final-images.mp4')
+await stubDialog(null, out2)
+await win.locator('.topbar button', { hasText: 'Xuất video' }).click()
+await win.locator('.modal.export button', { hasText: 'Chọn nơi lưu và xuất' }).click()
+await win.waitForSelector('.modal.export .ok', { timeout: 90000 })
+const dur2 = Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', out2]).toString())
+const total2 = await S(() => {
+  const p = window.__laila.store.getState().project
+  const len = (c) => (c.out - c.in) / Math.min(4, Math.max(0.25, c.speed ?? 1))
+  let sum = 0
+  p.timeline.forEach((c, i) => { sum += len(c); const n = p.timeline[i + 1]; if (n && c.transition && c.transition !== 'none') sum -= Math.min(c.transitionDuration ?? 0.5, len(c) * 0.45, len(n) * 0.45) })
+  for (const t of p.tracks) for (const c of t.clips) sum = Math.max(sum, c.start + len(c))
+  return sum
+})
+const px0 = [...execFileSync('ffmpeg', ['-v', 'error', '-ss', '1', '-i', out2, '-frames:v', '1', '-vf', 'scale=64:36,crop=2:2:31:17', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'])]
+check('Xuất video có clip ảnh + logo phủ', Math.abs(dur2 - total2) < 0.1 && px0[0] > 200 && px0[1] > 170 && px0[2] < 80, `${dur2.toFixed(2)}s/${total2.toFixed(2)}s, pixel ảnh ${px0.slice(0, 3)}`)
+await win.locator('.modal.export button', { hasText: 'Đóng' }).click()
+
 // 10. Motion Editor: rê chuột xem thử hiệu ứng
 await win.locator('.scene-card').first().locator('text=Chỉnh sửa').click()
 await win.waitForSelector('.motion-editor')
@@ -537,6 +691,15 @@ check('Rời chuột: thôi xem thử, playhead về chỗ cũ', !pv3.has && Mat
 await win.locator('.left-panels .preset-btn', { hasText: 'Xoay vào' }).click()
 const rk = await S(() => window.__laila.editor.getState().scene.layers.find((l) => l.id === 'bar').transform.rotation.keys)
 check('Bấm: áp hiệu ứng thật', Array.isArray(rk) && rk.length >= 2)
+// thả file AI vào khung hình -> layer ảnh tại chỗ thả
+const nl0 = await S(() => window.__laila.editor.getState().scene.layers.length)
+await dropOn('.viewer canvas', [D('mark.ai')], [0.25, 0.3])
+await win.waitForFunction((n) => window.__laila.editor.getState().scene.layers.length === n + 1, nl0, { timeout: 15000 })
+const dl = await S(() => { const e = window.__laila.editor.getState(); return e.scene.layers.find((l) => l.id === e.selected) })
+const st0 = await S(() => window.__laila.store.getState().project.settings)
+check('Thả file AI vào khung hình: thêm layer ảnh đúng chỗ', dl.type === 'image' && dl.image.src === 'mark' && Math.abs(dl.transform.x.v - st0.width * 0.25) < 4 && Math.abs(dl.transform.y.v - st0.height * 0.3) < 4, `${dl.image?.src} @${dl.transform.x.v.toFixed(0)},${dl.transform.y.v.toFixed(0)}`)
+await win.waitForTimeout(400)
+await shot('13-editor-drop')
 await win.locator('.me-toolbar button', { hasText: 'Studio' }).click()
 
 // 11. Giao diện tối

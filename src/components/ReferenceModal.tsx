@@ -5,6 +5,7 @@ import { mediaUrl, uid } from '../lib/media'
 import { cleanError, rerenderScene } from '../lib/pipeline'
 import { normScene } from '../engine/normalize'
 import { Icon } from './Icon'
+import { hasFiles, pathsOf } from '../lib/importer'
 
 const FEAS: Record<ReferenceResult['analysis']['feasibility'], { label: string; cls: string }> = {
   high: { label: 'Copy được gần như hoàn toàn', cls: 'ok' },
@@ -22,10 +23,15 @@ export function ReferenceModal(props: { onClose: () => void; onEdit: (sceneId: s
   const [reqId, setReqId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<ReferenceResult | null>(null)
+  const [over, setOver] = useState(false)
   const isImage = !!path && /\.(png|jpe?g|webp)$/i.test(path)
 
-  const pick = async () => {
-    const p = await window.laila.reference.pick()
+  const pick = async (dropped?: File) => {
+    const p = dropped ? (await pathsOf([dropped]))[0] : await window.laila.reference.pick()
+    if (p && !/\.(mp4|mov|m4v|webm|gif|png|jpe?g|webp)$/i.test(p)) {
+      setError('Chỉ nhận video (MP4, MOV, WebM), GIF hoặc ảnh (PNG, JPG, WebP)')
+      return
+    }
     if (p) {
       setPath(p)
       setResult(null)
@@ -89,7 +95,26 @@ export function ReferenceModal(props: { onClose: () => void; onEdit: (sceneId: s
         </div>
         <div className="ref-body">
           <div className="ref-left">
-            <div className="ref-drop" onClick={pick} title="Chọn ảnh / video / GIF tham khảo">
+            <div
+              className={'ref-drop' + (over ? ' file-over' : '')}
+              onClick={() => pick()}
+              title="Chọn hoặc kéo thả ảnh / video / GIF tham khảo"
+              onDragOver={(e) => {
+                if (!hasFiles(e)) return
+                e.preventDefault()
+                e.stopPropagation()
+                setOver(true)
+              }}
+              onDragLeave={() => setOver(false)}
+              onDrop={(e) => {
+                if (!hasFiles(e)) return
+                e.preventDefault()
+                e.stopPropagation()
+                setOver(false)
+                const f = e.dataTransfer.files[0]
+                if (f) pick(f)
+              }}
+            >
               {path ? (
                 isImage ? (
                   <img src={mediaUrl(path)} alt="" />
@@ -99,7 +124,7 @@ export function ReferenceModal(props: { onClose: () => void; onEdit: (sceneId: s
               ) : (
                 <div className="ref-empty">
                   <Icon name="film" size={26} />
-                  <p>Chọn video, GIF hoặc ảnh có hiệu ứng anh muốn làm theo</p>
+                  <p>Kéo thả hoặc bấm chọn video, GIF, ảnh có hiệu ứng muốn làm theo</p>
                 </div>
               )}
             </div>
@@ -111,7 +136,7 @@ export function ReferenceModal(props: { onClose: () => void; onEdit: (sceneId: s
               onChange={(e) => setNote(e.target.value)}
             />
             <div className="row">
-              <button className="btn" onClick={pick} disabled={busy}>
+              <button className="btn" onClick={() => pick()} disabled={busy}>
                 <Icon name="folder" /> Chọn file
               </button>
               <div className="spacer" />
