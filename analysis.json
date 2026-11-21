@@ -1,0 +1,95 @@
+{
+  "items": [
+    {
+      "engine": "rules",
+      "direction": "flat",
+      "headline": "Chưa đủ dữ liệu so sánh",
+      "summary": "Tóm tắt tự động từ số liệu thị trường. Đọc thêm các tin bên dưới để biết bối cảnh.",
+      "reasons": [],
+      "domestic_note": "",
+      "watch_next": [
+        "Biên bản/phát biểu của Fed",
+        "Chỉ số lạm phát CPI Mỹ",
+        "Diễn biến tỷ giá USD/VND"
+      ],
+      "date": "2026-11-22",
+      "at": "2026-11-21T17:56:15.456Z",
+      "worldPrice": 3539,
+      "worldPct": null,
+      "news": [
+        {
+          "title": "UBS flags further gold weakness before Fed rate-cut expectations return",
+          "link": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQbTNwdlJmVkFrd1I5dmxNWjB5RlJMekVvcUZ4VlFPSm9hZEx6QmlTYkVkUzZwcU8tRHdsSDRQRjRTQmxvLUUxVjBqQkVkcVZDRmthYkVoSGZienlyN0p6bnNTZHJTeVJqdWl3NDFONDhLUXZJamVHV0U2N1VTdFZ4N3BRQ1FlQVdYUlZXOUlvZWVvbktQakZFS1VmemZpLTd6TXM0S2wzQ2hNM1hKYVNMcnR4NUdlT0I1eG9JaVZYYm41Ukk?oc=5",
+          "source": "Investing.com Canada",
+          "date": "Sat, 21 Nov 2026 17:53:39 GMT"
+        },
+        {
+          "title": "Goldman favours gold over silver as central bank demand supports prices",
+          "link": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPVmduVHZiSmM5UWVaTFlXTW8zWWxRTmg3bWJxb05KdjhSUXZ2Uk01N1FUR2NlVFdwaGE3ZFhmVWkydTJOakNYRGFZYW5qSWRkUmgtcy0tVl9YWmpXb1IzQmx3WU1aTldOVHBsNHpINXdRRG1FTXNXWk0xZk52Z1Z1ZFpFY0gwMGoweUxKYWtoRnpBU1FwNXBzRUtDYUJEUUFlTUZNSnlDUWFBWktuWHI0Zk5aMUp3R1pPbF8xWmxUTjRxZGZv?oc=5",
+          "source": "Investing.com Canada",
+          "date": "Sat, 21 Nov 2026 17:07:23 GMT"
+        },
+        {
+          "title": "Vàng giảm gần 60 triệu đồng/lượng, nhà đầu tư nên làm gì?",
+          "link": "https://news.google.com/rss/articles/CBMimwFBVV95cUxPdW40cUVoa09GUHd4ZlRPckhlNTFfUVlCM1lVYnN3MlBuLVhmbXhCRndiT0czTTA3UDFxVTYxbGZlSnI2Qm5GSno2SEdjMmxmRFcta1NyY0hYNG5yLWlJS1lhNWt1STNhek96OTloY0hFck1EazUwSkpURVdzUE9ienlubll5VWg4MEtCVWtPNlN0a1h4Q2J3WnFFZw?oc=5",
+          "source": "CafeF",
+          "date": "Sat, 21 Nov 2026 17:03:00 GMT"
+        },
+        {
+          "title": "Fed Cuts Pay Raises for Regional-Bank Staff",
+          "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNSE9oYmJPLTJKZ3p5QzM1RWZ6WHZTc0g0M1dsdkl4czJFenpyWnRFdWJwX2dIR2F1a00xTFNIRUFFcFlYSUZRUlBENGVGV1VvYUtOWmVJNWlzcjBCVDd0aGRwR0x3WVdvQVVqU2xHTnFtU3hqZ21sV01ZcVlUdGtJUzg2VmlEc2d3c1pqdGRzTjJBaVhFRGdWWi1zVzM?oc=5",
+          "source": "WSJ",
+          "date": "Sat, 21 Nov 2026 16:54:30 GMT"
+        },
+        {
+          "title": "Một tuần, giá vàng thế giới mất đến 350 USD/ounce",
+          "link": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQUUVqQUhJOFFZYTNjS1VTUm8xd3o0N3hmU2FjeUJaWnI0REdMNEZ4UFBrbjFhbmxUcTdDMk1iRWFyVG5nNUItOVVGU3Z2Z2VhQ2tzOXQxS0VJVE00V2Qwa1V6bVVfZFE3ZHZKd3lIRHU1dVAySE9xTzNleld1bzRPQVctT3lxaWlVdWY1VEtzMHFFZXpX?oc=5",
+          "source": "Báo Tuổi Trẻ",
+          "date": "Sat, 21 Nov 2026 14:28:00 GMT"
+        },
+        {
+          "title": "Giá vàng giảm hơn 2.000 USD/ounce từ đỉnh và kỳ vọng đảo chiều",
+          "link": "https://news.google.com/rss/articles/CBMitgFBVV95cUxOcWo4UElIWjBmZzNLR1RLUFNqZWp3Ny1RQ3p2cHhva3JxZXZpbFJOR09NQWkwQ2N0LUNkZ24tYzdvU01ma2QzSGdMbF9hcXVGeTJWdm43ZU9oQWJ2OXZxQmctbHJlQ2gxY2lDaVFvckpHLVNXaGVxVGp2cXI5aXpialNZSnYza1c4Mkx3S0RrTUhBWG1NZC1LMXJucTdoTXJsY3B6OFRtaHhhZHMxUnh3VDVQTjlPUQ?oc=5",
+          "source": "Báo Dân trí",
+          "date": "Sat, 21 Nov 2026 12:45:00 GMT"
+        },
+        {
+          "title": "President Donald Trump's Economy and the AI-Driven Stock Market Are in Trouble, Thanks to a Newly Identified Source of Inflation",
+          "link": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPaFpvTWlhQ3lXU3BpQ1RNSUpvMzhKRDBwVDVTV2RsbnVucVJLRE9IMUZtbkVsOFpyQ3N1by1kcFNzTTBkcTl6M29BeUNyQkZYc3dZeXh0N0ttTElZcDIwYUJJcmpfSEJpYVJXa09PTDhFT3Q4WFVvYkd2SXF4ZFpXc2NXMThNVVExZnR2UEZrWDR3VEFXbGU5VHc3VEtUZEVj?oc=5",
+          "source": "Yahoo Finance",
+          "date": "Sat, 21 Nov 2026 09:26:02 GMT"
+        },
+        {
+          "title": "Vàng miếng SJC mua vào chỉ 128 triệu đồng/lượng",
+          "link": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPTFFpVjJrdExLeVRwZVE5VkRMVksxeTRvSHpZY0NPYV9rZVA5X2VmTVZCVHRHMXVNOHlEOFRjNGxPUUgwaDJMd29XcDZVV1R0UlExbVgyUDU1QXNTNm5JUm9JcnpVbDZETy03d1huakNLTjBPOWVhQ2R2aVQ5ZTdmbTlrcURfT2M0UzE3TlpTaEY?oc=5",
+          "source": "CafeF",
+          "date": "Sat, 21 Nov 2026 07:36:00 GMT"
+        },
+        {
+          "title": "Giá vàng giảm mạnh, những ai mua thời 'trên đỉnh' giờ tính sao?",
+          "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxNbUxLVnZfSGl1QzMxR2sxdWF4d3BvcnRaYjItZXhPbTBYbDhvYWNuY3JCendSTnZsWGJkRV9PaE9zZ1VZRm5CNG1pSVNFQVU2Mk9CSS1mZUI1RVhUSHZaN196bGdpWENBN1B4VG41dXhvSUNUcWpYWjJ1bkx6WDZ2YTRMSGItbFF1dHFScmJ5eHlwQmtRbmIybXNtVVZicDRTZ1NpWEN4Yw?oc=5",
+          "source": "Thanh Niên",
+          "date": "Sat, 21 Nov 2026 07:29:00 GMT"
+        },
+        {
+          "title": "Giá vàng hôm nay (chiều 21-11): Tiếp đà giảm",
+          "link": "https://news.google.com/rss/articles/CBMijgFBVV95cUxPM1VZQ24wUVRCMjR0b0lhdDJ2UmlfdDNKT2FQRlRqcjlkT2d4cmVHSFpabFV6MjNvSXNubXUzTGtWNzN6cTd2RVhDNGpxNGlIY25ZX29JMHQ0RFhfUzFkYTZsdkZYZldjY2hEWUE4akRNRWdDWjZ2NlFoTUEzVXNtLWxmSVJJZzBrTHYwdlV3?oc=5",
+          "source": "Báo Quân đội nhân dân",
+          "date": "Sat, 21 Nov 2026 06:48:51 GMT"
+        },
+        {
+          "title": "Giá vàng thấp nhất 14 tháng, chênh lệch mua - bán lên kỷ lục 6 triệu đồng/lượng",
+          "link": "https://news.google.com/rss/articles/CBMiygFBVV95cUxPd2oxUFQybC1jSDdaOWwtbUdUeE1wZDBmc2VYbkRMSjVjbHlRRkstYXlxTDRBRzJlRWtrVUdkbzhQengxajQ3Q0hXWnU2dDM0X2pMY3N0c1FfbUgzSzN3Q3lSSjduaEpFNU1WS19rU3k2dUdwRzhCd2ZUZ3JVWU00ZGlHNnFqcnJTdlZUN3Y4TTZVcURac0YwZHhLQU9fQlVaWlBvZlJiQzNMQWd1aC1RQTcxWEh0MVpFRE9ZbkFvVGJnQ0VYZVBiXzRB?oc=5",
+          "source": "Báo Dân trí",
+          "date": "Sat, 21 Nov 2026 06:04:17 GMT"
+        },
+        {
+          "title": "Giá vàng tiếp tục giảm, người \"ôm\" vàng lỗ nặng",
+          "link": "https://news.google.com/rss/articles/CBMiggFBVV95cUxQMWtULV8yQnBVZ1UxNDdUTEY1bnhhcUlGLXhVbFZMa2haUW9Wakd1Vk00XzAwVlFLQ1VzeFlCLURBUzgyX2ZEbVJXLUFoZ0E2SzV5YWpLNU1rRHNnejVsR0RpS2QxMF9acnNOR1VpZUtKaW1TN2xIODVLU2NmWG12YWRB?oc=5",
+          "source": "Báo Công an nhân dân",
+          "date": "Sat, 21 Nov 2026 04:20:54 GMT"
+        }
+      ]
+    }
+  ]
+}
