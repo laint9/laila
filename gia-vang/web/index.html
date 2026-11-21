@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Giá Vàng 999</title>
+  <meta name="description" content="Giá vàng 999.9 thế giới và Việt Nam, biểu đồ và lý do tăng giảm mỗi ngày.">
+  <meta name="theme-color" content="#0f0f10" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f5f3ee" media="(prefers-color-scheme: light)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Giá Vàng">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1 id="title">Giá vàng</h1>
+      <p class="sub" id="updated">Đang tải…</p>
+    </div>
+    <button class="icon-btn" id="refresh" aria-label="Tải lại">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 4a8 8 0 0 1 7.75 6h-2.1A6 6 0 1 0 18 14.5l-2.5-2.5H22v6.5l-2.4-2.4A8 8 0 1 1 12 4z"/></svg>
+    </button>
+  </header>
+
+  <main>
+    <!-- TỔNG QUAN -->
+    <section class="tab" id="tab-home" data-active>
+      <article class="card hero" id="world"></article>
+      <article class="card why-mini" id="whyMini" hidden></article>
+      <h2 class="section">Trong nước <span class="muted">· triệu đồng/lượng</span></h2>
+      <div class="list" id="brands"></div>
+      <p class="foot">Giá thế giới quy đổi = USD/oz × 1,2057 × tỷ giá bán Vietcombank. Chưa gồm thuế, phí. Dữ liệu chỉ để tham khảo.</p>
+    </section>
+
+    <!-- BIỂU ĐỒ -->
+    <section class="tab" id="tab-chart">
+      <div class="chips" id="seriesChips"></div>
+      <div class="seg" id="rangeSeg" role="tablist">
+        <button data-r="1d" aria-selected="true">Ngày</button>
+        <button data-r="1m">1 tháng</button>
+        <button data-r="3m">3 tháng</button>
+        <button data-r="6m">6 tháng</button>
+      </div>
+      <article class="card chart-card">
+        <div class="chart-head">
+          <div><div class="chart-val" id="chartVal">—</div><div class="sub" id="chartSub"></div></div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="chart" id="chart"></div>
+        <div class="stats" id="chartStats"></div>
+      </article>
+      <p class="foot" id="chartNote"></p>
+    </section>
+
+    <!-- LÝ DO -->
+    <section class="tab" id="tab-why">
+      <div id="why"></div>
+    </section>
+
+    <!-- CÀI ĐẶT -->
+    <section class="tab" id="tab-settings">
+      <h2 class="section">Nhận thông báo trên iPhone</h2>
+      <article class="card prose">
+        <ol>
+          <li>Cài app <b>ntfy</b> miễn phí trên App Store.</li>
+          <li>Mở ntfy, bấm <b>+</b>, nhập tên kênh: <code id="topicName">(chưa cấu hình)</code></li>
+          <li>Cho phép thông báo. Xong.</li>
+        </ol>
+        <p class="muted">Anh sẽ nhận: bản tin giá mỗi sáng, và báo ngay khi vàng thế giới chạy quá <span id="thrWorld">0,8%</span> hoặc SJC đổi quá <span id="thrVnd">500 nghìn</span>/lượng.</p>
+      </article>
+
+      <h2 class="section">Nhập giá tay</h2>
+      <article class="card prose">
+        <p class="muted">Huy Thanh và Hanno Jewels chưa công bố giá online, nên app không tự lấy được. Anh nhập giá đọc ở cửa hàng hoặc fanpage, app sẽ lưu lại để vẽ biểu đồ trên máy này.</p>
+        <form id="manualForm" class="form">
+          <label>Thương hiệu
+            <select name="brand" id="manualBrand"></select>
+          </label>
+          <div class="row2">
+            <label>Mua vào (triệu/lượng)<input name="buy" inputmode="decimal" placeholder="148,5" required></label>
+            <label>Bán ra (triệu/lượng)<input name="sell" inputmode="decimal" placeholder="150,5" required></label>
+          </div>
+          <button class="btn" type="submit">Lưu giá hôm nay</button>
+          <p class="muted small" id="manualMsg"></p>
+        </form>
+      </article>
+
+      <h2 class="section">Cài app vào màn hình chính</h2>
+      <article class="card prose">
+        <p>Mở trang này bằng <b>Safari</b> → bấm nút <b>Chia sẻ</b> → <b>Thêm vào MH chính</b>. App sẽ chạy toàn màn hình như app thường.</p>
+      </article>
+
+      <h2 class="section">Nguồn dữ liệu</h2>
+      <article class="card prose small" id="sources"></article>
+    </section>
+  </main>
+
+  <nav class="tabbar" id="tabbar">
+    <button data-tab="home" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></svg><span>Tổng quan</span>
+    </button>
+    <button data-tab="chart">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18v-2H5V4H3zm4-4 4-5 3 3 5-7 1.6 1.2-6.4 9-3-3-2.6 3.3z"/></svg><span>Biểu đồ</span>
+    </button>
+    <button data-tab="why">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H7l-3 3zm3 4v2h10V8zm0 4v2h7v-2z"/></svg><span>Lý do</span>
+    </button>
+    <button data-tab="settings">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zm8.4 5 .1-1.5-.1-1.5 2-1.6-2-3.4-2.4 1a8 8 0 0 0-2.6-1.5L15 2.5h-4l-.4 2.5A8 8 0 0 0 8 6.5l-2.4-1-2 3.4 2 1.6-.1 1.5.1 1.5-2 1.6 2 3.4 2.4-1a8 8 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a8 8 0 0 0 2.6-1.5l2.4 1 2-3.4z"/></svg><span>Cài đặt</span>
+    </button>
+  </nav>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>

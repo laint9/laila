@@ -1,0 +1,16 @@
+{
+  "_ghi_chu": "Cấu hình thương hiệu. mode=auto: tự lấy giá. mode=manual: chưa có nguồn công khai, nhập tay trong app. Nếu tìm được trang có bảng giá, đổi mode thành 'html' và điền url, match (từ khoá dòng cần lấy).",
+  "brands": [
+    { "id": "sjc", "name": "SJC", "mode": "auto" },
+    { "id": "btmc", "name": "Bảo Tín Minh Châu", "mode": "auto" },
+    { "id": "doji", "name": "DOJI", "mode": "auto" },
+    { "id": "mihong", "name": "Mi Hồng", "mode": "auto" },
+    { "id": "huythanh", "name": "Huy Thanh", "mode": "manual", "url": "", "match": "999" },
+    { "id": "hanno", "name": "Hanno Jewels", "mode": "manual", "url": "", "match": "999" }
+  ],
+  "notify": {
+    "worldPct": 0.8,
+    "vndPerLuong": 500000,
+    "dailySummaryHourVN": 8
+  }
+}

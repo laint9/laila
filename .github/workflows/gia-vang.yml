@@ -1,0 +1,88 @@
+# App Giá Vàng 999: lấy giá mỗi 30 phút, phân tích lý do, gửi thông báo, đăng app lên GitHub Pages.
+# Dữ liệu lịch sử lưu ở nhánh riêng "gia-vang-data" để không làm rối nhánh chính.
+#
+# Cần làm 1 lần:
+#   Settings → Pages → Source: GitHub Actions
+#   Settings → Secrets and variables → Actions:
+#     NTFY_TOPIC         (secret, bắt buộc để nhận thông báo) – tên kênh khó đoán, vd: giavang-anh-7f3k9q
+#     ANTHROPIC_API_KEY  (secret, tuỳ chọn) – để Claude viết phần giải thích lý do
+name: Giá vàng
+
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'gia-vang/**'
+      - '.github/workflows/gia-vang.yml'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: gia-vang
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Lấy dữ liệu cũ từ nhánh gia-vang-data
+        run: |
+          mkdir -p gia-vang/web/data
+          if git fetch --depth=1 origin gia-vang-data 2>/dev/null; then
+            git --work-tree=gia-vang/web/data checkout FETCH_HEAD -- . || true
+            git reset -q
+          fi
+          ls -la gia-vang/web/data
+
+      - name: Cài thư viện
+        working-directory: gia-vang
+        run: npm ci --no-audit --no-fund
+
+      - name: Kiểm thử
+        working-directory: gia-vang
+        run: npm test
+
+      - name: Lấy giá, phân tích, thông báo
+        working-directory: gia-vang
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          APP_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+        run: node scripts/fetch.mjs
+
+      - name: Lưu dữ liệu vào nhánh gia-vang-data
+        run: |
+          set -e
+          tmp=$(mktemp -d)
+          cp gia-vang/web/data/*.json "$tmp"/
+          cd "$tmp"
+          git init -q -b gia-vang-data
+          git config user.name "gia-vang-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if git fetch -q --depth=1 origin gia-vang-data; then git reset -q --soft FETCH_HEAD; fi
+          git add -A
+          git diff --cached --quiet || git commit -qm "Cập nhật giá $(TZ=Asia/Ho_Chi_Minh date '+%d/%m %H:%M')"
+          git push -q origin gia-vang-data
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: gia-vang/web
+      - id: deploy
+        uses: actions/deploy-pages@v4
