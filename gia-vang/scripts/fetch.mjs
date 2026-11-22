@@ -8,7 +8,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  OZ_PER_LUONG, parseNum, toVndPerLuong, vnDate, genericItems, parseSjc, parseBtmc, parseDoji, parseVcbUsd,
+  OZ_PER_LUONG, parseNum, toVndPerLuong, vnDate, genericItems, parseVcbUsd,
   pickMain, parseRss, isTrusted, upsertDaily, pushIntraday, pct, prevDaily, ruleAnalysis, shouldNotify,
 } from './lib.mjs';
 
@@ -57,14 +57,11 @@ async function yahoo(symbol, range = '1mo', interval = '1d') {
 }
 
 async function worldHistory() {
-  // Ưu tiên giá giao ngay XAU/USD từ Stooq, dự phòng bằng hợp đồng tương lai trên Yahoo
-  try {
-    const csv = await http('https://stooq.com/q/d/l/?s=xauusd&i=d');
-    const rows = csv.trim().split('\n').slice(1).map(l => l.split(',')).map(c => [c[0], +c[4]]).filter(r => /^\d{4}-/.test(r[0]) && r[1] > 0);
-    if (rows.length > 30) return { rows: rows.slice(-400), source: 'Stooq XAU/USD' };
-  } catch (e) { log('stooq lỗi:', e.message); }
-  const y = await yahoo('GC=F', '2y', '1d');
-  return { rows: y.rows.slice(-400), source: 'Yahoo GC=F' };
+  // xaus.com: XAU/USD theo ngày, 5 năm, không cần khoá. Yahoo/Stooq chặn máy chủ GitHub.
+  const j = await json('https://xaus.com/api/v1/history');
+  const rows = (j.points || []).map(p => [p.d, +p.c]).filter(r => /^\d{4}-/.test(r[0]) && r[1] > 0);
+  if (rows.length < 30) throw new Error('xaus.com trả về quá ít dữ liệu');
+  return { rows: rows.slice(-400), source: 'xaus.com' };
 }
 
 async function drivers() {
@@ -90,99 +87,58 @@ async function usdVnd() {
 }
 
 // ---------- Trong nước ----------
+// Trang gốc của SJC, DOJI, BTMC chặn máy chủ nước ngoài (GitHub Actions đặt ở Mỹ),
+// nên lấy qua trang tổng hợp công khai: Simplize (chính) và Webgia (dự phòng).
+const SLUG = { sjc: 'sjc', btmc: 'bao-tin-minh-chau', doji: 'doji', mihong: 'mi-hong' };
 const PREFER = {
-  sjc: [/SJC.*1L/i, /miếng/i],
-  btmc: [/VRTL|Rồng Thăng Long.*miếng/i, /999\.9/],
-  doji: [/SJC/i, /9999|99\.99|999\.9/],
+  sjc: [/SJC 1 lượng|1L/i, /miếng/i],
+  btmc: [/Rồng Thăng Long|VRTL/i, /miếng/i],
+  doji: [/SJC.*HCM/i, /SJC/i],
   mihong: [/999/, /SJC/i],
 };
 const NHAN = /nhẫn|nhan|ring/i;
+const NOT_GOLD = /bạc|silver/i;
 
-/** Tìm trong JSON bất kỳ các object có tên + giá mua + giá bán */
-function walkJsonItems(obj, ref, acc = []) {
-  if (Array.isArray(obj)) { obj.forEach(o => walkJsonItems(o, ref, acc)); return acc; }
-  if (obj && typeof obj === 'object') {
-    const keys = Object.keys(obj);
-    const k = re => keys.find(x => re.test(x));
-    const nk = k(/^(name|code|title|type|typename|goldtype|product)/i);
-    const bk = k(/^(buy|buying|mua|purchase)/i), sk = k(/^(sell|selling|ban|sale)/i);
-    if (nk && bk && sk) {
-      const buy = toVndPerLuong(parseNum(obj[bk]), ref), sell = toVndPerLuong(parseNum(obj[sk]), ref);
-      if (buy && sell) acc.push({ name: String(obj[nk]), buy, sell });
-    }
-    keys.forEach(x => typeof obj[x] === 'object' && walkJsonItems(obj[x], ref, acc));
-  }
-  return acc;
+async function simplize(id, ref) {
+  const url = `https://simplize.vn/gia-vang/${SLUG[id]}`;
+  const html = await http(url);
+  const m = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+  if (!m) throw new Error('Simplize: không thấy dữ liệu');
+  const list = JSON.parse(m[1]).props?.pageProps?.listData || [];
+  const items = list.filter(x => !NOT_GOLD.test(x.name)).map(x => ({
+    name: x.name,
+    buy: toVndPerLuong(parseNum(x.priceBuy), ref),
+    sell: toVndPerLuong(parseNum(x.priceSell), ref),
+    at: x.lastUpdatedDate ? `${x.lastUpdatedTime || ''} ${x.lastUpdatedDate}`.trim() : undefined,
+  })).filter(i => i.buy && i.sell);
+  return { items, url, via: 'Simplize' };
 }
 
-const FETCHERS = {
-  async sjc(ref) {
-    const body = 'method=GetCurrentGoldPrices';
-    const j = await json('https://sjc.com.vn/GoldPrice/Services/PriceService.ashx', {
-      method: 'POST', body, headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest', Referer: 'https://sjc.com.vn/' },
-    });
-    return { items: parseSjc(j, ref), url: 'https://sjc.com.vn' };
-  },
-  async btmc(ref) {
-    // Khoá công khai do BTMC cung cấp cho widget giá
-    const j = await json('http://api.btmc.vn/api/BTMCAPI/getpricebtmc?key=3kd8ub1llcg9t45hnoh8hmn7t5kc2v');
-    return { items: parseBtmc(j, ref), url: 'https://btmc.vn' };
-  },
-  async doji(ref) {
-    const x = await http('http://giavang.doji.vn/api/giavang/?api_key=258fbd2a72ce8481089d88c678e9fe4f');
-    return { items: parseDoji(x, ref), url: 'https://giavang.doji.vn' };
-  },
-  async mihong(ref) {
-    const tries = [
-      ['json', 'https://www.mihong.vn/api/v1/gold/prices/current'],
-      ['html', 'https://www.mihong.vn/vi/gia-vang-trong-nuoc'],
-      ['html', 'https://www.mihong.vn/'],
-    ];
-    let lastErr;
-    for (const [kind, url] of tries) {
-      try {
-        const t = await http(url);
-        const items = kind === 'json' ? walkJsonItems(JSON.parse(t), ref) : genericItems(t, /999|SJC|98[05]|vàng/i, ref);
-        if (items.length) return { items, url: 'https://www.mihong.vn' };
-      } catch (e) { lastErr = e; }
-    }
-    throw lastErr || new Error('Không đọc được bảng giá Mi Hồng');
-  },
-};
+async function webgia(id, ref) {
+  const url = `https://webgia.com/gia-vang/${SLUG[id]}/`;
+  const html = await http(url);
+  const items = genericItems(html, /vàng|SJC|nhẫn|999/i, ref).filter(i => !NOT_GOLD.test(i.name));
+  const at = html.match(/Cập nhật lúc ([\d:]+ [\d/]+)/)?.[1];
+  return { items: items.map(i => ({ ...i, at })), url, via: 'Webgia' };
+}
 
 async function fetchBrand(b, ref) {
   if (b.mode === 'manual') return { id: b.id, name: b.name, status: 'manual', items: [] };
-  try {
-    let r;
-    if (b.mode === 'html' && b.url) r = { items: genericItems(await http(b.url), new RegExp(b.match || '999', 'i'), ref), url: b.url };
-    else r = await FETCHERS[b.id](ref);
-    if (!r.items.length) throw new Error('Không tìm thấy dòng giá hợp lệ');
-    const main = pickMain(r.items, PREFER[b.id] || [/999/]);
-    const ring = r.items.find(i => NHAN.test(i.name) && /99/.test(i.name)) || null;
-    return { id: b.id, name: b.name, status: 'ok', url: r.url, main, ring, items: r.items.slice(0, 12) };
-  } catch (e) {
-    log(`${b.name} lỗi:`, e.message);
-    return { id: b.id, name: b.name, status: 'error', error: e.message, items: [] };
+  const errors = [];
+  const tries = b.mode === 'html' && b.url
+    ? [async () => ({ items: genericItems(await http(b.url), new RegExp(b.match || '999', 'i'), ref), url: b.url, via: b.url })]
+    : [() => simplize(b.id, ref), () => webgia(b.id, ref)];
+  for (const t of tries) {
+    try {
+      const r = await t();
+      if (!r.items.length) throw new Error('không có dòng giá hợp lệ');
+      const main = pickMain(r.items, PREFER[b.id] || [/999/]);
+      const ring = r.items.find(i => NHAN.test(i.name) && /99/.test(i.name)) || null;
+      return { id: b.id, name: b.name, status: 'ok', url: r.url, via: r.via, main, ring, items: r.items.slice(0, 12) };
+    } catch (e) { errors.push(e.message); }
   }
-}
-
-async function sjcBackfill(history, ref) {
-  if ((history.brands.sjc || []).length >= 60) return;
-  try {
-    const d = n => { const x = new Date(now.getTime() - n * 864e5); return `${String(x.getDate()).padStart(2, '0')}/${String(x.getMonth() + 1).padStart(2, '0')}/${x.getFullYear()}`; };
-    const body = `method=GetGoldPriceHistory&goldPriceId=1&fromDate=${d(190)}&toDate=${d(0)}`;
-    const j = await json('https://sjc.com.vn/GoldPrice/Services/PriceService.ashx', {
-      method: 'POST', body, headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest', Referer: 'https://sjc.com.vn/' },
-    });
-    let s = history.brands.sjc || [];
-    for (const r of j.data || []) {
-      const ms = +String(r.GroupDate || r.CreateDate || '').match(/\d{10,}/)?.[0];
-      const buy = toVndPerLuong(parseNum(r.BuyValue), ref), sell = toVndPerLuong(parseNum(r.SellValue), ref);
-      if (ms && buy && sell) s = upsertDaily(s, vnDate(new Date(ms)), [buy, sell]);
-    }
-    history.brands.sjc = s;
-    log('Đã nạp lịch sử SJC:', s.length, 'ngày');
-  } catch (e) { log('Nạp lịch sử SJC lỗi:', e.message); }
+  log(`${b.name} lỗi:`, errors.join(' | '));
+  return { id: b.id, name: b.name, status: 'error', error: errors.join(' | '), items: [] };
 }
 
 // ---------- Tin tức ----------
@@ -303,7 +259,6 @@ const brands = (await Promise.all(cfg.brands.map(b => fetchBrand(b, worldVnd || 
   if (b.status === 'error' && old?.main) return { ...old, stale: true, staleSince: old.staleSince || prevLatest.updatedAt, error: b.error };
   return b;
 });
-await sjcBackfill(history, worldVnd);
 
 const ts = now.getTime();
 if (spot) {

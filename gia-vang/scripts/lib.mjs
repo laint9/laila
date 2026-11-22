@@ -64,9 +64,9 @@ export function htmlTableRows(html) {
 export function genericItems(html, matchRe, ref) {
   const items = [];
   for (const cells of htmlTableRows(html)) {
-    const name = cells[0];
+    const name = cells.find(c => !/^[\d.,\s-]+$/.test(c) && matchRe.test(c)) || cells[0];
     if (!matchRe.test(cells.join(' '))) continue;
-    const nums = cells.slice(1).map(parseNum).filter(n => Number.isFinite(n) && n >= 1000);
+    const nums = cells.slice(1).filter(c => /^[\d.,\s]+$/.test(c)).map(parseNum).filter(n => Number.isFinite(n) && n >= 1000);
     if (nums.length < 2) continue;
     const buy = toVndPerLuong(nums[0], ref), sell = toVndPerLuong(nums[1], ref);
     if (buy && sell) items.push({ name, buy, sell });

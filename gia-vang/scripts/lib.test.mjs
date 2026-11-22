@@ -105,3 +105,14 @@ test('shouldNotify', () => {
   assert.deepEqual(shouldNotify({ state, now, worldPrice: 4040, sjcSell: 150.6e6, cfg }), ['world', 'sjc']);
   assert.deepEqual(shouldNotify({ state: { ...state, lastDailySummary: '2026-11-20' }, now, worldPrice: 4000, sjcSell: 150e6, cfg }), ['daily']);
 });
+
+test('genericItems bỏ qua cột khu vực và tên có chữ số (bảng kiểu Webgia)', () => {
+  const html = `<table><tr><th>Khu vực</th><th>Loại vàng</th><th>Mua vào</th><th>Bán ra</th></tr>
+  <tr><th rowspan="3">Hồ Chí Minh</th><td>Vàng SJC 1L, 10L, 1KG</td><td>12.850.000</td><td>13.350.000</td></tr>
+  <tr><td>Bạc 999</td><td>1.492.000</td><td>1.557.000</td></tr></table>`;
+  const items = genericItems(html, /vàng|SJC/i, REF);
+  assert.equal(items.length, 1);
+  assert.equal(items[0].name, 'Vàng SJC 1L, 10L, 1KG');
+  assert.equal(items[0].buy, 128_500_000);
+  assert.equal(items[0].sell, 133_500_000);
+});
