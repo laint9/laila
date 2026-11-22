@@ -1,8 +1,9 @@
 {
-  "updatedAt": "2026-11-22T04:21:49.926Z",
+  "updatedAt": "2026-11-22T04:33:28.956Z",
   "world": {
     "usdPerOz": 3539,
-    "changePct": null,
+    "changePct": 0.6713318541275505,
+    "prevClose": 3515.4,
     "vndPerLuong": 110851618.68463528,
     "source": "gold-api.com"
   },
@@ -10,36 +11,273 @@
     "rate": 25980,
     "source": "Vietcombank (giá bán)"
   },
-  "premiumSjc": null,
+  "premiumSjc": 23348381.31536472,
   "drivers": {},
   "brands": [
     {
       "id": "sjc",
       "name": "SJC",
-      "status": "error",
-      "error": "HTTP 403 https://sjc.com.vn/GoldPrice/Services/PriceService.ashx",
-      "items": []
+      "status": "ok",
+      "url": "https://simplize.vn/gia-vang/sjc",
+      "via": "Simplize",
+      "main": {
+        "name": "Vàng SJC 1 lượng",
+        "buy": 129200000,
+        "sell": 134200000,
+        "at": "11:19:18 22/11/2026"
+      },
+      "ring": {
+        "name": "Vàng nhẫn SJC 99,99 1 chỉ",
+        "buy": 128000000,
+        "sell": 134000000,
+        "at": "11:19:18 22/11/2026"
+      },
+      "items": [
+        {
+          "name": "Vàng SJC 1 lượng",
+          "buy": 129200000,
+          "sell": 134200000,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Vàng SJC 5 chỉ",
+          "buy": 129200000,
+          "sell": 134220000,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Vàng SJC 1 chỉ",
+          "buy": 129200000,
+          "sell": 134230000,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Vàng nhẫn SJC 99,99 1 chỉ",
+          "buy": 128000000,
+          "sell": 134000000,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Vàng nhẫn SJC 99,99 0.5 chỉ",
+          "buy": 128000000,
+          "sell": 134100000,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Nữ trang 99,99%",
+          "buy": 127000000,
+          "sell": 133000000,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Nữ trang 99%",
+          "buy": 124683168.3168,
+          "sell": 131683168.3168,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Nữ trang 75%",
+          "buy": 90109975.9975,
+          "sell": 99909975.9975,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Nữ trang 68%",
+          "buy": 80799044.9044,
+          "sell": 90599044.9044,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Nữ trang 61%",
+          "buy": 71488113.8113,
+          "sell": 81288113.8113,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Nữ trang 58.3%",
+          "buy": 67896754.6754,
+          "sell": 77696754.6754,
+          "at": "11:19:18 22/11/2026"
+        }
+      ],
+      "change": null
     },
     {
       "id": "btmc",
       "name": "Bảo Tín Minh Châu",
-      "status": "error",
-      "error": "fetch failed",
-      "items": []
+      "status": "ok",
+      "url": "https://simplize.vn/gia-vang/bao-tin-minh-chau",
+      "via": "Simplize",
+      "main": {
+        "name": "Vàng miếng Rồng Thăng Long BTMC",
+        "buy": 128800000,
+        "sell": 133800000,
+        "at": "11:24:17 22/11/2026"
+      },
+      "ring": null,
+      "items": [
+        {
+          "name": "Vàng miếng Rồng Thăng Long BTMC",
+          "buy": 128800000,
+          "sell": 133800000,
+          "at": "11:24:17 22/11/2026"
+        },
+        {
+          "name": "Vàng miếng SJC BTMC",
+          "buy": 128800000,
+          "sell": 134200000,
+          "at": "11:24:17 22/11/2026"
+        },
+        {
+          "name": "Nhẫn tròn trơn BTMC",
+          "buy": 128800000,
+          "sell": 133800000,
+          "at": "11:24:17 22/11/2026"
+        },
+        {
+          "name": "Bản vị vàng BTMC",
+          "buy": 128800000,
+          "sell": 133800000,
+          "at": "11:24:17 22/11/2026"
+        },
+        {
+          "name": "Trang sức Rồng Thăng Long 9999",
+          "buy": 127800000,
+          "sell": 132800000,
+          "at": "11:24:17 22/11/2026"
+        },
+        {
+          "name": "Trang sức Rồng Thăng Long 999",
+          "buy": 127600000,
+          "sell": 132600000,
+          "at": "11:24:17 22/11/2026"
+        }
+      ],
+      "change": null
     },
     {
       "id": "doji",
       "name": "DOJI",
-      "status": "error",
-      "error": "HTTP 503 http://giavang.doji.vn/api/giavang/?api_key=258fbd2a72ce8481089d88c678e9fe4f",
-      "items": []
+      "status": "ok",
+      "url": "https://simplize.vn/gia-vang/doji",
+      "via": "Simplize",
+      "main": {
+        "name": "Vàng miếng SJC DOJI HCM",
+        "buy": 129200000,
+        "sell": 134200000,
+        "at": "11:24:17 22/11/2026"
+      },
+      "ring": null,
+      "items": [
+        {
+          "name": "Vàng miếng SJC DOJI Hà Nội",
+          "buy": 129200000,
+          "sell": 134200000,
+          "at": "11:24:17 22/11/2026"
+        },
+        {
+          "name": "Vàng miếng SJC DOJI HCM",
+          "buy": 129200000,
+          "sell": 134200000,
+          "at": "11:24:17 22/11/2026"
+        },
+        {
+          "name": "Vàng miếng SJC DOJI Đà Nẵng",
+          "buy": 129200000,
+          "sell": 134200000,
+          "at": "11:24:17 22/11/2026"
+        },
+        {
+          "name": "Vàng miếng Phúc Long DOJI Hà Nội",
+          "buy": 129500000,
+          "sell": 133500000,
+          "at": "11:24:17 22/11/2026"
+        },
+        {
+          "name": "Vàng miếng Phúc Long DOJI HCM",
+          "buy": 129500000,
+          "sell": 133500000,
+          "at": "11:24:17 22/11/2026"
+        },
+        {
+          "name": "Vàng miếng Phúc Long DOJI Đà Nẵng",
+          "buy": 129500000,
+          "sell": 133500000,
+          "at": "11:24:17 22/11/2026"
+        },
+        {
+          "name": "Nhẫn Tròn Hưng Thịnh Vượng",
+          "buy": 129500000,
+          "sell": 133500000,
+          "at": "11:24:17 22/11/2026"
+        },
+        {
+          "name": "Vàng 24K DOJI",
+          "buy": 123000000,
+          "sell": 127000000,
+          "at": "11:24:17 22/11/2026"
+        }
+      ],
+      "change": null
     },
     {
       "id": "mihong",
       "name": "Mi Hồng",
-      "status": "error",
-      "error": "Unexpected token '<', \"<!doctype \"... is not valid JSON",
-      "items": []
+      "status": "ok",
+      "url": "https://simplize.vn/gia-vang/mi-hong",
+      "via": "Simplize",
+      "main": {
+        "name": "Vàng 999 Mi Hồng",
+        "buy": 131000000,
+        "sell": 133500000,
+        "at": "11:19:18 22/11/2026"
+      },
+      "ring": null,
+      "items": [
+        {
+          "name": "Vàng miếng SJC Mi Hồng",
+          "buy": 131000000,
+          "sell": 133500000,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Vàng 999 Mi Hồng",
+          "buy": 131000000,
+          "sell": 133500000,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Vàng 985 Mi Hồng",
+          "buy": 114500000,
+          "sell": 117500000,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Vàng 980 Mi Hồng",
+          "buy": 113700000,
+          "sell": 116700000,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Vàng 750 Mi Hồng",
+          "buy": 85500000,
+          "sell": 89500000,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Vàng 680 Mi Hồng",
+          "buy": 74000000,
+          "sell": 78000000,
+          "at": "11:19:18 22/11/2026"
+        },
+        {
+          "name": "Vàng 610 Mi Hồng",
+          "buy": 71000000,
+          "sell": 75000000,
+          "at": "11:19:18 22/11/2026"
+        }
+      ],
+      "change": null
     },
     {
       "id": "huythanh",
