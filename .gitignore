@@ -5,3 +5,4 @@ release/
 .DS_Store
 *.log
 build/bin/
+gia-vang/web/data/
