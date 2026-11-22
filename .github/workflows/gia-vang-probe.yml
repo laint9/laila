@@ -1,0 +1,14 @@
+# Tạm thời: kiểm tra nguồn giá nào truy cập được từ máy chạy GitHub. Xoá sau khi chọn xong nguồn.
+name: Giá vàng - kiểm tra nguồn
+on:
+  push:
+    branches: [claude/inspiring-darwin-5jj3ns]
+    paths: ['gia-vang/scripts/probe.mjs', '.github/workflows/gia-vang-probe.yml']
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node gia-vang/scripts/probe.mjs
