@@ -26,13 +26,15 @@ GitHub Actions (mỗi 30 phút)
 
 ## Cài đặt (làm 1 lần)
 
-1. Gộp nhánh này vào nhánh chính (`main`). Lịch chạy 30 phút của GitHub chỉ hoạt động trên nhánh chính.
+1. Gộp nhánh này vào nhánh mặc định của repo. Lịch chạy 30 phút của GitHub chỉ hoạt động trên nhánh mặc định.
 2. **Settings → Pages → Source: GitHub Actions.** Nếu repo private, GitHub Pages cần gói trả phí; nếu không, để repo public.
 3. **Settings → Secrets and variables → Actions → New repository secret**:
    - `NTFY_TOPIC`: tên kênh khó đoán, ví dụ `giavang-a7f3k9q2`. Ai biết tên kênh đều đọc được thông báo, nên đừng đặt dễ đoán.
    - `ANTHROPIC_API_KEY` (tuỳ chọn): để Claude viết phần "Vì sao tăng giảm" dễ hiểu, có trích nguồn. Không có thì app dùng phân tích theo quy tắc.
 4. Vào tab **Actions → Giá vàng → Run workflow** để chạy lần đầu.
-5. Trên iPhone: mở `https://<tên-github>.github.io/<tên-repo>/` bằng Safari → Chia sẻ → Thêm vào MH chính.
+5. Trên iPhone, cài app bằng 1 trong 2 cách:
+   - **File cài:** mở `https://<tên-github>.github.io/<tên-repo>/GiaVang.mobileconfig` bằng Safari → Cho phép → Cài đặt → Đã tải về hồ sơ → Cài đặt. Biểu tượng Giá Vàng hiện trên màn hình chính.
+   - **Thủ công:** mở `https://<tên-github>.github.io/<tên-repo>/` bằng Safari → Chia sẻ → Thêm vào MH chính.
 6. Cài app **ntfy** trên App Store → bấm + → nhập đúng tên kênh ở bước 3.
 
 ## Nguồn dữ liệu và độ tin cậy
