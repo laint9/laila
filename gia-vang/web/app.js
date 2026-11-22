@@ -281,7 +281,8 @@ function renderSettings() {
   if (cur) sel.value = cur;
   const w = S.latest.world, fx = S.latest.usdvnd;
   $('#sources').innerHTML = `<p>Thế giới: ${esc(w?.source || '—')}. Tỷ giá: ${esc(fx?.source || '—')}${fx ? ` (${Math.round(fx.rate).toLocaleString('vi-VN')} đ/USD)` : ''}.</p>
-    <p>${S.latest.brands.map(b => `${esc(b.name)}: ${b.status === 'ok' ? `<a href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.url.replace(/^https?:\/\//, ''))}</a>` : b.status === 'manual' ? 'nhập tay' : 'lỗi lần cập nhật gần nhất'}`).join('<br>')}</p>
+    <p>${S.latest.brands.map(b => `${esc(b.name)}: ${b.status === 'ok' ? `<a href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.via || b.url.replace(/^https?:\/\//, ''))}</a>${b.main?.at ? ` · niêm yết ${esc(b.main.at)}` : ''}${b.stale ? ' · giá cũ' : ''}` : b.status === 'manual' ? 'nhập tay' : 'lỗi lần cập nhật gần nhất'}`).join('<br>')}</p>
+    <p>Giá trong nước lấy qua trang tổng hợp Simplize, dự phòng Webgia, vì trang gốc của các thương hiệu chặn máy chủ nước ngoài. Giá thế giới: gold-api.com, lịch sử: xaus.com.</p>
     <p>Tin tức: Google News, chỉ giữ các báo uy tín (Reuters, Bloomberg, CNBC, Kitco, VnExpress, CafeF, Tuổi Trẻ…).</p>`;
 }
 

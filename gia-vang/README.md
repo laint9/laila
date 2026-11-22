@@ -15,8 +15,7 @@ App cho iPhone theo dõi giá vàng 999.9 thế giới và trong nước: biểu
 
 ```
 GitHub Actions (mỗi 30 phút)
-  ├─ Lấy giá: gold-api.com, Vietcombank, SJC, BTMC, DOJI, Mi Hồng
-  ├─ Lấy chỉ số liên quan: USD (DXY), lợi suất Mỹ 10 năm, dầu, S&P 500 (Yahoo Finance)
+  ├─ Lấy giá: gold-api.com, xaus.com, Vietcombank, Simplize/Webgia (SJC, BTMC, DOJI, Mi Hồng)
   ├─ Lấy tin: Google News, chỉ giữ báo uy tín
   ├─ Phân tích lý do: Claude (nếu có khoá API) hoặc quy tắc cố định
   ├─ Gửi thông báo qua ntfy khi vượt ngưỡng + bản tin mỗi sáng 8h
@@ -41,12 +40,13 @@ GitHub Actions (mỗi 30 phút)
 
 | Thương hiệu | Cách lấy | Ghi chú |
 |---|---|---|
-| SJC | API của sjc.com.vn | Có nạp lịch sử 6 tháng |
-| Bảo Tín Minh Châu | API công khai btmc.vn | Lịch sử tích luỹ từ ngày chạy |
-| DOJI | API công khai giavang.doji.vn | Lịch sử tích luỹ từ ngày chạy |
-| Mi Hồng | Đọc bảng giá trên mihong.vn | Trang web đổi giao diện thì có thể hỏng |
+| SJC, Bảo Tín Minh Châu, DOJI, Mi Hồng | Trang tổng hợp Simplize, dự phòng Webgia | Trang gốc của các thương hiệu chặn máy chủ GitHub (đặt ở Mỹ) |
 | Huy Thanh | Nhập tay trong app | Chưa có trang giá công khai |
 | Hanno Jewels | Nhập tay trong app | Chưa có trang giá công khai |
+| Giá thế giới | gold-api.com; lịch sử 400 ngày từ xaus.com | |
+| Tỷ giá | Vietcombank | |
+
+Lịch sử giá trong nước tích luỹ từ ngày app bắt đầu chạy. Giá lấy qua trang tổng hợp có thể trễ vài phút so với niêm yết gốc; app ghi rõ giờ niêm yết trong mục Cài đặt → Nguồn dữ liệu.
 
 Nếu tìm được trang có bảng giá của Huy Thanh hoặc Hanno, sửa `scripts/sources.json`: đổi `"mode": "manual"` thành `"html"` và điền `url`.
 
