@@ -1,6 +1,218 @@
 {
   "items": [
     {
+      "headline": "Vàng thế giới giảm nhẹ vì lo Fed tăng lãi suất, giá vàng trong nước đứng yên",
+      "direction": "down",
+      "summary": "Giá vàng thế giới hiện ở khoảng 3.547 USD/ounce, giảm nhẹ 0,15% so với phiên trước. Theo các tin trong danh sách, trước đó vàng đã giảm khá sâu. Nguyên nhân chính là nhà đầu tư lo Fed giữ lãi suất cao lâu hơn, thậm chí tăng thêm, trong khi chờ số liệu lạm phát Mỹ. Trong nước, giá vàng miếng SJC và các thương hiệu lớn chưa thay đổi.",
+      "reasons": [
+        {
+          "title": "Lo ngại Fed tăng hoặc giữ lãi suất cao lâu hơn",
+          "detail": "Biên bản cho thấy phần lớn ngân hàng Fed khu vực muốn tăng lãi suất vào tháng 10. JPMorgan còn dự báo Fed sẽ tăng lãi suất ở ba cuộc họp tới. Lãi suất cao khiến vàng, vốn không sinh lãi, kém hấp dẫn hơn so với gửi tiền hay trái phiếu.",
+          "kind": "su_that",
+          "sources": [
+            {
+              "title": "Most Fed Regional Boards Wanted to Raise Rates in October",
+              "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNWFNldmpiMGd5YzhHM3NRMXFQbmV5ZkE1ZkVXR3liN3RmVHhLdlF2TExubnJJeEM0Vm5NTHJpMlpBSlFZemt6YURLM3I1TFBrcWQzSUtUUGNEX3FiZ2dUZWlCZnl4c0w2SFZQYklPeExXTHNWdVlGYUltbEdvaWJuYUZTSHVRRHA0Rk5rQUN5T0dMVHFnek9vZlEzdlpxYUpEQ3I0ZDJmaUtGQ1VL?oc=5",
+              "source": "Bloomberg.com",
+              "date": "Tue, 24 Nov 2026 19:36:40 GMT"
+            },
+            {
+              "title": "JPMorgan’s Bruce Kasman expects the Fed to hike rates at its next three meetings",
+              "link": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQY3ppMC1lX3NDS0JocVFuT3p1Ty10OVR0N1JXTGYwUUh5bkkwLTFHX0JMcXJUaE05b0pyQnVGdXA1cjhHSURjdVlwaFFjMTNVdXZNZUxza1NzWWpzdlRnVldjYjA4YWZzek9SclRvenVUbEF6N2tyNUNUcUZsalBfY2lqNDNNVzJZeTJxanIzM08xeHJZeV9VS0Fn?oc=5",
+              "source": "CNBC",
+              "date": "Tue, 24 Nov 2026 19:24:47 GMT"
+            },
+            {
+              "title": "Giá vàng giảm mạnh trở lại vì mối lo lãi suất cao hơn lâu hơn",
+              "link": "https://news.google.com/rss/articles/CBMijwFBVV95cUxQc0E4cXJ3cUo5WTNhUTZDdm50N1hpMWtwUmFXclo5a0kxckR0MHZ6S1BRRElyWmgydm9haHo1VGI5N2hkOGJmczY0eWduQlV0VFZRbjlvVnRQbTdzdTJ5S3JrVVRuUC1tY0FQSmlSUV82Y0tTclUwNjlxVzRpTGVzQXc0OUtxV29FalNOY3JIbw?oc=5",
+              "source": "VnEconomy",
+              "date": "Wed, 25 Nov 2026 00:39:27 GMT"
+            },
+            {
+              "title": "Inflation, not markets, is driving Fed decisions, says JPMorgan's Michael Feroli",
+              "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNY3hXUTZHU3dCY0FLT0RCQ0FiT2pET0lZdWpQTkFDQ0p0ckNDdnB1RWZvLWZaRG1BUzdNY2h1WkVBRWZXSWp5UUcySzNsVndzemp0WGR3RHhFeUh1a3h5bjl1R25HaGFHNmpxdFFjaEticE5tZmZ3WkZrQlk2QXNoblU0d25DNm1ZN0N6WUpqblFKQ29DS2l6UHRlWGpMQ0hRbF9WdVMwNG9vQWprTUhfREkzRQ?oc=5",
+              "source": "CNBC",
+              "date": "Tue, 24 Nov 2026 22:15:01 GMT"
+            }
+          ]
+        },
+        {
+          "title": "Thị trường thận trọng chờ số liệu lạm phát Mỹ",
+          "detail": "Reuters và Kitco cho biết vàng đi xuống khi nhà đầu tư chờ số liệu lạm phát Mỹ. Đây được xem là phép thử cho quyết định lãi suất sắp tới của Fed. Trước dữ liệu quan trọng, nhiều người chọn chốt lời hoặc đứng ngoài.",
+          "kind": "nhan_dinh",
+          "sources": [
+            {
+              "title": "Gold ticks lower ahead of US inflation data",
+              "link": "https://news.google.com/rss/articles/CBMikgFBVV95cUxOV1p3ZkduX2FrdGJhMEMtbmNXNTgxN05HeDFsX2xxNDBkWXZQVkFWS3NzNFpITzZ2RnRyYXVZQ1k5bmthekYzdG9aSDVxcGZGS1RxMnNTTHNRRkQyQWFoWm1zNXVfd2hVQW96VHQ1ZFd4eU04cXNTRWk0cFJ4LS1PLUd1eUFmN3Y4ZjJQbXZpVkd3UQ?oc=5",
+              "source": "Reuters",
+              "date": "Wed, 25 Nov 2026 00:49:00 GMT"
+            },
+            {
+              "title": "Gold, silver extend losses as tech stocks slide, Fed inflation test looms - Kitco PM Report",
+              "link": "https://news.google.com/rss/articles/CBMivAFBVV95cUxOU2lqcG5YQlM4N3pRZHUyQkIyM2ZCZ1FLTE9ZTzNLQWNCRkxzdnFZS2VFcHVUY2Nfcjc2TzFPaV83WXNKUzd0SE5YZVZUYXYyMF9nbzBzamo2MjB0M2hUQkRQRzBUTk5wVzBPbU01ZFU0TFhyZktReS1KZ0E1MjNySU1JcHhsaTB3QlFUeGVyRzcyT01xMmxXejJzYW5BcmtJcG13SGFMZ3VKZjM1SmZYV1JFSGttM3l3NWpucw?oc=5",
+              "source": "Kitco",
+              "date": "Tue, 24 Nov 2026 22:16:28 GMT"
+            },
+            {
+              "title": "Giá vàng hôm nay 25/11: Đà phục hồi đối mặt áp lực lớn",
+              "link": "https://news.google.com/rss/articles/CBMikgFBVV95cUxPN0pyc3ZsdEladV94dVN6Rm5mbHNHa0c3d2NDdHgzVjBLdVlpdkNIdWRaVFU0YldtWG4zaEhLUjBETGsySzkzOEpBWE1tNElxM281SjloZjUxbEYxcGh2dzF6ckdSVFpvWkRPX2U1WkNsX0pLZE1nTDFWcllJTXlsak5sNE05S01ObG9Gb1pLYVlEZw?oc=5",
+              "source": "Báo VietNamNet",
+              "date": "Tue, 24 Nov 2026 22:00:00 GMT"
+            }
+          ]
+        },
+        {
+          "title": "Lạm phát dai dẳng ở nhiều nước",
+          "detail": "Lạm phát Úc tăng nhanh hơn dù ngân hàng trung ương đã nâng lãi suất. Chỉ số lạm phát dịch vụ của Nhật lên mức cao nhất 36 năm. Thống đốc Ngân hàng Canada cũng cảnh báo lạm phát sẽ còn dai dẳng. Điều này củng cố kỳ vọng lãi suất toàn cầu còn ở mức cao, gây áp lực lên vàng.",
+          "kind": "su_that",
+          "sources": [
+            {
+              "title": "Australian Inflation Accelerates, Even After RBA Rate Hikes",
+              "link": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPSmZnclVsakZpNHFUSWtSVk4walE3M0V1bkM0RHgyWFVpRjVzVHM0TTI4TWhTYnNjQXJSTWkzdWZ2clZiVmEyaTEtSjlheHZTUURJWXB6TF9mc1JrcEZxbjlfWUJTLTlieWpSa2dzWHNPem1IVEdCVFNwSmFqYW95cTI0ak4wSUE2UC1EV19WZVU5MUpSRUNPeUUtYWNHb3AyazFodU9qVzNMbmJZZVE?oc=5",
+              "source": "Bloomberg.com",
+              "date": "Wed, 25 Nov 2026 00:50:00 GMT"
+            },
+            {
+              "title": "Japan's key services inflation gauge hits 36-year high",
+              "link": "https://news.google.com/rss/articles/CBMimwFBVV95cUxObmQyUGZ2bG00UVFlbzFVMEZpdGt1ZzV0Y0ZxX21VLVZfSFEtNl8zeldrZ1NtSXhpSGhLaVNtSkxFR1Zvc3FVeHFBNGctWVVMZlhQb2lhbkNnMUdoQTdaWndqSEktMmZpUXJKWU81bFRHQmJTSGlhZ1IxcEF6N25wV3FIbDhWbmVIV241SW84RWlEN1FTRmgxaF91SQ?oc=5",
+              "source": "Reuters",
+              "date": "Wed, 25 Nov 2026 00:05:00 GMT"
+            },
+            {
+              "title": "Bank of Canada Gov. Macklem Expects Inflation to Remain Persistent",
+              "link": "https://news.google.com/rss/articles/CBMiugFBVV95cUxQdmV5U2pibTRfUmJObWdlQl9rS1JlZ2xqQ0hkTTE5UG4zODdpTWRjbFNyQUxaY2pYRHdhTG1JNHFFUExBWV96S1dXaWRTV1llaEh3U0ZkeU9oLU5VRGVBajVhcmRpemh4SkZncUlvb2ROUlVwdVQtSzJZU2Z3WEREMXp2SndmeW0wTWI4RWpIaDlwS2dNYzZXN2FfYkhURmlPUENCX1hqMnV0MWdxX2xPWGh5bmlfLW10VGc?oc=5",
+              "source": "WSJ",
+              "date": "Tue, 24 Nov 2026 18:41:00 GMT"
+            },
+            {
+              "title": "Canadian Dollar Gains Most Since August on BOC Inflation Warning",
+              "link": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPZDFtNnJVYmZPR0dHaVNLNDVBQjBReWFZNzhIaGRkUUNuU3p4WFVnb2RLcHdkSEFoQXJVV0dEbWNCaEJjQW03LXF5RVhSVWhmVHlDYlBuajVJNVE4c3B1QW1kY3NTbUFCRUREbjRvc2hRNzlzTlYwLUpqYlJzcEs0eXpfNl9ZRU84NGFDMXRMVFlMTUtzbXUzQzBjRWhZSDdJX0FEQmJWU1QyY1hydTlvZ3c2S2tYdw?oc=5",
+              "source": "Bloomberg.com",
+              "date": "Tue, 24 Nov 2026 22:15:54 GMT"
+            },
+            {
+              "title": "Stubborn Inflation Could Pose a Bigger Threat to Markets Than AI Worries",
+              "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQa3FoY0YzbWhuWFh0ZTgyaC1MTTMxaEtUNUZ4T0lxanE2bWItUzhnSk1vUkxLWHZTX3BYRUJLTVg0cFRMc0ZzeUt2UGZQQ09qV2E3Vi02dG5qX0JxclFSOUtaaGgyY1F3TVBneHlZT1ZvSjJhZHh0Sm1JTF9DLUlHUEM4cE9kc3VoUjVsS25sU1UtR1oyVlVjd0Y3aEMteE5PQWwtOWQ2bS1WazZMc1dUVWhkTU4?oc=5",
+              "source": "Barron's",
+              "date": "Tue, 24 Nov 2026 22:05:00 GMT"
+            }
+          ]
+        },
+        {
+          "title": "Cổ phiếu công nghệ giảm kéo kim loại quý đi xuống theo",
+          "detail": "Kitco ghi nhận vàng và bạc nối dài đà giảm khi cổ phiếu công nghệ trượt dốc. Tuổi Trẻ cho biết bạc mất hơn 5%. Tuy vậy, Bloomberg lại đưa tin vàng giữ được mức tăng sau đợt phục hồi của cổ phiếu Nvidia. Như vậy diễn biến ngắn hạn còn giằng co, chưa rõ xu hướng.",
+          "kind": "su_that",
+          "sources": [
+            {
+              "title": "Gold, silver extend losses as tech stocks slide, Fed inflation test looms - Kitco PM Report",
+              "link": "https://news.google.com/rss/articles/CBMivAFBVV95cUxOU2lqcG5YQlM4N3pRZHUyQkIyM2ZCZ1FLTE9ZTzNLQWNCRkxzdnFZS2VFcHVUY2Nfcjc2TzFPaV83WXNKUzd0SE5YZVZUYXYyMF9nbzBzamo2MjB0M2hUQkRQRzBUTk5wVzBPbU01ZFU0TFhyZktReS1KZ0E1MjNySU1JcHhsaTB3QlFUeGVyRzcyT01xMmxXejJzYW5BcmtJcG13SGFMZ3VKZjM1SmZYV1JFSGttM3l3NWpucw?oc=5",
+              "source": "Kitco",
+              "date": "Tue, 24 Nov 2026 22:16:28 GMT"
+            },
+            {
+              "title": "Giá vàng hôm nay 25-11: Vàng thế giới đảo chiều giảm sâu, bạc mất hơn 5%",
+              "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNOEF2ZGJ0VU91WWVTMFhtYUVvSUZFa2JNb3YtWHIwb3FmZ0ZHZG95eEUyMTdydU8yeVBYU3FtZjZOS3U2M3hiYkFVYW8zeHhvMlU2VXdfdFZzeHZtNF9hcTdkSHhqS1NvUmpSWmR1TVAwSnAwTEE5MEpSS3VDS2ZRcTJsQXVObVBKZkpWMUNyaWZQTDFOcGstRXdKUEFXYTB6bDB3TmJ4YTBOMEVCekxUZg?oc=5",
+              "source": "Tuổi Trẻ",
+              "date": "Wed, 25 Nov 2026 00:08:00 GMT"
+            },
+            {
+              "title": "Gold Holds Gain After Nvidia’s Rehiring of Huang Sparks Rally",
+              "link": "https://news.google.com/rss/articles/CBMisgFBVV95cUxPdmx6UDZKMVladVJKQ1lxa3lSaU1BR3h2VGcwUVpJNW8yVmpyaTIxTTctWUZ2VV9ZX1ppbDNhTEIyYVBrckJ1Sm1YMUZBLWVXLXZFMkNnRXJoMWZndzhwcHVmYWRWSjlHRUJVWUhIZnl3QnZrYWJWU1dIWTF1Mm1pYzV0YlFxWE9RU1NyazhrbU56a1hGTDJ4RTY3ZkVZVFRWaTdsa2Jrdm02d3NyRWNYbEZR?oc=5",
+              "source": "Bloomberg.com",
+              "date": "Tue, 24 Nov 2026 21:59:32 GMT"
+            }
+          ]
+        }
+      ],
+      "domestic_note": "Giá vàng trong nước không đi theo thế giới phiên này. SJC và DOJI vẫn giữ giá 130 triệu đồng/lượng mua vào, 135 triệu đồng/lượng bán ra. Bảo Tín Minh Châu và Mi Hồng cũng không đổi. Tỷ giá USD/VND đứng yên ở 25.990. Giá thế giới quy đổi chỉ khoảng 111,15 triệu đồng/lượng, nên vàng SJC đang cao hơn khoảng 23,8 triệu đồng/lượng. Khoảng chênh lớn này cho thấy giá trong nước chủ yếu do cung cầu nội địa quyết định và thường điều chỉnh chậm hơn thế giới.",
+      "watch_next": [
+        "Số liệu lạm phát Mỹ sắp công bố và phản ứng của thị trường",
+        "Tín hiệu từ Fed về khả năng tăng lãi suất ở các cuộc họp tới",
+        "Diễn biến cổ phiếu công nghệ và lợi suất trái phiếu Mỹ",
+        "Liệu vàng có giữ được vùng 3.500 USD/ounce",
+        "Mức chênh lệch giữa giá SJC và giá thế giới quy đổi"
+      ],
+      "engine": "claude",
+      "date": "2026-11-25",
+      "at": "2026-11-25T01:01:55.819Z",
+      "worldPrice": 3547.300049,
+      "worldPct": -0.1519956934162714,
+      "news": [
+        {
+          "title": "Australian Inflation Accelerates, Even After RBA Rate Hikes",
+          "link": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPSmZnclVsakZpNHFUSWtSVk4walE3M0V1bkM0RHgyWFVpRjVzVHM0TTI4TWhTYnNjQXJSTWkzdWZ2clZiVmEyaTEtSjlheHZTUURJWXB6TF9mc1JrcEZxbjlfWUJTLTlieWpSa2dzWHNPem1IVEdCVFNwSmFqYW95cTI0ak4wSUE2UC1EV19WZVU5MUpSRUNPeUUtYWNHb3AyazFodU9qVzNMbmJZZVE?oc=5",
+          "source": "Bloomberg.com",
+          "date": "Wed, 25 Nov 2026 00:50:00 GMT"
+        },
+        {
+          "title": "Gold ticks lower ahead of US inflation data",
+          "link": "https://news.google.com/rss/articles/CBMikgFBVV95cUxOV1p3ZkduX2FrdGJhMEMtbmNXNTgxN05HeDFsX2xxNDBkWXZQVkFWS3NzNFpITzZ2RnRyYXVZQ1k5bmthekYzdG9aSDVxcGZGS1RxMnNTTHNRRkQyQWFoWm1zNXVfd2hVQW96VHQ1ZFd4eU04cXNTRWk0cFJ4LS1PLUd1eUFmN3Y4ZjJQbXZpVkd3UQ?oc=5",
+          "source": "Reuters",
+          "date": "Wed, 25 Nov 2026 00:49:00 GMT"
+        },
+        {
+          "title": "Giá vàng giảm mạnh trở lại vì mối lo lãi suất cao hơn lâu hơn",
+          "link": "https://news.google.com/rss/articles/CBMijwFBVV95cUxQc0E4cXJ3cUo5WTNhUTZDdm50N1hpMWtwUmFXclo5a0kxckR0MHZ6S1BRRElyWmgydm9haHo1VGI5N2hkOGJmczY0eWduQlV0VFZRbjlvVnRQbTdzdTJ5S3JrVVRuUC1tY0FQSmlSUV82Y0tTclUwNjlxVzRpTGVzQXc0OUtxV29FalNOY3JIbw?oc=5",
+          "source": "VnEconomy",
+          "date": "Wed, 25 Nov 2026 00:39:27 GMT"
+        },
+        {
+          "title": "Giá vàng hôm nay 25-11: Vàng thế giới đảo chiều giảm sâu, bạc mất hơn 5%",
+          "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNOEF2ZGJ0VU91WWVTMFhtYUVvSUZFa2JNb3YtWHIwb3FmZ0ZHZG95eEUyMTdydU8yeVBYU3FtZjZOS3U2M3hiYkFVYW8zeHhvMlU2VXdfdFZzeHZtNF9hcTdkSHhqS1NvUmpSWmR1TVAwSnAwTEE5MEpSS3VDS2ZRcTJsQXVObVBKZkpWMUNyaWZQTDFOcGstRXdKUEFXYTB6bDB3TmJ4YTBOMEVCekxUZg?oc=5",
+          "source": "Tuổi Trẻ",
+          "date": "Wed, 25 Nov 2026 00:08:00 GMT"
+        },
+        {
+          "title": "Japan's key services inflation gauge hits 36-year high",
+          "link": "https://news.google.com/rss/articles/CBMimwFBVV95cUxObmQyUGZ2bG00UVFlbzFVMEZpdGt1ZzV0Y0ZxX21VLVZfSFEtNl8zeldrZ1NtSXhpSGhLaVNtSkxFR1Zvc3FVeHFBNGctWVVMZlhQb2lhbkNnMUdoQTdaWndqSEktMmZpUXJKWU81bFRHQmJTSGlhZ1IxcEF6N25wV3FIbDhWbmVIV241SW84RWlEN1FTRmgxaF91SQ?oc=5",
+          "source": "Reuters",
+          "date": "Wed, 25 Nov 2026 00:05:00 GMT"
+        },
+        {
+          "title": "Giá vàng hôm nay ngày 25/11: Giá vàng thế giới quay đầu giảm mạnh",
+          "link": "https://news.google.com/rss/articles/CBMie0FVX3lxTE52VXBGTFNXWDV5Wi1tNlIxT2NJMFdfa1FwT0RzSFh2SEVQa1hnRTNoeDFUbXhyeVNaMFRMdXQ1cXBGMDRkTjNRWEJTaEMwMUJMSzRfOGp5LVFILTEyODVEXzFXQzc5X1lId2tPR1pJR3RJcDJUNGpKR1E1TQ?oc=5",
+          "source": "VnExpress",
+          "date": "Tue, 24 Nov 2026 23:38:39 GMT"
+        },
+        {
+          "title": "Chuyên gia nói gì về việc dùng vàng làm quỹ dự phòng khẩn cấp?",
+          "link": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQZld2RHFzemxFeUNvYi1VUXVnR3pNb21LU3R5UHBtMVV0elk2cGkxaDF6WHoydTFSUkgwUjByRHlmbmdTQk9wb0d2MzMtX0JFZm5BU01GTnRyaUZvM3hQQ09YMkYwY0Iyc05Od01FN2Q4NlNTV2pVYzM5UDNoU2tmLVdEekJFd1ZiX05QV1VkUGswTDBLUDczbGN1UWZ6bDcxTTFEWGFGdS1acDUxMGhZT21FME9CanM?oc=5",
+          "source": "Báo Dân trí",
+          "date": "Tue, 24 Nov 2026 23:33:00 GMT"
+        },
+        {
+          "title": "Giá vàng hôm nay (25-11): Vàng thế giới giảm",
+          "link": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQd0JIYmdMa0w1TFExa1RLMkFOam5pSzRPZENwMWJ0ck85aldwVkQ2bWw4ejZyV2dMUVRkUG9zVDIwSkhocUpTNU9mZWpnSHEyQVdEVjBRWTNpOFVCR2d5QzR5NVlCcHcwQnBKTzhRTEd4dU53MEI3X2Rpc09YTkhsZkVYWl9hNzRkOTIwRUZR?oc=5",
+          "source": "Báo Quân đội nhân dân",
+          "date": "Tue, 24 Nov 2026 22:54:28 GMT"
+        },
+        {
+          "title": "Fed Cuts Pay Raises for Regional-Bank Staff",
+          "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNSE9oYmJPLTJKZ3p5QzM1RWZ6WHZTc0g0M1dsdkl4czJFenpyWnRFdWJwX2dIR2F1a00xTFNIRUFFcFlYSUZRUlBENGVGV1VvYUtOWmVJNWlzcjBCVDd0aGRwR0x3WVdvQVVqU2xHTnFtU3hqZ21sV01ZcVlUdGtJUzg2VmlEc2d3c1pqdGRzTjJBaVhFRGdWWi1zVzM?oc=5",
+          "source": "WSJ",
+          "date": "Tue, 24 Nov 2026 22:25:46 GMT"
+        },
+        {
+          "title": "Gold, silver extend losses as tech stocks slide, Fed inflation test looms - Kitco PM Report",
+          "link": "https://news.google.com/rss/articles/CBMivAFBVV95cUxOU2lqcG5YQlM4N3pRZHUyQkIyM2ZCZ1FLTE9ZTzNLQWNCRkxzdnFZS2VFcHVUY2Nfcjc2TzFPaV83WXNKUzd0SE5YZVZUYXYyMF9nbzBzamo2MjB0M2hUQkRQRzBUTk5wVzBPbU01ZFU0TFhyZktReS1KZ0E1MjNySU1JcHhsaTB3QlFUeGVyRzcyT01xMmxXejJzYW5BcmtJcG13SGFMZ3VKZjM1SmZYV1JFSGttM3l3NWpucw?oc=5",
+          "source": "Kitco",
+          "date": "Tue, 24 Nov 2026 22:16:28 GMT"
+        },
+        {
+          "title": "Canadian Dollar Gains Most Since August on BOC Inflation Warning",
+          "link": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPZDFtNnJVYmZPR0dHaVNLNDVBQjBReWFZNzhIaGRkUUNuU3p4WFVnb2RLcHdkSEFoQXJVV0dEbWNCaEJjQW03LXF5RVhSVWhmVHlDYlBuajVJNVE4c3B1QW1kY3NTbUFCRUREbjRvc2hRNzlzTlYwLUpqYlJzcEs0eXpfNl9ZRU84NGFDMXRMVFlMTUtzbXUzQzBjRWhZSDdJX0FEQmJWU1QyY1hydTlvZ3c2S2tYdw?oc=5",
+          "source": "Bloomberg.com",
+          "date": "Tue, 24 Nov 2026 22:15:54 GMT"
+        },
+        {
+          "title": "Inflation, not markets, is driving Fed decisions, says JPMorgan's Michael Feroli",
+          "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNY3hXUTZHU3dCY0FLT0RCQ0FiT2pET0lZdWpQTkFDQ0p0ckNDdnB1RWZvLWZaRG1BUzdNY2h1WkVBRWZXSWp5UUcySzNsVndzemp0WGR3RHhFeUh1a3h5bjl1R25HaGFHNmpxdFFjaEticE5tZmZ3WkZrQlk2QXNoblU0d25DNm1ZN0N6WUpqblFKQ29DS2l6UHRlWGpMQ0hRbF9WdVMwNG9vQWprTUhfREkzRQ?oc=5",
+          "source": "CNBC",
+          "date": "Tue, 24 Nov 2026 22:15:01 GMT"
+        }
+      ]
+    },
+    {
       "headline": "Vàng thế giới giảm hơn 2% vì kỳ vọng Fed tăng lãi suất; giá SJC đứng yên",
       "direction": "down",
       "summary": "Giá vàng thế giới giảm khoảng 2,28% xuống quanh 3.568 USD/ounce, thủng vùng hỗ trợ 3.600 USD mà giới giao dịch đang theo dõi. Lý do chính là thị trường ngày càng tin Cục Dự trữ Liên bang Mỹ (Fed) sẽ tăng lãi suất, khiến vàng kém hấp dẫn hơn vì không sinh lời. Trong nước, giá vàng miếng SJC giữ nguyên 135 triệu đồng/lượng và vẫn cao hơn giá thế giới quy đổi khoảng 23,2 triệu đồng.",
