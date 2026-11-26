@@ -1,17 +1,17 @@
 {
-  "updatedAt": "2026-11-25T19:52:56.804Z",
+  "updatedAt": "2026-11-26T02:45:36.007Z",
   "world": {
-    "usdPerOz": 3537.300049,
-    "changePct": 0.08488382423675869,
-    "prevClose": 3534.3,
-    "vndPerLuong": 110968961.60533893,
+    "usdPerOz": 3583.100098,
+    "changePct": -0.6019724256546908,
+    "prevClose": 3604.8,
+    "vndPerLuong": 112492158.61607473,
     "source": "gold-api.com"
   },
   "usdvnd": {
-    "rate": 26020,
+    "rate": 26040,
     "source": "Vietcombank (giá bán)"
   },
-  "premiumSjc": 23131038.39466107,
+  "premiumSjc": 21607841.383925274,
   "drivers": {},
   "brands": [
     {
@@ -24,80 +24,80 @@
         "name": "Vàng SJC 1 lượng",
         "buy": 129100000,
         "sell": 134100000,
-        "at": "02:49:18 26/11/2026"
+        "at": "09:29:18 26/11/2026"
       },
       "ring": {
         "name": "Vàng nhẫn SJC 99,99 1 chỉ",
         "buy": 127900000,
         "sell": 133900000,
-        "at": "02:49:18 26/11/2026"
+        "at": "09:29:18 26/11/2026"
       },
       "items": [
         {
           "name": "Vàng SJC 1 lượng",
           "buy": 129100000,
           "sell": 134100000,
-          "at": "02:49:18 26/11/2026"
+          "at": "09:29:18 26/11/2026"
         },
         {
           "name": "Vàng SJC 5 chỉ",
           "buy": 129100000,
           "sell": 134120000,
-          "at": "02:49:18 26/11/2026"
+          "at": "09:29:18 26/11/2026"
         },
         {
           "name": "Vàng SJC 1 chỉ",
           "buy": 129100000,
           "sell": 134130000,
-          "at": "02:49:18 26/11/2026"
+          "at": "09:29:18 26/11/2026"
         },
         {
           "name": "Vàng nhẫn SJC 99,99 1 chỉ",
           "buy": 127900000,
           "sell": 133900000,
-          "at": "02:49:18 26/11/2026"
+          "at": "09:29:18 26/11/2026"
         },
         {
           "name": "Vàng nhẫn SJC 99,99 0.5 chỉ",
           "buy": 127900000,
           "sell": 134000000,
-          "at": "02:49:18 26/11/2026"
+          "at": "09:29:18 26/11/2026"
         },
         {
           "name": "Nữ trang 99,99%",
           "buy": 126900000,
           "sell": 132900000,
-          "at": "02:49:18 26/11/2026"
+          "at": "09:29:18 26/11/2026"
         },
         {
           "name": "Nữ trang 99%",
           "buy": 124584158.4158,
           "sell": 131584158.4158,
-          "at": "02:49:18 26/11/2026"
+          "at": "09:29:18 26/11/2026"
         },
         {
           "name": "Nữ trang 75%",
           "buy": 90034968.4968,
           "sell": 99834968.4968,
-          "at": "02:49:18 26/11/2026"
+          "at": "09:29:18 26/11/2026"
         },
         {
           "name": "Nữ trang 68%",
           "buy": 80731038.1038,
           "sell": 90531038.1038,
-          "at": "02:49:18 26/11/2026"
+          "at": "09:29:18 26/11/2026"
         },
         {
           "name": "Nữ trang 61%",
           "buy": 71427107.7107,
           "sell": 81227107.7107,
-          "at": "02:49:18 26/11/2026"
+          "at": "09:29:18 26/11/2026"
         },
         {
           "name": "Nữ trang 58.3%",
           "buy": 67838448.8448,
           "sell": 77638448.8448,
-          "at": "02:49:18 26/11/2026"
+          "at": "09:29:18 26/11/2026"
         }
       ],
       "change": {
@@ -115,7 +115,7 @@
         "name": "Vàng miếng Rồng Thăng Long BTMC",
         "buy": 128500000,
         "sell": 133500000,
-        "at": "02:39:18 26/11/2026"
+        "at": "09:39:18 26/11/2026"
       },
       "ring": null,
       "items": [
@@ -123,37 +123,37 @@
           "name": "Vàng miếng Rồng Thăng Long BTMC",
           "buy": 128500000,
           "sell": 133500000,
-          "at": "02:39:18 26/11/2026"
+          "at": "09:39:18 26/11/2026"
         },
         {
           "name": "Vàng miếng SJC BTMC",
           "buy": 128500000,
           "sell": 134100000,
-          "at": "02:39:18 26/11/2026"
+          "at": "09:39:18 26/11/2026"
         },
         {
           "name": "Nhẫn tròn trơn BTMC",
           "buy": 128500000,
           "sell": 133500000,
-          "at": "02:39:18 26/11/2026"
+          "at": "09:39:18 26/11/2026"
         },
         {
           "name": "Bản vị vàng BTMC",
           "buy": 128500000,
           "sell": 133500000,
-          "at": "02:39:18 26/11/2026"
+          "at": "09:39:18 26/11/2026"
         },
         {
           "name": "Trang sức Rồng Thăng Long 9999",
           "buy": 127500000,
           "sell": 132500000,
-          "at": "02:39:18 26/11/2026"
+          "at": "09:39:18 26/11/2026"
         },
         {
           "name": "Trang sức Rồng Thăng Long 999",
           "buy": 127300000,
           "sell": 132300000,
-          "at": "02:39:18 26/11/2026"
+          "at": "09:39:18 26/11/2026"
         }
       ],
       "change": {
@@ -171,7 +171,7 @@
         "name": "Vàng miếng SJC DOJI HCM",
         "buy": 129100000,
         "sell": 134100000,
-        "at": "02:44:16 26/11/2026"
+        "at": "08:54:16 26/11/2026"
       },
       "ring": null,
       "items": [
@@ -179,49 +179,49 @@
           "name": "Vàng miếng SJC DOJI Hà Nội",
           "buy": 129100000,
           "sell": 134100000,
-          "at": "02:44:16 26/11/2026"
+          "at": "08:54:16 26/11/2026"
         },
         {
           "name": "Vàng miếng SJC DOJI HCM",
           "buy": 129100000,
           "sell": 134100000,
-          "at": "02:44:16 26/11/2026"
+          "at": "08:54:16 26/11/2026"
         },
         {
           "name": "Vàng miếng SJC DOJI Đà Nẵng",
           "buy": 129100000,
           "sell": 134100000,
-          "at": "02:44:16 26/11/2026"
+          "at": "08:54:16 26/11/2026"
         },
         {
           "name": "Vàng miếng Phúc Long DOJI Hà Nội",
           "buy": 128500000,
           "sell": 133500000,
-          "at": "02:44:16 26/11/2026"
+          "at": "08:54:16 26/11/2026"
         },
         {
           "name": "Vàng miếng Phúc Long DOJI HCM",
           "buy": 128500000,
           "sell": 133500000,
-          "at": "02:44:16 26/11/2026"
+          "at": "08:54:16 26/11/2026"
         },
         {
           "name": "Vàng miếng Phúc Long DOJI Đà Nẵng",
           "buy": 128500000,
           "sell": 133500000,
-          "at": "02:44:16 26/11/2026"
+          "at": "08:54:16 26/11/2026"
         },
         {
           "name": "Nhẫn Tròn Hưng Thịnh Vượng",
           "buy": 128500000,
           "sell": 133500000,
-          "at": "02:44:16 26/11/2026"
+          "at": "08:54:16 26/11/2026"
         },
         {
           "name": "Vàng 24K DOJI",
           "buy": 123000000,
           "sell": 127000000,
-          "at": "02:44:16 26/11/2026"
+          "at": "08:54:16 26/11/2026"
         }
       ],
       "change": {
@@ -239,7 +239,7 @@
         "name": "Vàng 999 Mi Hồng",
         "buy": 132500000,
         "sell": 134000000,
-        "at": "02:44:16 26/11/2026"
+        "at": "09:39:18 26/11/2026"
       },
       "ring": null,
       "items": [
@@ -247,43 +247,43 @@
           "name": "Vàng miếng SJC Mi Hồng",
           "buy": 132500000,
           "sell": 134000000,
-          "at": "02:44:16 26/11/2026"
+          "at": "09:39:18 26/11/2026"
         },
         {
           "name": "Vàng 999 Mi Hồng",
           "buy": 132500000,
           "sell": 134000000,
-          "at": "02:44:16 26/11/2026"
+          "at": "09:39:18 26/11/2026"
         },
         {
           "name": "Vàng 985 Mi Hồng",
-          "buy": 115500000,
+          "buy": 116000000,
           "sell": 118500000,
-          "at": "02:44:16 26/11/2026"
+          "at": "09:39:18 26/11/2026"
         },
         {
           "name": "Vàng 980 Mi Hồng",
-          "buy": 114800000,
+          "buy": 115300000,
           "sell": 117800000,
-          "at": "02:44:16 26/11/2026"
+          "at": "09:39:18 26/11/2026"
         },
         {
           "name": "Vàng 750 Mi Hồng",
-          "buy": 87000000,
+          "buy": 87500000,
           "sell": 91000000,
-          "at": "02:44:16 26/11/2026"
+          "at": "09:39:18 26/11/2026"
         },
         {
           "name": "Vàng 680 Mi Hồng",
-          "buy": 75500000,
+          "buy": 76000000,
           "sell": 79500000,
-          "at": "02:44:16 26/11/2026"
+          "at": "09:39:18 26/11/2026"
         },
         {
           "name": "Vàng 610 Mi Hồng",
-          "buy": 72500000,
+          "buy": 73000000,
           "sell": 76500000,
-          "at": "02:44:16 26/11/2026"
+          "at": "09:39:18 26/11/2026"
         }
       ],
       "change": {
@@ -305,227 +305,209 @@
     }
   ],
   "analysis": {
-    "headline": "Vàng thế giới đi ngang quanh 3.537 USD sau cú giảm mạnh, giá SJC đứng yên",
-    "direction": "flat",
-    "summary": "Giá vàng thế giới hôm nay gần như không đổi, chỉ tăng 0,08% lên khoảng 3.537 USD/ounce. Trước đó, vàng đã giảm mạnh xuống gần mức thấp nhất hơn một năm vì lạm phát Mỹ nóng lên và lo ngại Fed tăng lãi suất. Trong nước, giá SJC và các thương hiệu lớn giữ nguyên, bán ra 134,1 triệu đồng/lượng.",
+    "headline": "Vàng thế giới giảm 0,6% do lo Fed tăng lãi suất, SJC đứng yên ở 134,1 triệu",
+    "direction": "down",
+    "summary": "Giá vàng thế giới giảm khoảng 0,6% so với phiên trước, còn khoảng 3.583 USD/ounce. Lý do chính là số liệu lạm phát Mỹ nóng làm nhà đầu tư lo Fed sẽ tăng lãi suất, dù trong phiên vàng có lúc bật mạnh từ vùng gần 3.400 USD. Trong nước, vàng miếng SJC giữ nguyên giá nhưng vẫn đắt hơn giá thế giới quy đổi khoảng 21,6 triệu đồng/lượng.",
     "reasons": [
       {
-        "title": "Vàng nghỉ lấy hơi sau phiên giảm sâu",
-        "detail": "Phiên trước, giá vàng giảm hơn 120 USD/ounce, có lúc mất mốc 3.500 USD và về gần đáy khoảng 15 tháng. Hôm nay giá chỉ nhích nhẹ 0,08%, cho thấy thị trường đang chững lại chứ chưa thật sự hồi phục.",
+        "title": "Lạm phát Mỹ cao, thị trường đặt cược Fed tăng lãi suất",
+        "detail": "Số liệu cho thấy kinh tế Mỹ tăng trưởng mạnh trong quý III, còn lạm phát tháng 10 vẫn cao, lên mức cao nhất 3 năm. Điều này khiến giới đầu tư nghĩ Fed có thể tăng lãi suất, mà lãi suất cao thường bất lợi cho vàng vì vàng không sinh lời.",
         "kind": "su_that",
         "sources": [
           {
-            "title": "Giá vàng giảm hơn 120 USD/ounce sau tin Mỹ sắp áp thuế",
-            "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxOMW1oX1ZaTkZtOU5tNEZnS2RIZnhIeGQxODRsV0lnR3FLUUZUZXJFd2VoYm1VOVJJaW9SZHZSRXRicHVGa0dEVmpOZnZvbnFVUFVxY0ZMRm1JcUNhQzJuaU5sTzM0eU9DRXFpUkV6TEJ3WGIzT2xBRFJIMGY5S2NMbmxfUGJHMk5mY01ZM1V1SUpxSGZPQlhIN3FuZ2c?oc=5",
-            "source": "Tuổi Trẻ",
-            "date": "Wed, 25 Nov 2026 16:59:00 GMT"
-          },
-          {
-            "title": "Gold Hits Near 15-Month Lows, Silver Crashes Below $40 Amid Fed Hike Fears – All Eyes On The Fed Rate Decision",
-            "link": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNVW43SFhnN0VQZkdTa1l2a3BOVWRmZUdsVzVRN29JNWM5TDdLZElJMF9weE5ub1ZuVW5RTEJ3Sl9CNVZ2UUd4dXNJMURwamF1dTBhOWNjR2NTYTduMEVGanRmc2EyWXAwdXd0cVBKZF9hR0EwQzNTMzA4Z3VmWnh4VmR0T0JxN1c3aXp0TDA0X1NXMFZWeWpaMg?oc=5",
-            "source": "Yahoo Finance",
-            "date": "Wed, 25 Nov 2026 16:38:46 GMT"
-          },
-          {
-            "title": "Gold sinks to more than one-year low after data shows US inflation rose further",
-            "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxPWXU0aldnamQxQUhjOGlpSlNKb1BuaUJBWnRVUGJlemdVN2RmQnRHOTdTQWJ0My1SRmp4dXhXVUJQNkVUenkxTlYyVmN3bDVZb0xqVjh2QnpSdTZlVWFQdktZYVVpUFZFYnlRb0lpd1hsZEljUE1KRjVfNVUtLXEwWUNnaTBuLVFvXzRReHJTLWdJWUp1YjFnT3hDVnpremlkd2lWQWVHVnY3djdnaTZRMFZmQVA?oc=5",
-            "source": "Kitco",
-            "date": "Wed, 25 Nov 2026 15:23:47 GMT"
-          },
-          {
-            "title": "Giá vàng hôm nay ngày 25/11: Giá vàng thế giới mất mốc 3.500 USD",
-            "link": "https://news.google.com/rss/articles/CBMiekFVX3lxTE5YRUx4VlIxb1RLVWl4UkxFSW9uWGR6UHNFenBDd0dHYWhRU0xRXzFTeW0yYlhzcjlxd19LY2paRk9KWnl3bl9wTUNHbkJ0TTlKNEZUSFpQOGRIX1V2VVlaTWEtbmZCREtIbk9Tcng2bDNHbW9UemYyZlhn?oc=5",
-            "source": "VnExpress",
-            "date": "Wed, 25 Nov 2026 14:50:35 GMT"
-          }
-        ]
-      },
-      {
-        "title": "Lạm phát Mỹ nóng, lo Fed tăng lãi suất tháng 12",
-        "detail": "Chỉ số lạm phát PCE của Mỹ lên 3,8%, tăng trưởng quý 3 được điều chỉnh tăng mạnh, và khảo sát Beige Book của Fed cho thấy lạm phát vẫn dai dẳng. Khi lãi suất có thể tăng, vàng (không sinh lãi) kém hấp dẫn hơn, nên đây là lực đè chính lên giá.",
-        "kind": "su_that",
-        "sources": [
-          {
-            "title": "The Fed says inflation hasn’t gotten any better ahead of its key December vote to raise rates",
-            "link": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxOV0o1WjBQV3JLSkJlU1VRU0I4SUczYUVfcG1zZEVLU0ZZa1Y3MFJYcHhZWHNtVlVPTWJjcUJYalpFWEFIVkdjNW8xTFkwSG5uUC1YNG0zOVpGcE1GQ1h3UU5YZmxkUEFnWFQ1aTZSVklUSU9EblV0ckVYeEpNaGxIVUpNYlplaDBONHEwSkpPUGdXX2RiUXJQb1lOb0RQdEJwQUwxam0xZjZ5dnJlYUNFM2pZeDZmQVVlNzFDRUZHaWZBQWVCLTBPYUF1VXpXYmxT?oc=5",
-            "source": "MarketWatch",
-            "date": "Wed, 25 Nov 2026 19:39:00 GMT"
-          },
-          {
-            "title": "Fed Beige Book Shows Moderate Growth, Uptick in Wage Pressures",
-            "link": "https://news.google.com/rss/articles/CBMisgFBVV95cUxPQWV5eGNLVEd2LU00RkQ2VlpWbGJqam5RUEVQd0dmN1lRYjBZOGVCYmxwTG5XV1huU3RfR2hNN0tuRV9iSW5NY2NxUUhsS1JORF90dF9wTnJBYTF5VEI3Y3BMd1luV2lMSFJseXdTQTVNTVk3eFRFdjM1ZWpmYVdCN0lnNEoxMWV3bUxFbjl0RVRDSmtidEhvS08wN29xRElHcVBiX2ZNa1l6bU5sWjB5NzFR?oc=5",
+            "title": "Gold Edges Lower as US Inflation Data Fuels Bets for Rate Hikes",
+            "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNWk5iY21FejJMUDVfS2h4ekdoUnQ1RndSalFWS2pkZzJZY1AwSXRnY1otVEdsMUdRVWZJV0NKSUxEM3Boc2VlQXNMMWkweGxJSWVGaFJHcC1qWTk0WTdIbXR0Z3VNQ2N2R054YXZMa1I2eVk4RjU5T09FelF5ZC1KdGJRYnV5bFdvMjJoRzBpMjNoUDkzMDJiTmdvejdOMF85Vy1JZU16eEI1M3VzVlBNa0RyMjk?oc=5",
             "source": "Bloomberg",
-            "date": "Wed, 25 Nov 2026 19:35:50 GMT"
+            "date": "Thu, 26 Nov 2026 00:18:00 GMT"
           },
           {
-            "title": "Fed survey shows continued growth and sticky inflation in recent weeks",
-            "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQZm5vWXNOWWIxaUVxUEVsRDBCWmpwYmd6eWJMLW1tcnJMVmxvR08ybXFaYWlFcVZ2YU1fYk9hbWotWlBXTzVValBHSFFzNjM1QlpyVWNCXzFPTFRZMUtWeHp0SThmaWxRMTVYVXp3UlM2R3pKQnVNS2hiZ1VERU9EVnFGNlA5dGZEa1NtZ1o5REVxM3ZzX2ZpOXRaN0lydzlDZk1VQ2FlS212U3dw?oc=5",
-            "source": "Reuters",
-            "date": "Wed, 25 Nov 2026 19:19:43 GMT"
-          },
-          {
-            "title": "Inflation gets worse. Now the Fed has no choice but to raise U.S. interest rates.",
-            "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOLXEwWmxfQlloLXRNcENFN0UwSmFNV0Z1VW9aMzNSeGU3ajdlUVlVNUdKMGNDZTk1a3RjNVJ3ZkNyWXQ3YUN1dEZCMmV5allEUDNVd2FoSnBINFRiYTdXTFh4ajFtNm5HUjVBVmJIT3YwYnlzS3lnMUFycDdwSlpRRlRqV01ZMlpmRGZZb0xVOEF2Y2FrdVlMeGVuNWxJZjlaQWZMV2YzTlVmTkpZQmJCRFRfSlU5azVt?oc=5",
-            "source": "MarketWatch",
-            "date": "Wed, 25 Nov 2026 17:31:00 GMT"
-          },
-          {
-            "title": "US third-quarter economic growth revised sharply higher; inflation broadening out",
+            "title": "US economy roars ahead in third quarter, inflation remains high in October",
             "link": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNalBrRjhRWHdhRDduMzduLU1kN1lGVFpzNFllX0RzdjJXMjdtajRZS1l1dms2MFJFbkhJQmx3Qzgydi1nTTJnQ1JPLUtoa1R5LWZjWjItUXJhXzhoZG51NU9ENzVBQjVSZWFpdHlqbV9PSkVncWtjUlptdXhjd0ZKRXZ6d2Y1dw?oc=5",
             "source": "Reuters",
-            "date": "Wed, 25 Nov 2026 16:15:17 GMT"
+            "date": "Wed, 25 Nov 2026 22:06:55 GMT"
           },
           {
-            "title": "PCE Inflation Hits 3.8%. Strong GDP Growth Raises Odds of More Fed Hikes.",
-            "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTFBDV3l4a1ZBY2w0MVpXQnhtVlJtOHJTNm92X093d0NmMHpVT3NlT0M2bzMxM2FLdjI1a1A1VHpJaktUMHJzdkxQckV4clA0REtxckMzVlMzTU9IalAyckFnREowRVl4UkFXMDlpamNseXR1dGZPTlFxX1UzNDVabWM?oc=5",
+            "title": "Businesses Plan More Price Hikes for 2027 as Inflation Hits 3-Year High",
+            "link": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPS2tmMTlPRUxWOW4xamRyY2hyY1FWaERYbmFWOVhyYmZfVUF1OEhtdlc5TFo1bGNHbmJWSlFBY0pRYTBDUjF4ZExMN1JJOHotS2RqaE5rTVpqdmN6UXVtd1hGNFF0SGlMZnZxVjZBUmxqSUVKSDFmWGRIMVFmWVZpcHNKUld3UFgwRVR0V1hwM3N0TG5DLU94aQ?oc=5",
             "source": "Barron's",
-            "date": "Wed, 25 Nov 2026 15:07:00 GMT"
+            "date": "Wed, 25 Nov 2026 22:01:00 GMT"
+          },
+          {
+            "title": "Hot inflation data and shaky markets poise new test for Fed ahead of December meeting",
+            "link": "https://news.google.com/rss/articles/CBMixwFBVV95cUxNTFJTTUZNYWt6NFNLTkd1V3M3ME93eXRjWlR0TXBBOTFna1RDSmhkaUR6WXhIMjZERWtPaFRDNmZWZXFGRF9HTWhHS1U3d05ZUDV6eHlrZG1OOWJoS1lvbWRCQ1hHaGJrMTdwV3RGOTV3WkNkOTl4aVA5Qk9ybFNkd1k2bExEYlVkV1ZVaWI5TTRBVVI2RHc2QmpxamRhaDduS3drVFFyc254WjdOblIzZG0xNzJ1Vm44c2pCZ3VHZDZiM2xTR2FB?oc=5",
+            "source": "CNBC",
+            "date": "Wed, 25 Nov 2026 21:40:49 GMT"
           }
         ]
       },
       {
-        "title": "Dòng tiền rút khỏi quỹ ETF vàng",
-        "detail": "Các quỹ ETF vàng toàn cầu vừa có tuần bị bán ra mạnh nhất kể từ tháng 6. Nhà đầu tư lớn rút tiền khiến giá khó bật lên.",
+        "title": "Lo ngại lạm phát còn có thể leo thang",
+        "detail": "Một số chuyên gia cho rằng lạm phát Mỹ có thể tiến gần 4% trong những tháng tới, và thuế quan bổ sung có thể làm lạm phát tệ hơn, tạo áp lực đẩy lãi suất lên. Đây là nhận định, nhưng nó làm tăng kỳ vọng Fed sẽ cứng rắn hơn.",
+        "kind": "nhan_dinh",
+        "sources": [
+          {
+            "title": "U.S. inflation could move near 4% in coming months: Economist",
+            "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQbjJ5N2pCZTNicURzdE5vTjdjY2VoQldXRUxXZ19hT0NKdk9aSF9CVHN2V1FjSHc1Nll3a1dLajlmN0Q5NTI5bUxJYTFZZEhrQUhmWXlHbGV4RHprYWY4czF0NEJXRlZWR05sLTJJTFQyemZ6RHJHUFhuUUhCQ2dPeGs4MUxfWVhuR2VyYkNaTzNzSVlSX1htcEhpYmE4NUhKTFB1Y0Fkcw?oc=5",
+            "source": "CNBC",
+            "date": "Thu, 26 Nov 2026 01:32:51 GMT"
+          },
+          {
+            "title": "Upward pressure on interest rates as additional U.S. tariffs could worsen inflation: CIO",
+            "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNM1BnWUZITFUzTlFPSjZZaDRJRWRhVVg2QUVUODF5UEZCdlkzREthNlNnNmo3VVA5eXpqY2NzX05QV0VZS1RuMWl3WGRCVkc4cHA5YWVFX2ctREsxaGZWM2x3RGpQdFVJTnJpaGNMTGZnMUo5UFRncjJab2djTDN1Q21waDI5N2x6UHFNcEZMNnNUZEhIaVltdDJ5YVJ6NHNySjVzdkZyLWZtMGox?oc=5",
+            "source": "CNBC",
+            "date": "Thu, 26 Nov 2026 01:21:23 GMT"
+          },
+          {
+            "title": "Wild Market Swings Are Colliding With a Fed Bent on Taming Inflation",
+            "link": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNNktjNDdMSmJmZDNsOE1CbkdBZVBNS2ZrVEJSUXQtazcwMUs3MHRwbk5xNmN4YmxhTC1OcUdlRVBDVmtiWXZYckVLQ1pOMFMxbXhPaXpsdjdMejlzLW5TMjYxYUVHQUJUamVMaERpbmIwSXd2bUoyMFJLWUcxV0JDZVVvUjE0UmRjaDdJTlJneE9CRnFrZ1dkZGdzeVA5MEtsSG93T0gySzktblJRWGZQUGlsUGVDXzNqRUtvV1pR?oc=5",
+            "source": "WSJ",
+            "date": "Thu, 26 Nov 2026 01:00:00 GMT"
+          },
+          {
+            "title": "Liesman: Why Greenspan could bet on productivity — and Warsh needs to hike",
+            "link": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNM3N5enRnaERDY09xbVFVbm1tSFZnTWt5bHlmUnViaDhTZlZXMnQ0QWZPUFJQOF9zeHh2UzNsNEowWjAxLWxkV1RPZS1SY1N0dFhmWW1DNkZHUlhDcmhTSHRJSnluQkw5c3c5Vnk5Uy11eURiQ1FNQWtPZDNEV3dpM2Z2WmdCNzI00gGOAUFVX3lxTE1Za0pYdWtPZUVWeUFhemZMOGI5ZjZMTmxFVkpDUTdQM2hQOGRKMDhZM0JJNXhKdUtRYkpsY1NmVzNwODRtRWJNNTlZVVZoZ1AwUFREdmh3T1I0bFpia0tGbEVILW1uUlNEZGVXdi1RLWNXcDctRTdOYm5ZWVlLdVVHR1FUVUVNdlBSc0o1SlE?oc=5",
+            "source": "CNBC",
+            "date": "Wed, 25 Nov 2026 21:55:45 GMT"
+          }
+        ]
+      },
+      {
+        "title": "Quỹ vàng lớn SPDR bán ròng",
+        "detail": "Quỹ SPDR Gold Trust, quỹ vàng lớn nhất thế giới, đã bán ròng vàng, cho thấy dòng tiền lớn đang rút bớt khỏi vàng.",
         "kind": "su_that",
         "sources": [
           {
-            "title": "ETF vàng toàn cầu có tuần bán mạnh nhất kể từ tháng 6, điều gì đang xảy ra?",
-            "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPdEJJeVRROUIwVXpISTMxS01xcmVtamgyNk9iQ0RxRXdTSnZOcHNxOENNbUtuOXhqNjJ6QkI4YlVzR29lOG1EZ1poaHZqWUkzWVhrWGdZbXJZMjdlUFlrVnowU2NuYk9BTFRVMnV5UzFqbGNyLUJuSVpMU1FhQ3dKTXNYeGdzYkpnMUhQLV80R21qNThPYjlfNVpHSzRDMmpaN3U2T2gya04zaEFZTUFHVjNMaw?oc=5",
-            "source": "CafeF",
-            "date": "Wed, 25 Nov 2026 17:05:00 GMT"
+            "title": "Giá vàng đảo chiều mạnh sau nhịp lao dốc về gần 3.400 USD/oz, SPDR Gold Trust bán ròng",
+            "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNaXdXdG1XR1NqVjdJMlp2MHYzNW0ySmkxTEw4VFpBSDlOUTlIWFU0RGZlVVRiLXFaSVpPa3JCTXQ3U0tPemhxYThXZW1BTEJOVXVaU1JaUWFzS3dzZXBBdktaY0c1cVBFRlh2TzRKNUZUSS0yRGIwTzhBWk5hcFpQdm9hSlBROXBKMjh1VWplcHFWQmQySngtaVQzQ1lfNEZIdFB5R3gzWGxPdGZX?oc=5",
+            "source": "VnEconomy",
+            "date": "Thu, 26 Nov 2026 00:27:29 GMT"
           }
         ]
       },
       {
-        "title": "Thuế quan mới và chứng khoán lao dốc",
-        "detail": "Tin Mỹ sắp áp thêm thuế cùng đợt bán tháo cổ phiếu công nghệ (Nasdaq giảm khoảng 4%) khiến thị trường rung lắc. Lần này vàng không được hưởng lợi như kênh trú ẩn mà còn giảm theo, có thể do nhà đầu tư bán vàng để bù lỗ ở nơi khác.",
-        "kind": "nhan_dinh",
+        "title": "Thị trường biến động mạnh, vàng hồi từ đáy nhưng chưa giữ được đà",
+        "detail": "Trước đó vàng đã lao dốc về gần 3.400 USD/ounce rồi bật lên hơn 135-150 USD từ đáy. Dù vậy, chốt so với phiên trước giá vẫn thấp hơn khoảng 0,6%, cho thấy nhà đầu tư vẫn còn dè dặt.",
+        "kind": "su_that",
         "sources": [
           {
-            "title": "Bitcoin Falls Toward $57,000 as Hotter Inflation and Tariff Worries Sink Stocks",
-            "link": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQXzFLcGlUNmxOd0QzeUhGMV9LSk1OMDRrcGYxS2VxdXZFLXZDeV91NTJNa3JRRTVvQU1SSl81dWlYR2xrcVVjdjh3OFkyMzRKU3RXZnNuT2lOcVgzcHdVZWRGUUttTFVWMnNtYl9NelR5NG1RbEJPeGl5LWxfSXBvMGtrWUtfcjRManBuUXd4MzdvZWsxOGxn?oc=5",
-            "source": "Yahoo Finance",
-            "date": "Wed, 25 Nov 2026 17:54:00 GMT"
+            "title": "Giá vàng hôm nay 26-11: Vàng thế giới bật tăng 135 USD, SJC lại giảm 900.000 đồng",
+            "link": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNaTYtQU1kZy1xTENHTlptMjVidHdFeHEwQ0liVWM1bEtPX09GMFFmQkJiZkp1ZmRrRUVFbTg5cF9VMTZneXhndGNyVEg1QUdaZVItQ3N2Q2tQSy1DWkZwNnVfZ2ktdk5RcUFFQ3JYY0p5R19QLVE4b1NSRDFlOEh4SGpuVDYyMHc1RHFCelBiZmM1Y0IwN0hRVGhzVmNWUm5hN280eElZVFdpNWtIaGJzV04wQWJkSFN6MV9kcg?oc=5",
+            "source": "Báo Tuổi Trẻ",
+            "date": "Thu, 26 Nov 2026 00:53:00 GMT"
           },
           {
-            "title": "Nasdaq sinks about 4% as AI rout, fresh Trump tariffs spook Wall St",
-            "link": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNdUdBTGhVT2V5cDcydUZMX2NTdTkxVDBJSHdCMUgwNXBibGhQc28zdktpLXA2dGVUYzRzV3hpMld1U29KempSNUswd2dNYVdITlFxV2NycEkwbnlpZkdPSDNicVRKM3NCU2l0M0hoWU13UTZkbTAtX2JFempxaUtFbjdTZGMxT2lXM2g3dkR4cy1UYnVfZ09kOWpTNGxtUEZZOTRPaXhENlZ6OGt2ZF94d0RCVjdOSldfc0E?oc=5",
+            "title": "Giá vàng đảo chiều mạnh sau nhịp lao dốc về gần 3.400 USD/oz, SPDR Gold Trust bán ròng",
+            "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNaXdXdG1XR1NqVjdJMlp2MHYzNW0ySmkxTEw4VFpBSDlOUTlIWFU0RGZlVVRiLXFaSVpPa3JCTXQ3U0tPemhxYThXZW1BTEJOVXVaU1JaUWFzS3dzZXBBdktaY0c1cVBFRlh2TzRKNUZUSS0yRGIwTzhBWk5hcFpQdm9hSlBROXBKMjh1VWplcHFWQmQySngtaVQzQ1lfNEZIdFB5R3gzWGxPdGZX?oc=5",
+            "source": "VnEconomy",
+            "date": "Thu, 26 Nov 2026 00:27:29 GMT"
+          },
+          {
+            "title": "Giá vàng hôm nay 26/11 đảo chiều tăng mạnh, bật hơn 150 USD/ounce từ đáy",
+            "link": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPUTdtaTNNRWQ3SXRPTWl2d0l3OG1KeV9xbHpiOGlRX3NpM3RPbEdqTnpWX0FLSndqT1QxSk9ZVlY1VEtKVGVLaVlURVAzSDMyY2Y3bnhKLTQ2UGtSaEJoSXFBMEVXV0lEbTVNd1JCd2JXSjE1TWQzcnJaSkZVZXJvWWJGWV9BUlRKc1hod295aElsYUh2aFROVDdqY1ZfNHhBYlUwRzNQTENCQQ?oc=5",
+            "source": "Báo VietNamNet",
+            "date": "Wed, 25 Nov 2026 22:00:00 GMT"
+          }
+        ]
+      },
+      {
+        "title": "Đồng USD đi ngang, chưa phải yếu tố chính",
+        "detail": "Đồng USD gần như đứng yên khi lợi suất trái phiếu giảm bớt, nên tác động của USD lên vàng hôm nay không rõ rệt.",
+        "kind": "su_that",
+        "sources": [
+          {
+            "title": "Dollar steady as sliding yields temper safe-haven bid",
+            "link": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQeGRxVzhWY18xWGQzRlVEbmZBbU9lcnR5WEpveVIybFY3X0I5bVNXN2Q2NWZUTUl6eGJYQUZoeHEwSFJqYzhGZDV4Yk9OV29Qc0dXSXFEbm9PY09FQlhNWVlQb2ZEN0FlelZvQVJyT2N3WU42X3phd3ZYVVczQ0RORDFwaW5vd0NxTnozeEpYU3VIVF9NcGtGYng0VWRnT0hk?oc=5",
             "source": "Reuters",
-            "date": "Wed, 25 Nov 2026 17:49:51 GMT"
-          },
-          {
-            "title": "Giá vàng giảm hơn 120 USD/ounce sau tin Mỹ sắp áp thuế",
-            "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxOMW1oX1ZaTkZtOU5tNEZnS2RIZnhIeGQxODRsV0lnR3FLUUZUZXJFd2VoYm1VOVJJaW9SZHZSRXRicHVGa0dEVmpOZnZvbnFVUFVxY0ZMRm1JcUNhQzJuaU5sTzM0eU9DRXFpUkV6TEJ3WGIzT2xBRFJIMGY5S2NMbmxfUGJHMk5mY01ZM1V1SUpxSGZPQlhIN3FuZ2c?oc=5",
-            "source": "Tuổi Trẻ",
-            "date": "Wed, 25 Nov 2026 16:59:00 GMT"
-          },
-          {
-            "title": "Nasdaq tumbles 4% as Nvidia leads AI sell-off, inflation and tariffs weigh on investors",
-            "link": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPRkVucHFsYk91LUJRTjJQX2RCSGwwUWhzVkhHTU5wREtmaEpxNk9ORTdKam9iRXd0aWZPX0U1RkxqTC1BN1NUOFV1dUowMlFXLVp2RjFkRVFrNFBSYWZDV3lGenRTQzVVOU0zOXlTZWZwQkZKNkNDbzBXbEs1akdqdThjbE1fRnFzMTBlbENDV1J6c05sRVNMeXN3?oc=5",
-            "source": "Yahoo Finance",
-            "date": "Wed, 25 Nov 2026 16:43:13 GMT"
-          }
-        ]
-      },
-      {
-        "title": "Lợi suất trái phiếu Mỹ giảm có thể giúp vàng ngừng rơi",
-        "detail": "Lợi suất trái phiếu Mỹ giảm thêm sau loạt số liệu, điều thường hỗ trợ vàng. Tuy vậy, chưa rõ đây có phải lý do chính khiến vàng nhích nhẹ hôm nay hay không.",
-        "kind": "nhan_dinh",
-        "sources": [
-          {
-            "title": "Treasury Yields Extend Fall After U.S. Data Flurry",
-            "link": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQWGhuNzRQQ2Z2ZWMwOFZPOTk4UXFxNWg4R09KdWVyVXItRnRQMnFJYkxvM3Flb1ktS2pJMFFqZXJodXM1ZXhpZ2hiOUoxTmRXMzZXVEtqZUF2emgyb0dfZm9xbVktNGJrSkZCTjdvZkVmQVItODZmZXdkX3lydHV2SUY4NzFWY3V6RnBlREg1RFhXa0hLaGt4MGRRbmhpQVpm?oc=5",
-            "source": "WSJ",
-            "date": "Wed, 25 Nov 2026 15:21:00 GMT"
+            "date": "Thu, 26 Nov 2026 01:44:00 GMT"
           }
         ]
       }
     ],
-    "domestic_note": "Giá vàng trong nước hôm nay đứng yên: SJC và DOJI mua 129,1 – bán 134,1 triệu đồng/lượng, Bảo Tín Minh Châu bán 133,5 triệu, Mi Hồng bán 134 triệu. Tỷ giá USD/VND không đổi ở 26.020 và giá thế giới gần như đi ngang nên chưa có lực kéo giá trong nước. Giá vàng thế giới quy đổi chỉ khoảng 111 triệu đồng/lượng, thấp hơn SJC khoảng 23,1 triệu đồng, nghĩa là giá trong nước đang cao hơn nhiều và không bám sát thế giới. Người mua nên lưu ý khoảng chênh mua – bán khoảng 5 triệu đồng/lượng ở SJC, DOJI và Bảo Tín Minh Châu.",
+    "domestic_note": "Giá vàng miếng SJC và DOJI giữ nguyên ở 129,1 triệu (mua) - 134,1 triệu (bán) mỗi lượng, Bảo Tín Minh Châu và Mi Hồng cũng không đổi. Giá trong nước không đi theo nhịp giảm của thế giới và đang cao hơn giá thế giới quy đổi (khoảng 112,5 triệu đồng/lượng) tới khoảng 21,6 triệu đồng. Ngoài ra, chênh lệch giữa giá mua và bán SJC khoảng 5 triệu đồng/lượng, nên người mua vào lúc này sẽ chịu lỗ ngay nếu bán lại.",
     "watch_next": [
-      "Quyết định lãi suất của Fed vào tháng 12",
+      "Cuộc họp tháng 12 của Fed: có tăng lãi suất hay không",
       "Các số liệu lạm phát Mỹ tiếp theo",
-      "Diễn biến chính sách thuế quan của Mỹ và thị trường chứng khoán",
-      "Dòng tiền vào/ra các quỹ ETF vàng",
-      "Khoảng chênh giữa giá SJC và giá thế giới quy đổi"
+      "Dòng tiền vào/ra quỹ SPDR Gold Trust",
+      "Diễn biến đồng USD và lợi suất trái phiếu Mỹ",
+      "Chênh lệch giá SJC so với thế giới có thu hẹp hay không"
     ],
     "engine": "claude",
     "date": "2026-11-26",
-    "at": "2026-11-25T19:52:56.804Z",
-    "worldPrice": 3537.300049,
-    "worldPct": 0.08488382423675869,
+    "at": "2026-11-26T02:45:36.007Z",
+    "worldPrice": 3583.100098,
+    "worldPct": -0.6019724256546908,
     "news": [
       {
-        "title": "The Fed says inflation hasn’t gotten any better ahead of its key December vote to raise rates",
-        "link": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxOV0o1WjBQV3JLSkJlU1VRU0I4SUczYUVfcG1zZEVLU0ZZa1Y3MFJYcHhZWHNtVlVPTWJjcUJYalpFWEFIVkdjNW8xTFkwSG5uUC1YNG0zOVpGcE1GQ1h3UU5YZmxkUEFnWFQ1aTZSVklUSU9EblV0ckVYeEpNaGxIVUpNYlplaDBONHEwSkpPUGdXX2RiUXJQb1lOb0RQdEJwQUwxam0xZjZ5dnJlYUNFM2pZeDZmQVVlNzFDRUZHaWZBQWVCLTBPYUF1VXpXYmxT?oc=5",
-        "source": "MarketWatch",
-        "date": "Wed, 25 Nov 2026 19:39:00 GMT"
-      },
-      {
-        "title": "Fed Beige Book Shows Moderate Growth, Uptick in Wage Pressures",
-        "link": "https://news.google.com/rss/articles/CBMisgFBVV95cUxPQWV5eGNLVEd2LU00RkQ2VlpWbGJqam5RUEVQd0dmN1lRYjBZOGVCYmxwTG5XV1huU3RfR2hNN0tuRV9iSW5NY2NxUUhsS1JORF90dF9wTnJBYTF5VEI3Y3BMd1luV2lMSFJseXdTQTVNTVk3eFRFdjM1ZWpmYVdCN0lnNEoxMWV3bUxFbjl0RVRDSmtidEhvS08wN29xRElHcVBiX2ZNa1l6bU5sWjB5NzFR?oc=5",
-        "source": "Bloomberg",
-        "date": "Wed, 25 Nov 2026 19:35:50 GMT"
-      },
-      {
-        "title": "Fed survey shows continued growth and sticky inflation in recent weeks",
-        "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQZm5vWXNOWWIxaUVxUEVsRDBCWmpwYmd6eWJMLW1tcnJMVmxvR08ybXFaYWlFcVZ2YU1fYk9hbWotWlBXTzVValBHSFFzNjM1QlpyVWNCXzFPTFRZMUtWeHp0SThmaWxRMTVYVXp3UlM2R3pKQnVNS2hiZ1VERU9EVnFGNlA5dGZEa1NtZ1o5REVxM3ZzX2ZpOXRaN0lydzlDZk1VQ2FlS212U3dw?oc=5",
+        "title": "Australian bank ANZ dropped from NY Fed's foreign exchange counterparty list",
+        "link": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNX0hoU2hvV28yQ0RhZnVqNk43V2UyQU1TUUxnVnNWd2pPWFBuYmxDWW0wNEhBMWpuX2pCYVc2cFFodEM2QkFiWU1JUngxQXhrbngzdEpObTRBSXdCWFpuV05vR19IYmdWZWprRW9XOS1MYU54ZWZyTzdMdVI3eGpiTVpQaFVHbHAwLV9lNldnTmlLYVVBSDVUX2JDM0ZzcDVwLTRiV2dGT05PRm9SQkRHYjdkdmp3Zw?oc=5",
         "source": "Reuters",
-        "date": "Wed, 25 Nov 2026 19:19:43 GMT"
+        "date": "Thu, 26 Nov 2026 02:06:00 GMT"
       },
       {
-        "title": "Russian Inflation Hits One-Year High in October as War Escalates",
-        "link": "https://news.google.com/rss/articles/CBMitgFBVV95cUxOWE5ybkJCY2o1YlBIUGNDS1BGaG52ajNQWXA0UGNfSUpaWDhhc0VQWEFVTEpPVTJ0TlVrN0JKVS1YeHlmWk03VUYyMy1sTUpzOFRfMTJjSXZudnZVWm5DWjh1NFc4MkZWMlZjUHg0dmRrX1dGTlNQTVJrZGR3QWtQbWpiZ3RkR3o1UWxIbjlDZk1NczBtZTJWTW5EXzR5OUZPcFpCRkhZQkpZY3N1aDBmSlh4bGVmUQ?oc=5",
-        "source": "Bloomberg",
-        "date": "Wed, 25 Nov 2026 18:55:33 GMT"
+        "title": "Giá vàng hôm nay 26.11.2027: Dậm chân tại chỗ nhưng người mua sẽ lỗ ngay 6 triệu",
+        "link": "https://news.google.com/rss/articles/CBMivgFBVV95cUxPdVFMZGNGWWliaWRMTXNseGN1aklmVGduN1hRWnhVMnVfdUZKTThadk9OQ1pwdTcxZ1MyWUhSNVNvSVhmdlhFdzdVdHpWMGZmWFpXc2lfaFBVWkxNekpVUjBkbG43djUwZlRsbGNjakxLM05pRkV3ZUh1UXktMlFUUUUtREx0ZW9Nd2R2WVZ1SjFFM193d0FKeVBmX05MUXIzNTlta28wTC1OZVF0QzJaOWN4UElOc0k0ZkxVSGNR?oc=5",
+        "source": "Báo Thanh Niên",
+        "date": "Thu, 26 Nov 2026 01:58:00 GMT"
       },
       {
-        "title": "Bitcoin Falls Toward $57,000 as Hotter Inflation and Tariff Worries Sink Stocks",
-        "link": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQXzFLcGlUNmxOd0QzeUhGMV9LSk1OMDRrcGYxS2VxdXZFLXZDeV91NTJNa3JRRTVvQU1SSl81dWlYR2xrcVVjdjh3OFkyMzRKU3RXZnNuT2lOcVgzcHdVZWRGUUttTFVWMnNtYl9NelR5NG1RbEJPeGl5LWxfSXBvMGtrWUtfcjRManBuUXd4MzdvZWsxOGxn?oc=5",
-        "source": "Yahoo Finance",
-        "date": "Wed, 25 Nov 2026 17:54:00 GMT"
-      },
-      {
-        "title": "Nasdaq sinks about 4% as AI rout, fresh Trump tariffs spook Wall St",
-        "link": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNdUdBTGhVT2V5cDcydUZMX2NTdTkxVDBJSHdCMUgwNXBibGhQc28zdktpLXA2dGVUYzRzV3hpMld1U29KempSNUswd2dNYVdITlFxV2NycEkwbnlpZkdPSDNicVRKM3NCU2l0M0hoWU13UTZkbTAtX2JFempxaUtFbjdTZGMxT2lXM2g3dkR4cy1UYnVfZ09kOWpTNGxtUEZZOTRPaXhENlZ6OGt2ZF94d0RCVjdOSldfc0E?oc=5",
+        "title": "Dollar steady as sliding yields temper safe-haven bid",
+        "link": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQeGRxVzhWY18xWGQzRlVEbmZBbU9lcnR5WEpveVIybFY3X0I5bVNXN2Q2NWZUTUl6eGJYQUZoeHEwSFJqYzhGZDV4Yk9OV29Qc0dXSXFEbm9PY09FQlhNWVlQb2ZEN0FlelZvQVJyT2N3WU42X3phd3ZYVVczQ0RORDFwaW5vd0NxTnozeEpYU3VIVF9NcGtGYng0VWRnT0hk?oc=5",
         "source": "Reuters",
-        "date": "Wed, 25 Nov 2026 17:49:51 GMT"
+        "date": "Thu, 26 Nov 2026 01:44:00 GMT"
       },
       {
-        "title": "Bitcoin Falls Toward 2-Year Low. Rising Inflation and Higher Interest Rates Are Its Threats.",
-        "link": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxORnhkSWNrcWlxeVhzZnBZMGdic2dCdmxtNTVRYXpoRXczV1h5ZFYySWc4T2FsWmU0emRCd1ZISVVDT1BnVExBVVpNTmI2Uzd3NXVtNGp5clRLRUZaaDM3bTZUekVtWEtCZXQwMmZOV1ptcTVQazE1Ti03UDFjMTJDUkt1SVcwdUp5?oc=5",
-        "source": "Barron's",
-        "date": "Wed, 25 Nov 2026 17:44:00 GMT"
+        "title": "U.S. inflation could move near 4% in coming months: Economist",
+        "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQbjJ5N2pCZTNicURzdE5vTjdjY2VoQldXRUxXZ19hT0NKdk9aSF9CVHN2V1FjSHc1Nll3a1dLajlmN0Q5NTI5bUxJYTFZZEhrQUhmWXlHbGV4RHprYWY4czF0NEJXRlZWR05sLTJJTFQyemZ6RHJHUFhuUUhCQ2dPeGs4MUxfWVhuR2VyYkNaTzNzSVlSX1htcEhpYmE4NUhKTFB1Y0Fkcw?oc=5",
+        "source": "CNBC",
+        "date": "Thu, 26 Nov 2026 01:32:51 GMT"
       },
       {
-        "title": "Inflation gets worse. Now the Fed has no choice but to raise U.S. interest rates.",
-        "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOLXEwWmxfQlloLXRNcENFN0UwSmFNV0Z1VW9aMzNSeGU3ajdlUVlVNUdKMGNDZTk1a3RjNVJ3ZkNyWXQ3YUN1dEZCMmV5allEUDNVd2FoSnBINFRiYTdXTFh4ajFtNm5HUjVBVmJIT3YwYnlzS3lnMUFycDdwSlpRRlRqV01ZMlpmRGZZb0xVOEF2Y2FrdVlMeGVuNWxJZjlaQWZMV2YzTlVmTkpZQmJCRFRfSlU5azVt?oc=5",
-        "source": "MarketWatch",
-        "date": "Wed, 25 Nov 2026 17:31:00 GMT"
+        "title": "Upward pressure on interest rates as additional U.S. tariffs could worsen inflation: CIO",
+        "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNM1BnWUZITFUzTlFPSjZZaDRJRWRhVVg2QUVUODF5UEZCdlkzREthNlNnNmo3VVA5eXpqY2NzX05QV0VZS1RuMWl3WGRCVkc4cHA5YWVFX2ctREsxaGZWM2x3RGpQdFVJTnJpaGNMTGZnMUo5UFRncjJab2djTDN1Q21waDI5N2x6UHFNcEZMNnNUZEhIaVltdDJ5YVJ6NHNySjVzdkZyLWZtMGox?oc=5",
+        "source": "CNBC",
+        "date": "Thu, 26 Nov 2026 01:21:23 GMT"
       },
       {
-        "title": "Tech stocks suffer sell-off on AI angst, US inflation",
-        "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOOHh3Uk12UkUwR0doYlVNRDZRVWZFRzFOYko4dmRsQ085SEdZa3BrSnpqWGFHbkczcmtHdlJQQmRMWnV5aVU1b1JjRFJiTDlmNUxJU252YmktZXhPR1ZUWXFaWDMxazBRbV9hT1Zrd2pCMGRHN2ctYzhwQ2lsTGcxcVliSklib2dVYmVqZmY1N19pRjFlY0hPb2dObi0yaElrZ2JCQ1ItZw?oc=5",
-        "source": "Yahoo Finance",
-        "date": "Wed, 25 Nov 2026 17:05:53 GMT"
+        "title": "Wild Market Swings Are Colliding With a Fed Bent on Taming Inflation",
+        "link": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNNktjNDdMSmJmZDNsOE1CbkdBZVBNS2ZrVEJSUXQtazcwMUs3MHRwbk5xNmN4YmxhTC1OcUdlRVBDVmtiWXZYckVLQ1pOMFMxbXhPaXpsdjdMejlzLW5TMjYxYUVHQUJUamVMaERpbmIwSXd2bUoyMFJLWUcxV0JDZVVvUjE0UmRjaDdJTlJneE9CRnFrZ1dkZGdzeVA5MEtsSG93T0gySzktblJRWGZQUGlsUGVDXzNqRUtvV1pR?oc=5",
+        "source": "WSJ",
+        "date": "Thu, 26 Nov 2026 01:00:00 GMT"
       },
       {
-        "title": "ETF vàng toàn cầu có tuần bán mạnh nhất kể từ tháng 6, điều gì đang xảy ra?",
-        "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPdEJJeVRROUIwVXpISTMxS01xcmVtamgyNk9iQ0RxRXdTSnZOcHNxOENNbUtuOXhqNjJ6QkI4YlVzR29lOG1EZ1poaHZqWUkzWVhrWGdZbXJZMjdlUFlrVnowU2NuYk9BTFRVMnV5UzFqbGNyLUJuSVpMU1FhQ3dKTXNYeGdzYkpnMUhQLV80R21qNThPYjlfNVpHSzRDMmpaN3U2T2gya04zaEFZTUFHVjNMaw?oc=5",
-        "source": "CafeF",
-        "date": "Wed, 25 Nov 2026 17:05:00 GMT"
+        "title": "South Korea raises rates to highest in two years, as inflation remains above target",
+        "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTE1BX0ltaTV6dmM2SkZLci1OMHRCRHpKYTVHUTY2bmcwSDhFRTRGN2tGUUttWndwSmV1WnYzTXhGTTRkN3JfckQ2bmtJbGw3RTVwNFJMeDZvbi1rd3RKdTJZTjE1czJud2tTNGhDdDRRcnNPNDRybzY0SW9vS3UzS2fSAYQBQVVfeXFMTzBydDUteUdVY1J0eUMza3RsTlZQdG82RG9OUDlXLXdyYl93NVpXcldtSUg5S3RtT3ZXVGFsTjRnaGVlUGFIeU5BUU1aNGxWODVRMHNGWUdwdmFFanBac3U1NXhKVUE2TjZFdVdjcUF3MlA0cWpMS0xDTHZGYnNQVjg3Y3Fp?oc=5",
+        "source": "CNBC",
+        "date": "Thu, 26 Nov 2026 00:54:00 GMT"
       },
       {
-        "title": "Giá vàng giảm hơn 120 USD/ounce sau tin Mỹ sắp áp thuế",
-        "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxOMW1oX1ZaTkZtOU5tNEZnS2RIZnhIeGQxODRsV0lnR3FLUUZUZXJFd2VoYm1VOVJJaW9SZHZSRXRicHVGa0dEVmpOZnZvbnFVUFVxY0ZMRm1JcUNhQzJuaU5sTzM0eU9DRXFpUkV6TEJ3WGIzT2xBRFJIMGY5S2NMbmxfUGJHMk5mY01ZM1V1SUpxSGZPQlhIN3FuZ2c?oc=5",
-        "source": "Tuổi Trẻ",
-        "date": "Wed, 25 Nov 2026 16:59:00 GMT"
+        "title": "Giá vàng hôm nay 26-11: Vàng thế giới bật tăng 135 USD, SJC lại giảm 900.000 đồng",
+        "link": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNaTYtQU1kZy1xTENHTlptMjVidHdFeHEwQ0liVWM1bEtPX09GMFFmQkJiZkp1ZmRrRUVFbTg5cF9VMTZneXhndGNyVEg1QUdaZVItQ3N2Q2tQSy1DWkZwNnVfZ2ktdk5RcUFFQ3JYY0p5R19QLVE4b1NSRDFlOEh4SGpuVDYyMHc1RHFCelBiZmM1Y0IwN0hRVGhzVmNWUm5hN280eElZVFdpNWtIaGJzV04wQWJkSFN6MV9kcg?oc=5",
+        "source": "Báo Tuổi Trẻ",
+        "date": "Thu, 26 Nov 2026 00:53:00 GMT"
       },
       {
-        "title": "Inflation remains uncomfortably high despite a retreat in gas prices as challenges mount for the Fed",
-        "link": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOWjFKVU92YjgtRlZKS1BWWTFDYWthODExQ0VMLXJ0OHY5T2tzamlmemN0akZCS0RKaGR4MGRlamtQbzFzUUsxWURPRHVqZWMtd3VnOHFldzdPYnVEcVNNZDBJLTIxMHFlOUE2ZjAza2UxZkFmbG55N04wSS1hR1JUcWNyNXVaaGFkUUFNc0JRekpqZTUzR0JWMzJwdmxKMmVWS3JXeQ?oc=5",
-        "source": "AP News",
-        "date": "Wed, 25 Nov 2026 16:56:00 GMT"
+        "title": "Giá vàng thế giới giảm sâu",
+        "link": "https://news.google.com/rss/articles/CBMibEFVX3lxTE1WQXdVOGV6M2RMeWRwOWVYUFp5eHBWTzVKeHpOVWV2Z0ZuVDQzcHNNaC1oQ1VTTnJBclEtV25CLUdRUDgtaXBDMzhrLTAyWFJ0NGhmM3laUW1CajJ0X0tYdVhEX1V2Z05jZXJXdg?oc=5",
+        "source": "Znews",
+        "date": "Thu, 26 Nov 2026 00:52:04 GMT"
+      },
+      {
+        "title": "BOK Hikes Rate on Stubborn Inflation as AI Boom Drives Growth",
+        "link": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQTTAzSnF0UXZLcGIzQnV0VXoxU2x5UF9Vb1JqNGtuVENiTGg0Z1FMNno4dTZRcVNFR1BHUE81QTg4QWpZOXdxbnhUb2RDT0VWbTBBM1dVVUUwTUh5M20zNHp0SmNkS0hMYUZBazZ2c09pNWdvMTdQa0NCRWNpZDdZRGFXME8zcnU1akZOWmNxcVZhOS1LS0pkdnpiaHdBa20yWVVtcWJfNlBwU0VGeGtXNHV3?oc=5",
+        "source": "Bloomberg",
+        "date": "Thu, 26 Nov 2026 00:50:53 GMT"
+      },
+      {
+        "title": "Chênh lệch giá vàng thế giới và trong nước tăng lên 22 triệu đồng/lượng",
+        "link": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxNenFrUEhQVWVkMDl2TDl0NlBEV0RwUE5LTnFSVjg0amktYnFFNUxCSHVvZDFaUXhkWU92akxtT2lXUzFQaDBXNVlCMEhFeXVBNEVFdmRCX0FCenRrbGpvYWRrSm9BU1EwVXpJM01JRkhfZmlDMmVRTjg1TjMyMmZ4b2dEX3MwUWJiX1F3aXAzcXZsRUdoX1Z2MmRWRmFKdGtrallENkNycHA2WnJ2enBrZkRMYkdaZWhxX3VUeXRLMU9Zd0k?oc=5",
+        "source": "Báo Dân trí",
+        "date": "Thu, 26 Nov 2026 00:29:26 GMT"
+      },
+      {
+        "title": "Giá vàng đảo chiều mạnh sau nhịp lao dốc về gần 3.400 USD/oz, SPDR Gold Trust bán ròng",
+        "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNaXdXdG1XR1NqVjdJMlp2MHYzNW0ySmkxTEw4VFpBSDlOUTlIWFU0RGZlVVRiLXFaSVpPa3JCTXQ3U0tPemhxYThXZW1BTEJOVXVaU1JaUWFzS3dzZXBBdktaY0c1cVBFRlh2TzRKNUZUSS0yRGIwTzhBWk5hcFpQdm9hSlBROXBKMjh1VWplcHFWQmQySngtaVQzQ1lfNEZIdFB5R3gzWGxPdGZX?oc=5",
+        "source": "VnEconomy",
+        "date": "Thu, 26 Nov 2026 00:27:29 GMT"
       }
     ]
   }
