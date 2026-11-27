@@ -1,6 +1,189 @@
 {
   "items": [
     {
+      "headline": "Vàng thế giới giảm nhẹ 0,23% do lo ngại Fed, giá trong nước đứng yên",
+      "direction": "down",
+      "summary": "Giá vàng thế giới hôm nay giảm nhẹ khoảng 0,23%, còn 3.650 USD/ounce, sau khi vừa hồi lên từ vùng thấp nhất 15 tháng. Nỗi lo Fed có thể giữ lập trường cứng rắn về lãi suất vẫn đè nặng lên giá vàng. Trong nước, giá vàng miếng SJC và các thương hiệu lớn không đổi, vẫn cao hơn giá thế giới quy đổi khoảng 21 triệu đồng/lượng.",
+      "reasons": [
+        {
+          "title": "Lo ngại Fed cứng rắn về lãi suất",
+          "detail": "Giới phân tích cho rằng rủi ro từ Fed đang rất lớn. Giọng điệu của ông Warsh có thể khiến giá vàng bị ép xuống thêm, dù vàng có thể hồi nhẹ sau quyết định của Fed. Lãi suất cao thường bất lợi cho vàng vì vàng không sinh lãi.",
+          "kind": "nhan_dinh",
+          "sources": [
+            {
+              "title": "Gold and silver bounce from 15-month lows, but Fed risks loom large",
+              "link": "https://news.google.com/rss/articles/CBMipgFBVV95cUxOUHRKOGNNMzNLb2dYbFhxMi12UEpPOGRqSHI0XzRmVVZBZThlVjdOWGh0WHo1Sjh6U1NYdmI4eU9GVkNZeHZNQ3luTmkwRWxIQUJQbGZNa1hsTXpiSHJoVGtvNGFiNmNxZ0hNNmVOT1NBTUVrSXQ5clI4YUFkQjJpclhfWFg0eS1GSVFNMC12ZWtpQVUzM1NwelhzWDJqVnh4clJvcllB?oc=5",
+              "source": "Kitco",
+              "date": "Fri, 27 Nov 2026 22:05:46 GMT"
+            },
+            {
+              "title": "Gold may get a relief rally following the Fed, but Warsh’s tone could still hammer prices lower – BubbleBubble Report’s Colombo",
+              "link": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQQVJNeDA1dXJNNGlXVlNfbEg5aXBWZVlhNTRDVnFBSjllblA3c1NWY1JIMUxfY202RC1nMDhEdjRXa25xNGttVVVKWElVYXpKWXc1ZXVNaTVGYWFqZnBQZEpTR2V1T3VHRW1rN2NSTVZES3J3YndCbTFTYlY5N0g0MWc2MVZ2LURRbTM2Um5aOFpDak9taHVFWDJMNUJPb3g3TmJxWEJMalpwSjRpQ1hMUFJSNnBFMUE?oc=5",
+              "source": "Kitco",
+              "date": "Fri, 27 Nov 2026 22:03:48 GMT"
+            },
+            {
+              "title": "The Big Pressures Facing the Fed",
+              "link": "https://news.google.com/rss/articles/CBMijwFBVV95cUxPYmJVY0hNd3M0QlpLTWVBLW5iNXM3SWhZeGRHOWpyS0xxbWk3QmczdjVYN2lfdnRaNEpOTWFfRGtHdGNHbVM0UTNTS3FLNFZua0dScFRNanRvaDJmMzRFdm42OUczNUZnLWQwbDI4STFxSkljNkRETXJDT3ZaeU1aYnRvSmpTeUlKVk9LQ0lCWQ?oc=5",
+              "source": "Bloomberg",
+              "date": "Fri, 27 Nov 2026 15:53:26 GMT"
+            },
+            {
+              "title": "High Inflation Puts Fed’s Credibility On the Line",
+              "link": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNd2h6dk0xd0JHNWIwS3FxcXRDV1VNc3VTRUdFT0NtaFFiUFNwVkt0bzZONVFyMUxaRmtwSEpzZzU3NEhqQXI5dG5pM2lDdGFlSXhqUHg1b1J1bDVLMGNBekg2U2ludnNGOUpPRzRTanBMdHF2UkNmWXdPRDlxVG9nbV9qUERpZlNOR29oNlZ6Zm8yQy1nMTVqUmNtV0s0N1dJSTlHZkx3?oc=5",
+              "source": "Bloomberg.com",
+              "date": "Fri, 27 Nov 2026 11:00:10 GMT"
+            }
+          ]
+        },
+        {
+          "title": "Vàng vẫn quanh vùng thấp nhất 15 tháng",
+          "detail": "Vàng và bạc vừa hồi lên từ mức thấp nhất 15 tháng nhưng đà hồi còn yếu. Hôm nay giá thế giới lại giảm nhẹ về 3.650 USD/ounce.",
+          "kind": "su_that",
+          "sources": [
+            {
+              "title": "Gold and silver bounce from 15-month lows, but Fed risks loom large",
+              "link": "https://news.google.com/rss/articles/CBMipgFBVV95cUxOUHRKOGNNMzNLb2dYbFhxMi12UEpPOGRqSHI0XzRmVVZBZThlVjdOWGh0WHo1Sjh6U1NYdmI4eU9GVkNZeHZNQ3luTmkwRWxIQUJQbGZNa1hsTXpiSHJoVGtvNGFiNmNxZ0hNNmVOT1NBTUVrSXQ5clI4YUFkQjJpclhfWFg0eS1GSVFNMC12ZWtpQVUzM1NwelhzWDJqVnh4clJvcllB?oc=5",
+              "source": "Kitco",
+              "date": "Fri, 27 Nov 2026 22:05:46 GMT"
+            }
+          ]
+        },
+        {
+          "title": "Đồng USD có dấu hiệu bật tăng",
+          "detail": "Theo Reuters, các đợt bán tháo cổ phiếu Mỹ đang kéo theo một kiểu bật tăng mới của đồng USD. USD mạnh lên thường khiến vàng (định giá bằng USD) kém hấp dẫn hơn.",
+          "kind": "nhan_dinh",
+          "sources": [
+            {
+              "title": "US stock selloffs trigger a new kind of dollar bounce",
+              "link": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPZGRGWE5fV3A5Um9RYUlPZ1ZTRjlHMzBHckV2bmhVbkFTX0xqZEJ0dldFMkN0NFNlYUNOLXpLR25YNU1fdzNyajYyV0JHcUFELUtLU3FMN3E5MWlCS0dqLVIybTF3bXpRMU5CeHhxbXFpeHNhNzVMZ2RnREdUaXZCbGdCQXh1YUxKRXhuUVpUb3k3SDl4ZGt5ZQ?oc=5",
+              "source": "Reuters",
+              "date": "Fri, 27 Nov 2026 13:17:43 GMT"
+            }
+          ]
+        },
+        {
+          "title": "Xu hướng tăng lãi suất lan rộng ở nhiều nơi",
+          "detail": "ECB có thể phải tăng lãi suất thêm do lạm phát vẫn trên 3%, còn nhà đầu tư Canada đặt cược vào đợt tăng lãi suất tháng 12. Bối cảnh lãi suất toàn cầu đi lên gây thêm áp lực cho vàng.",
+          "kind": "nhan_dinh",
+          "sources": [
+            {
+              "title": "Canadian dollar holds on to weekly gain as investors bet on December rate hike",
+              "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxQRzA1OHRPU2pmSXIwcDdWYlBUUnkzOGM0QzlIY0NWTFVoT00zUlc4WWtWeHNScHlIbE1hcmsyalVwSE1xcWpUWlFqTzlKejlWSHJPeXRoc1hDcG9BLUFxWm82b3RGaE50Wkk4blNfVW1ndDhFX0FPaVhRYTU3S0w4LU1iNDVZZmxzOGFXSEhiYXFHT2duU2VyQjF3OFlvdnNoRWNvTXFjZlU4X0cyaUl3NU9oZWJPcVlv?oc=5",
+              "source": "Kitco",
+              "date": "Fri, 27 Nov 2026 20:16:52 GMT"
+            },
+            {
+              "title": "ECB may have to raise rates further as inflation stays above 3%",
+              "link": "https://news.google.com/rss/articles/CBMirgFBVV95cUxOWjZWeTZiZjhicmk5NDhSTG1DUlFOTTJ6eExNcUNab3JiTTlHemhjZ05sc05Fb3g3dWVGbmlQRGJZZzBPV3hOS3R1cVlLOExWU0QyQlBFSVpFV1hmSXRPcTJMX09pNldlRXpXNFJSRkhtb2ptWERxR0Q5VUQyX3hORnZ0X1BUSElKTG0tSVVFOFEwbG9WZjZJQ012V1Q1ZU9vdi0tTEQwTXE0Q1hBTkE?oc=5",
+              "source": "Reuters",
+              "date": "Fri, 27 Nov 2026 13:15:43 GMT"
+            }
+          ]
+        },
+        {
+          "title": "Vẫn có ý kiến lạc quan cho cuối năm",
+          "detail": "Một số chuyên gia cho rằng vàng có thể được hỗ trợ bởi đà tăng của chứng khoán và yếu tố mùa vụ cuối năm, nên đà giảm hiện tại chưa chắc kéo dài.",
+          "kind": "nhan_dinh",
+          "sources": [
+            {
+              "title": "Gold could ride the double tailwind of equities and seasonals higher into the new year – investingLive’s Button",
+              "link": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQUS1NNmNtb2RVVC1qSUh6RTNDOE1ES1lrVC1ibnZuUTJSRnMtLW1JblBfZkVNOGh2bUM3UHl1YTd6SnIwOVNCc0tPTDhFZmFOQU80U3AzWEU1U25DV1dyQVYzWHdYRERQRnF5S2kwTGRmcmg1Q2dGeHJ2dHVHdHFDaHZWcFBWRVM5bkdQQl8wdHduTGlTMk1JNFRuNUtPVkhMTDRCZ013djJnR3laR1F2VkdJbUp3WkE?oc=5",
+              "source": "Kitco",
+              "date": "Fri, 27 Nov 2026 20:47:17 GMT"
+            }
+          ]
+        }
+      ],
+      "domestic_note": "Giá vàng trong nước hôm nay đứng yên: SJC và DOJI mua 130,5 triệu, bán 135,5 triệu đồng/lượng; Bảo Tín Minh Châu bán 134 triệu; Mi Hồng bán 135,5 triệu. Tỷ giá USD/VND không đổi (26.030). Giá thế giới quy đổi chỉ khoảng 114,5 triệu đồng/lượng, nên vàng SJC đang cao hơn khoảng 21 triệu đồng/lượng. Khoảng chênh lớn này cho thấy giá trong nước chủ yếu do cung cầu nội địa quyết định và không phản ứng ngay với biến động nhỏ của thế giới.",
+      "watch_next": [
+        "Số liệu việc làm Mỹ tuần tới, trước quyết định lãi suất tháng 12 của Fed",
+        "Phát biểu và giọng điệu của ông Warsh cùng các quan chức Fed",
+        "Diễn biến đồng USD và thị trường chứng khoán Mỹ",
+        "Động thái lãi suất của ECB và Ngân hàng Trung ương Canada",
+        "Khoảng chênh lệch giữa giá SJC và giá thế giới"
+      ],
+      "engine": "claude",
+      "date": "2026-11-28",
+      "at": "2026-11-27T22:53:48.576Z",
+      "worldPrice": 3650,
+      "worldPct": -0.23233565668990025,
+      "news": [
+        {
+          "title": "Gold and silver bounce from 15-month lows, but Fed risks loom large",
+          "link": "https://news.google.com/rss/articles/CBMipgFBVV95cUxOUHRKOGNNMzNLb2dYbFhxMi12UEpPOGRqSHI0XzRmVVZBZThlVjdOWGh0WHo1Sjh6U1NYdmI4eU9GVkNZeHZNQ3luTmkwRWxIQUJQbGZNa1hsTXpiSHJoVGtvNGFiNmNxZ0hNNmVOT1NBTUVrSXQ5clI4YUFkQjJpclhfWFg0eS1GSVFNMC12ZWtpQVUzM1NwelhzWDJqVnh4clJvcllB?oc=5",
+          "source": "Kitco",
+          "date": "Fri, 27 Nov 2026 22:05:46 GMT"
+        },
+        {
+          "title": "Gold may get a relief rally following the Fed, but Warsh’s tone could still hammer prices lower – BubbleBubble Report’s Colombo",
+          "link": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQQVJNeDA1dXJNNGlXVlNfbEg5aXBWZVlhNTRDVnFBSjllblA3c1NWY1JIMUxfY202RC1nMDhEdjRXa25xNGttVVVKWElVYXpKWXc1ZXVNaTVGYWFqZnBQZEpTR2V1T3VHRW1rN2NSTVZES3J3YndCbTFTYlY5N0g0MWc2MVZ2LURRbTM2Um5aOFpDak9taHVFWDJMNUJPb3g3TmJxWEJMalpwSjRpQ1hMUFJSNnBFMUE?oc=5",
+          "source": "Kitco",
+          "date": "Fri, 27 Nov 2026 22:03:48 GMT"
+        },
+        {
+          "title": "Brazilian markets rally after Lula taps Bradesco chairman for finance chief",
+          "link": "https://news.google.com/rss/articles/CBMivwFBVV95cUxOVFRwQWxfcmJJYjdURlh4dEJ6bHRBMXdvZUt3Ry0wMGRmMDduc2N0NXVleHBaSWtFbENkbzVkSjRCMDNrUlp5LTdtdHd1WHBfZ044QllESlc1eTdRLTZCQ1NOTHo0aDVJX2xoeDRxOVZPSGxhdVYyOEZPT2w1eDBkZ0RlWUowdC1DWW52Wl85eEYtTHhNb1ZkMENTVmdzdHRTcEluMTZnSU9QSFF2c19rQ3Z0QXBoS3RoS3AtYy0yUQ?oc=5",
+          "source": "Reuters",
+          "date": "Fri, 27 Nov 2026 21:10:41 GMT"
+        },
+        {
+          "title": "Gold could ride the double tailwind of equities and seasonals higher into the new year – investingLive’s Button",
+          "link": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQUS1NNmNtb2RVVC1qSUh6RTNDOE1ES1lrVC1ibnZuUTJSRnMtLW1JblBfZkVNOGh2bUM3UHl1YTd6SnIwOVNCc0tPTDhFZmFOQU80U3AzWEU1U25DV1dyQVYzWHdYRERQRnF5S2kwTGRmcmg1Q2dGeHJ2dHVHdHFDaHZWcFBWRVM5bkdQQl8wdHduTGlTMk1JNFRuNUtPVkhMTDRCZ013djJnR3laR1F2VkdJbUp3WkE?oc=5",
+          "source": "Kitco",
+          "date": "Fri, 27 Nov 2026 20:47:17 GMT"
+        },
+        {
+          "title": "Canadian dollar holds on to weekly gain as investors bet on December rate hike",
+          "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxQRzA1OHRPU2pmSXIwcDdWYlBUUnkzOGM0QzlIY0NWTFVoT00zUlc4WWtWeHNScHlIbE1hcmsyalVwSE1xcWpUWlFqTzlKejlWSHJPeXRoc1hDcG9BLUFxWm82b3RGaE50Wkk4blNfVW1ndDhFX0FPaVhRYTU3S0w4LU1iNDVZZmxzOGFXSEhiYXFHT2duU2VyQjF3OFlvdnNoRWNvTXFjZlU4X0cyaUl3NU9oZWJPcVlv?oc=5",
+          "source": "Kitco",
+          "date": "Fri, 27 Nov 2026 20:16:52 GMT"
+        },
+        {
+          "title": "Inflation-Weary Shoppers Are Picky—Yet This Mall Brand Surged 30%",
+          "link": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxQeDljOUJFR2hvdVNMV21tamFpWmU3TXRKcU5lREZ4c2xBWUdNaVJUOThMUzl3ck5LbG41NFU1amJKbmxCNjJsTTJ1THR4YU1jTk5ycGhncDdrT1hfZk84cTVpcGdYLUFQeV9JbzNtVDRIUVNlbU5BOUdqTzJTYk9WcFh6NURhR3NiWEsxcnpYQ1NTc0tPb2YtYm9GVXdKRlVvU3lwSGdiM2Y0aGl2X2NXLVA4YnI3LTBINEZv?oc=5",
+          "source": "Investing.com",
+          "date": "Fri, 27 Nov 2026 20:12:38 GMT"
+        },
+        {
+          "title": "The Holidays’ Most Coveted Item? A Good Deal",
+          "link": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxQT1NKMVU5Nnk0MjUtVkRldkR4NjZOcXZrQkhnMVZSb0N1bGF2dXpTeE5pcXJLeTMtcTlreDJzR25WLWJYZ0ZrZGxpbkIzTzR1ZE5JMWV3TjN6SEN6VmFQY2NyclkyYTdENW5XQm9HMlotSTk3cVRuazByN3pSZGM5dXRaZHhJQVJuRWF2MV9NVU9pckE0amR3ZTNGTWF1cWJNS1B0NjFselU0QWl3UF9zRkVWdDJLQTJwS2g4a0Nld1M?oc=5",
+          "source": "Bloomberg",
+          "date": "Fri, 27 Nov 2026 18:45:27 GMT"
+        },
+        {
+          "title": "Macro Strategist Greg Faranello Talks Factors Determining Fed’s Rate Timeline",
+          "link": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNMVJlUGdWQllOQ0wwM09DaGVQdkpVTWI2WGYzbHB2bEFJaExaRHd2YWVDcExIdFBCbmhRTG1RcjhnTlFQRVpmd29NMTNLVTYtSVdBZTIwTXpWSUdpZUs1WWNrcVRJcnh6dkpxa0VqQVNSNGZpRE55bWkxMDF1TjVid2dfZ1NwM3FwdG9ieQ?oc=5",
+          "source": "Yahoo Finance",
+          "date": "Fri, 27 Nov 2026 16:23:14 GMT"
+        },
+        {
+          "title": "Euro-Zone Inflation Is Seen Weaker for First Time in Five Months",
+          "link": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNQV91VXMzbTBWRWtyVHZlbmxqSFdtQnNteHFSTnVRdlJCVm9NZUdCMnROT0E2U3dLREktSk5GYkl2bUF2UXhrM1FDVFR0dTktMnVTUDVqWHZJTVdtUDZKUnY3YUFadGpZdU5xbHJhcEFUaDQzX3EwekliN3I5VXlzVXZ0VUtPT2c2SEVvbC1wX1MwN3dKQkU0TWwxTWRIVTU5bUxYVmJVeWRsZTAwSEVlUzF2ME5udw?oc=5",
+          "source": "Bloomberg",
+          "date": "Fri, 27 Nov 2026 16:18:45 GMT"
+        },
+        {
+          "title": "The Big Pressures Facing the Fed",
+          "link": "https://news.google.com/rss/articles/CBMijwFBVV95cUxPYmJVY0hNd3M0QlpLTWVBLW5iNXM3SWhZeGRHOWpyS0xxbWk3QmczdjVYN2lfdnRaNEpOTWFfRGtHdGNHbVM0UTNTS3FLNFZua0dScFRNanRvaDJmMzRFdm42OUczNUZnLWQwbDI4STFxSkljNkRETXJDT3ZaeU1aYnRvSmpTeUlKVk9LQ0lCWQ?oc=5",
+          "source": "Bloomberg",
+          "date": "Fri, 27 Nov 2026 15:53:26 GMT"
+        },
+        {
+          "title": "Kinross Gold (KGC) Down 14.7% Since Last Earnings Report: Can It Rebound?",
+          "link": "https://news.google.com/rss/articles/CBMikwFBVV95cUxPdDlRSVhrOW9qZW43Wk5zbGFfMXBDUnIxbWU4Ujh2dUxYby10NFREV01LT2hJc25jTUJycWxsZ3ZIOG1SQXRmeUlWcXg0NWtlS2hyODVzSjBYd3NxaTA4WXJZamFXYi0tRGhTWE8ycmV4MXhhb290dkZPcWluMWgzSXR2SlV6bkNWbHV4aTFYY2FKV28?oc=5",
+          "source": "Yahoo Finance",
+          "date": "Fri, 27 Nov 2026 15:30:16 GMT"
+        },
+        {
+          "title": "Inflation and Destocking Drag Down PPG Industries (PPG)",
+          "link": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPdmZ2TDF4QzNWYWJEc2tFZlRtcDNYYkF1UWVLeGMzaDJDNHJkWW1Zb0QtZk1OTUtiZk1OakYwczFLVC10QXF1eVJzTkFNTzdQbWUwUEJodjZmcWdxb1NwNjRUcldMOTltQXBXcjQxNGRiSzdJQnF1NEtaT1RLclVGS1VGeDdoMkFrWWkzc2ZTSU1yZVRLVXB3cjZ3R2FxXzd6?oc=5",
+          "source": "Yahoo Finance",
+          "date": "Fri, 27 Nov 2026 15:06:06 GMT"
+        }
+      ]
+    },
+    {
       "headline": "Vàng thế giới tăng hơn 1%, SJC lên 135,5 triệu đồng/lượng",
       "direction": "up",
       "summary": "Giá vàng thế giới tăng khoảng 1,1% lên quanh 3.634 USD/ounce, mức cao nhất trong một tuần, cùng lúc chứng khoán Mỹ giảm gần 2%. Vàng trong nước tăng theo: SJC và DOJI tăng 1 triệu đồng mỗi lượng, Bảo Tín Minh Châu tăng 0,5 triệu đồng. Nguyên nhân trực tiếp là đà phục hồi của vàng thế giới, còn các yếu tố phía sau như lo ngại lạm phát và chứng khoán giảm chủ yếu là cách giới phân tích diễn giải.",
